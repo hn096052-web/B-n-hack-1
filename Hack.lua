@@ -1,8 +1,8 @@
 --[[ 
-    H HUB - V6 ULTIMATE (FORCE MOVE & ATTACK)
-    - Fix: Ép di chuyển bằng CFrame/Vector (Không bị game chặn)
-    - Fix: Đầy đủ nút Thu nhỏ (-), Đóng (X), Chữ H
-    - Feature: Auto Play (Lao vào đánh), Smart Block (Tự đỡ)
+    H HUB - V7 BRUTE FORCE EDITION
+    - Fix: Di chuyển bằng CFrame (Chống đứng yên tuyệt đối)
+    - Fix: Đầy đủ nút thu nhỏ (-), Đóng (X)
+    - Feature: Auto Play (Teleport-Follow), Smart Block
 ]]
 
 local TweenService = game:GetService("TweenService")
@@ -12,14 +12,14 @@ local RunService = game:GetService("RunService")
 local VIM = game:GetService("VirtualInputManager")
 local LocalPlayer = Players.LocalPlayer
 
-if CoreGui:FindFirstChild("HHUB_V6") then CoreGui.HHUB_V6:Destroy() end
+if CoreGui:FindFirstChild("HHUB_V7") then CoreGui.HHUB_V7:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "HHUB_V6"
+ScreenGui.Name = "HHUB_V7"
 ScreenGui.Parent = CoreGui
 
 ---------------------------------------------------
--- HÀM DI CHUYỂN BẢNG (DRAG)
+-- HÀM KÉO BẢNG
 ---------------------------------------------------
 local function MakeDraggable(gui)
     local dragging, dragInput, dragStart, startPos
@@ -48,167 +48,127 @@ end
 -- GIAO DIỆN
 ---------------------------------------------------
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 320, 0, 180)
-MainFrame.Position = UDim2.new(0.5, -160, 0.5, -90)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.Size = UDim2.new(0, 300, 0, 160)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -80)
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 MainFrame.Visible = false
 Instance.new("UICorner", MainFrame)
 local MainStroke = Instance.new("UIStroke", MainFrame)
-MainStroke.Thickness = 3
+MainStroke.Thickness = 2
 MakeDraggable(MainFrame)
 
 local Title = Instance.new("TextLabel", MainFrame)
-Title.Text = "H HUB - AUTO PLAY V6"
-Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Text = "H HUB - BRUTE FORCE V7"
+Title.Size = UDim2.new(1, 0, 0, 35)
 Title.TextColor3 = Color3.new(1, 1, 1)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBold
 
+-- Nút Thu Nhỏ (-)
 local MinBtn = Instance.new("TextButton", MainFrame)
 MinBtn.Text = "-"
-MinBtn.Size = UDim2.new(0, 30, 0, 30)
-MinBtn.Position = UDim2.new(1, -70, 0, 5)
-MinBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+MinBtn.Size = UDim2.new(0, 25, 0, 25)
+MinBtn.Position = UDim2.new(1, -60, 0, 5)
+MinBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 MinBtn.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", MinBtn)
 
-local CloseBtn = Instance.new("TextButton", MainFrame)
-CloseBtn.Text = "X"
-CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-CloseBtn.Position = UDim2.new(1, -35, 0, 5)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
-CloseBtn.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", CloseBtn)
-
+-- Nút Chữ H
 local MiniH = Instance.new("TextButton", ScreenGui)
 MiniH.Text = "H"
-MiniH.Size = UDim2.new(0, 60, 0, 60)
-MiniH.Position = UDim2.new(0, 20, 0.5, -30)
+MiniH.Size = UDim2.new(0, 50, 0, 50)
+MiniH.Position = UDim2.new(0, 10, 0.5, -25)
 MiniH.Visible = false
-MiniH.BackgroundColor3 = Color3.fromRGB(170, 0, 255)
-MiniH.TextColor3 = Color3.new(1, 1, 1)
 MiniH.Font = Enum.Font.GothamBold
-MiniH.TextSize = 30
-Instance.new("UICorner", MiniH).CornerRadius = UDim.new(0, 15)
+MiniH.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", MiniH).CornerRadius = UDim.new(0, 10)
 local MiniStroke = Instance.new("UIStroke", MiniH)
-MiniStroke.Thickness = 3
+MiniStroke.Thickness = 2
 MakeDraggable(MiniH)
 
+-- Nút Bật/Tắt
 local KillBtn = Instance.new("TextButton", MainFrame)
-KillBtn.Text = "BẮT ĐẦU AUTO PLAY"
-KillBtn.Size = UDim2.new(0, 240, 0, 60)
-KillBtn.Position = UDim2.new(0.5, -120, 0.5, -10)
-KillBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+KillBtn.Text = "START AUTO PLAY"
+KillBtn.Size = UDim2.new(0, 220, 0, 50)
+KillBtn.Position = UDim2.new(0.5, -110, 0.6, -10)
+KillBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 KillBtn.TextColor3 = Color3.new(1, 1, 1)
 KillBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", KillBtn)
 local KillStroke = Instance.new("UIStroke", KillBtn)
-KillStroke.Thickness = 2
 
 ---------------------------------------------------
--- LOGIC CẦU VỒNG & NÚT
+-- RAINBOW & EVENTS
 ---------------------------------------------------
 local hue = 0
-RunService.RenderStepped:Connect(function()
+RunService.Heartbeat:Connect(function()
     hue = (hue + 0.005) % 1
     local color = Color3.fromHSV(hue, 1, 1)
     MainStroke.Color = color
     KillStroke.Color = color
     MiniStroke.Color = color
+    MiniH.BackgroundColor3 = color
 end)
 
 local autoKill = false
 KillBtn.MouseButton1Click:Connect(function()
     autoKill = not autoKill
-    KillBtn.Text = autoKill and "ĐANG CHẠY..." or "BẮT ĐẦU AUTO PLAY"
-    KillBtn.BackgroundColor3 = autoKill and Color3.fromRGB(0, 100, 0) or Color3.fromRGB(30, 30, 30)
+    KillBtn.Text = autoKill and "AUTO IS RUNNING..." or "START AUTO PLAY"
     if not autoKill then VIM:SendKeyEvent(false, Enum.KeyCode.F, false, game) end
 end)
 
 MinBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false MiniH.Visible = true end)
 MiniH.MouseButton1Click:Connect(function() MiniH.Visible = false MainFrame.Visible = true end)
+local CloseBtn = Instance.new("TextButton", MainFrame)
+CloseBtn.Text = "X"; CloseBtn.Size = UDim2.new(0,25,0,25); CloseBtn.Position = UDim2.new(1,-30,0,5); CloseBtn.BackgroundColor3 = Color3.fromRGB(150,0,0); CloseBtn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", CloseBtn);
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 ---------------------------------------------------
--- TỐI ƯU QUÉT MỤC TIÊU
+-- CORE: BRUTE FORCE MOVE & DEFEND
 ---------------------------------------------------
-local function getClosest()
-    local target = nil
-    local dist = 200
-    local myChar = LocalPlayer.Character
-    if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return nil end
-
+local function getTarget()
+    local target, dist = nil, 150
     for _, v in pairs(workspace:GetChildren()) do
-        if v:IsA("Model") and v ~= myChar and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") then
+        if v:IsA("Model") and v ~= LocalPlayer.Character and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") then
             if v.Humanoid.Health > 0 then
-                local d = (myChar.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude
-                if d < dist then
-                    dist = d
-                    target = v
-                end
+                local d = (LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude
+                if d < dist then dist = d; target = v end
             end
         end
     end
     return target
 end
 
----------------------------------------------------
--- CORE: AUTO PLAY (ÉP DI CHUYỂN & ĐÁNH)
----------------------------------------------------
-task.spawn(function()
-    while task.wait() do
-        if autoKill then
-            local myChar = LocalPlayer.Character
-            local enemy = getClosest()
+RunService.Stepped:Connect(function()
+    if autoKill then
+        local myChar = LocalPlayer.Character
+        local enemy = getTarget()
+        
+        if myChar and enemy and myChar:FindFirstChild("HumanoidRootPart") then
+            local myHRP = myChar.HumanoidRootPart
+            local enHRP = enemy.HumanoidRootPart
+            local dist = (myHRP.Position - enHRP.Position).Magnitude
             
-            if myChar and enemy and myChar:FindFirstChild("HumanoidRootPart") then
-                local myHRP = myChar.HumanoidRootPart
-                local enHRP = enemy.HumanoidRootPart
-                local distance = (myHRP.Position - enHRP.Position).Magnitude
-                
-                -- 1. XOAY NGƯỜI
-                myHRP.CFrame = CFrame.new(myHRP.Position, Vector3.new(enHRP.Position.X, myHRP.Position.Y, enHRP.Position.Z))
-                
-                -- 2. ÉP DI CHUYỂN (Dùng Velocity để lao vào)
-                if distance > 5 then
-                    myHRP.Velocity = (enHRP.Position - myHRP.Position).Unit * 50
-                end
+            -- ÉP DỊCH CHUYỂN (CFRAME LERP)
+            if dist > 4 then
+                myHRP.CFrame = myHRP.CFrame:Lerp(CFrame.new(myHRP.Position, Vector3.new(enHRP.Position.X, myHRP.Position.Y, enHRP.Position.Z)) * CFrame.new(0, 0, -2), 0.15)
+            end
 
-                -- 3. SMART DEFENSE & ATTACK
-                local enemyHum = enemy:FindFirstChildOfClass("Humanoid")
-                local isEnemyAttacking = enemyHum and #enemyHum:GetPlayingAnimationTracks() > 0
-
-                if distance < 12 and isEnemyAttacking then
-                    VIM:SendKeyEvent(true, Enum.KeyCode.F, false, game)
-                else
-                    VIM:SendKeyEvent(false, Enum.KeyCode.F, false, game)
-                    if distance < 10 then
-                        VIM:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                        task.wait(0.05)
-                        VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0)
-                    end
+            -- ĐỠ ĐÒN & TẤN CÔNG
+            local isAttacking = #enemy.Humanoid:GetPlayingAnimationTracks() > 0
+            if dist < 12 and isAttacking then
+                VIM:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+            else
+                VIM:SendKeyEvent(false, Enum.KeyCode.F, false, game)
+                if dist < 8 then
+                    VIM:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                    VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0)
                 end
             end
         end
     end
 end)
 
----------------------------------------------------
--- INTRO
----------------------------------------------------
-task.spawn(function()
-    local Intro = Instance.new("Frame", ScreenGui)
-    Intro.Size = UDim2.new(0, 250, 0, 80)
-    Intro.Position = UDim2.new(0.5, -125, 0.5, -40)
-    Intro.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    local T = Instance.new("TextLabel", Intro)
-    T.Text = "Cảm ơn vì đã dùng H HUB"
-    T.Size = UDim2.new(1, 0, 1, 0)
-    T.TextColor3 = Color3.new(1, 1, 1)
-    T.BackgroundTransparency = 1
-    Instance.new("UICorner", Intro)
-    task.wait(1.5)
-    Intro:Destroy()
-    MainFrame.Visible = true
-end)
-
+-- Hiện Main
+task.wait(1.5)
+MainFrame.Visible = true
