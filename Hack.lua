@@ -12,7 +12,7 @@ ScreenGui.Name = "H_HUB_OFFICIAL"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- [MỚI] HÀM TẠO TIẾNG CLICK
+-- HÀM TẠO TIẾNG CLICK
 local function PlayClickSound()
     local sound = Instance.new("Sound")
     sound.SoundId = "rbxassetid://6895079853"
@@ -20,6 +20,19 @@ local function PlayClickSound()
     sound.Parent = ScreenGui
     sound:Play()
     sound.Ended:Connect(function() sound:Destroy() end)
+end
+
+-- [MỚI] HÀM TẠO HIỆU ỨNG ĐỘNG CHO NÚT
+local function AddButtonAnimation(btn)
+    local originalSize = btn.Size
+    local hoverSize = UDim2.new(originalSize.X.Scale, originalSize.X.Offset + 5, originalSize.Y.Scale, originalSize.Y.Offset + 2)
+    
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {Size = hoverSize, BackgroundTransparency = 0.2}):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {Size = originalSize, BackgroundTransparency = 0}):Play()
+    end)
 end
 
 -- 3. HÀM HIỆU ỨNG LẤP LÁNH
@@ -49,9 +62,7 @@ IntroFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
 IntroFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 IntroFrame.BorderSizePixel = 0
 IntroFrame.Parent = ScreenGui
-
-local IntroCorner = Instance.new("UICorner", IntroFrame)
-IntroCorner.CornerRadius = UDim.new(0, 15)
+Instance.new("UICorner", IntroFrame).CornerRadius = UDim.new(0, 15)
 
 local IntroText = Instance.new("TextLabel")
 IntroText.Text = "Cảm ơn vì đã dùng H HUB"
@@ -61,7 +72,6 @@ IntroText.TextSize = 22
 IntroText.Font = Enum.Font.SourceSansBold
 IntroText.BackgroundTransparency = 1
 IntroText.Parent = IntroFrame
-
 ApplySparkleEffect(IntroFrame)
 
 -- 5. BẢNG CHÍNH (MAIN FRAME)
@@ -90,7 +100,7 @@ local ContentFolder = Instance.new("ScrollingFrame")
 ContentFolder.Size = UDim2.new(1, 0, 1, -40)
 ContentFolder.Position = UDim2.new(0, 0, 0, 40)
 ContentFolder.BackgroundTransparency = 1
-ContentFolder.CanvasSize = UDim2.new(0, 0, 3, 0)
+ContentFolder.CanvasSize = UDim2.new(0, 0, 3.5, 0)
 ContentFolder.ScrollBarThickness = 4
 ContentFolder.Parent = MainFrame
 
@@ -112,11 +122,9 @@ H_Button.Visible = false
 H_Button.Active = true
 H_Button.Draggable = true
 H_Button.Parent = ScreenGui
-
-local UICornerH = Instance.new("UICorner")
-UICornerH.CornerRadius = UDim.new(0, 15)
-UICornerH.Parent = H_Button
+Instance.new("UICorner", H_Button).CornerRadius = UDim.new(0, 15)
 ApplySparkleEffect(H_Button)
+AddButtonAnimation(H_Button)
 
 H_Button.MouseButton1Click:Connect(function()
     PlayClickSound()
@@ -169,6 +177,8 @@ local function CreateSysBtn(txt, pos, color)
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.SourceSansBold
     btn.Parent = TitleBar
+    Instance.new("UICorner", btn)
+    AddButtonAnimation(btn)
     btn.MouseButton1Click:Connect(PlayClickSound)
     return btn
 end
@@ -181,21 +191,26 @@ local ConfirmFrame = Instance.new("Frame")
 ConfirmFrame.Size = UDim2.new(0, 260, 0, 140)
 ConfirmFrame.Position = UDim2.new(0.5, -130, 0.5, -70)
 ConfirmFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-ConfirmFrame.BorderSizePixel = 2
 ConfirmFrame.Visible = false
 ConfirmFrame.ZIndex = 100
 ConfirmFrame.Parent = ScreenGui
+Instance.new("UICorner", ConfirmFrame)
 ApplySparkleEffect(ConfirmFrame)
 
 local ExitBtn = Instance.new("TextButton")
 ExitBtn.Text = "ĐÓNG"; ExitBtn.Size = UDim2.new(0, 100, 0, 40); ExitBtn.Position = UDim2.new(0, 20, 1, -55); ExitBtn.BackgroundColor3 = Color3.fromRGB(180, 0, 0); ExitBtn.TextColor3 = Color3.new(1, 1, 1); ExitBtn.ZIndex = 101; ExitBtn.Parent = ConfirmFrame
+Instance.new("UICorner", ExitBtn)
+AddButtonAnimation(ExitBtn)
+
 local BackBtn = Instance.new("TextButton")
 BackBtn.Text = "QUAY LẠI"; BackBtn.Size = UDim2.new(0, 100, 0, 40); BackBtn.Position = UDim2.new(1, -120, 1, -55); BackBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0); BackBtn.TextColor3 = Color3.new(1, 1, 1); BackBtn.ZIndex = 101; BackBtn.Parent = ConfirmFrame
+Instance.new("UICorner", BackBtn)
+AddButtonAnimation(BackBtn)
 
 MinBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; H_Button.Visible = true end)
 CloseBtn.MouseButton1Click:Connect(function() ConfirmFrame.Visible = true end)
-BackBtn.MouseButton1Click:Connect(function() PlayClickSound(); ConfirmFrame.Visible = false end)
-ExitBtn.MouseButton1Click:Connect(function() PlayClickSound(); ScreenGui:Destroy() end)
+BackBtn.MouseButton1Click:Connect(function() ConfirmFrame.Visible = false end)
+ExitBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 -- 9. HÀM TẠO BỘ ĐIỀU CHỈNH (+/-)
 local function CreateAdjuster(name, defaultVal, callback)
@@ -206,8 +221,14 @@ local function CreateAdjuster(name, defaultVal, callback)
     local val = defaultVal
     local dec = Instance.new("TextButton")
     dec.Text = "-"; dec.Size = UDim2.new(0, 45, 0, 30); dec.Position = UDim2.new(0.05, 0, 0, 25); dec.BackgroundColor3 = Color3.fromRGB(70, 70, 70); dec.TextColor3 = Color3.new(1, 1, 1); dec.Parent = frame
+    Instance.new("UICorner", dec)
+    AddButtonAnimation(dec)
+    
     local inc = Instance.new("TextButton")
     inc.Text = "+"; inc.Size = UDim2.new(0, 45, 0, 30); inc.Position = UDim2.new(0.72, 0, 0, 25); inc.BackgroundColor3 = Color3.fromRGB(70, 70, 70); inc.TextColor3 = Color3.new(1, 1, 1); inc.Parent = frame
+    Instance.new("UICorner", inc)
+    AddButtonAnimation(inc)
+
     dec.MouseButton1Click:Connect(function() PlayClickSound(); val = math.max(0, val - 10); label.Text = name .. ": " .. val; callback(val) end)
     inc.MouseButton1Click:Connect(function() PlayClickSound(); val = val + 10; label.Text = name .. ": " .. val; callback(val) end)
 end
@@ -217,33 +238,37 @@ local function CreateHackBtn(txt, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0, 180, 0, 40)
     btn.Text = txt
-    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    btn.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Mặc định là Đỏ (Tắt)
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.SourceSansBold
     btn.Parent = ContentFolder
+    Instance.new("UICorner", btn)
+    AddButtonAnimation(btn)
     btn.MouseButton1Click:Connect(function()
         PlayClickSound()
-        callback()
+        callback(btn)
     end)
     return btn
 end
 
--- [MỚI] NHẢY VÔ HẠN
-local infJump = false
-local btnInf = CreateHackBtn("Nhảy Vô Hạn: TẮT", function()
-    infJump = not infJump
-    btnInf.Text = infJump and "Nhảy Vô Hạn: BẬT" or "Nhảy Vô Hạn: TẮT"
-    btnInf.BackgroundColor3 = infJump and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(200, 50, 50)
-end)
+-- FIX TRẠNG THÁI NÚT (BẬT/TẮT)
+local function ToggleBtnUI(btn, state, baseText)
+    btn.Text = baseText .. (state and ": BẬT" or ": TẮT")
+    btn.BackgroundColor3 = state and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(200, 50, 50)
+end
 
+-- NHẢY VÔ HẠN
+local infJump = false
+local btnInf = CreateHackBtn("Nhảy Vô Hạn: TẮT", function(btn)
+    infJump = not infJump
+    ToggleBtnUI(btn, infJump, "Nhảy Vô Hạn")
+end)
 UserInputService.JumpRequest:Connect(function()
-    if infJump then
-        player.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-    end
+    if infJump then player.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping") end
 end)
 
 -- FIX LAG
-local btnLag = CreateHackBtn("🚀 FIX LAG (MƯỢT)", function()
+CreateHackBtn("🚀 FIX LAG (MƯỢT)", function(btn)
     settings().Rendering.QualityLevel = 1
     for _, v in pairs(game:GetDescendants()) do
         if v:IsA("Part") or v:IsA("MeshPart") then v.Material = Enum.Material.SmoothPlastic; v.Reflectance = 0
@@ -251,6 +276,7 @@ local btnLag = CreateHackBtn("🚀 FIX LAG (MƯỢT)", function()
         elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then v.Enabled = false end
     end
     Lighting.GlobalShadows = false
+    btn.Text = "ĐÃ TỐI ƯU ✅"
 end)
 
 CreateAdjuster("Tốc Độ", 16, function(v) if player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.WalkSpeed = v end end)
@@ -261,9 +287,9 @@ CreateAdjuster("Tốc Độ Bay", 50, function(v) flySpd = v end)
 
 -- Nút Bay
 local flying = false
-local btnFly = CreateHackBtn("Bay: TẮT", function()
+local btnFly = CreateHackBtn("Bay: TẮT", function(btn)
     flying = not flying
-    btnFly.Text = flying and "Bay: BẬT" or "Bay: TẮT"; btnFly.BackgroundColor3 = flying and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(200, 50, 50)
+    ToggleBtnUI(btn, flying, "Bay")
     local root = player.Character:FindFirstChild("HumanoidRootPart")
     if flying and root then
         local bv = Instance.new("BodyVelocity", root)
@@ -271,9 +297,7 @@ local btnFly = CreateHackBtn("Bay: TẮT", function()
         task.spawn(function()
             while flying do
                 local hum = player.Character:FindFirstChild("Humanoid")
-                if hum then
-                    bv.Velocity = hum.MoveDirection * flySpd + Vector3.new(0, workspace.CurrentCamera.CFrame.LookVector.Y * flySpd * hum.MoveDirection.Magnitude, 0)
-                end
+                if hum then bv.Velocity = hum.MoveDirection * flySpd + Vector3.new(0, workspace.CurrentCamera.CFrame.LookVector.Y * flySpd * hum.MoveDirection.Magnitude, 0) end
                 task.wait()
             end
             bv:Destroy()
@@ -283,9 +307,9 @@ end)
 
 -- Nút Xuyên Tường
 local noclip = false
-local btnNoc = CreateHackBtn("Xuyên Tường: TẮT", function()
+local btnNoc = CreateHackBtn("Xuyên Tường: TẮT", function(btn)
     noclip = not noclip
-    btnNoc.Text = noclip and "Xuyên Tường: BẬT" or "Xuyên Tường: TẮT"; btnNoc.BackgroundColor3 = noclip and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(200, 50, 50)
+    ToggleBtnUI(btn, noclip, "Xuyên Tường")
 end)
 RunService.Stepped:Connect(function()
     if noclip and player.Character then
@@ -295,9 +319,9 @@ end)
 
 -- Nút Tàng Hình
 local invis = false
-local btnInvis = CreateHackBtn("Tàng Hình: TẮT", function()
+local btnInvis = CreateHackBtn("Tàng Hình: TẮT", function(btn)
     invis = not invis
-    btnInvis.Text = invis and "Tàng Hình: BẬT" or "Tàng Hình: TẮT"; btnInvis.BackgroundColor3 = invis and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(200, 50, 50)
+    ToggleBtnUI(btn, invis, "Tàng Hình")
     if player.Character then
         for _, v in pairs(player.Character:GetDescendants()) do
             if (v:IsA("BasePart") or v:IsA("Decal")) and v.Name ~= "HumanoidRootPart" then
