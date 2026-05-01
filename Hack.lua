@@ -4,7 +4,8 @@ local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local Lighting = game:GetService("Lighting")
 local UserInputService = game:GetService("UserInputService")
-local player = game.Players.LocalPlayer
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
 -- 2. TẠO SCREEN GUI
 local ScreenGui = Instance.new("ScreenGui")
@@ -76,14 +77,15 @@ ApplySparkleEffect(IntroFrame)
 
 -- 5. BẢNG CHÍNH (MAIN FRAME)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 220, 0, 420)
-MainFrame.Position = UDim2.new(0.5, -110, 0.5, -210)
+MainFrame.Size = UDim2.new(0, 240, 0, 500)
+MainFrame.Position = UDim2.new(0.5, -120, 0.5, -250)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainFrame.BorderSizePixel = 2
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Visible = false 
 MainFrame.Parent = ScreenGui
+Instance.new("UICorner", MainFrame)
 ApplySparkleEffect(MainFrame)
 
 task.spawn(function()
@@ -97,17 +99,29 @@ task.spawn(function()
 end)
 
 local ContentFolder = Instance.new("ScrollingFrame")
-ContentFolder.Size = UDim2.new(1, 0, 1, -40)
-ContentFolder.Position = UDim2.new(0, 0, 0, 40)
+ContentFolder.Size = UDim2.new(1, 0, 1, -110)
+ContentFolder.Position = UDim2.new(0, 0, 0, 45)
 ContentFolder.BackgroundTransparency = 1
 ContentFolder.CanvasSize = UDim2.new(0, 0, 3.5, 0)
-ContentFolder.ScrollBarThickness = 4
+ContentFolder.ScrollBarThickness = 3
 ContentFolder.Parent = MainFrame
 
 local UIList = Instance.new("UIListLayout")
 UIList.Parent = ContentFolder
 UIList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 UIList.Padding = UDim.new(0, 10)
+
+-- HÀM TẠO NHÃN PHÂN LOẠI (CATEGORY)
+local function CreateCategory(name)
+    local lab = Instance.new("TextLabel")
+    lab.Size = UDim2.new(0.9, 0, 0, 30)
+    lab.Text = "── " .. name .. " ──"
+    lab.TextColor3 = Color3.fromRGB(200, 200, 200)
+    lab.Font = Enum.Font.SourceSansItalic
+    lab.TextSize = 15
+    lab.BackgroundTransparency = 1
+    lab.Parent = ContentFolder
+end
 
 -- 6. NÚT THU NHỎ "H"
 local H_Button = Instance.new("TextButton")
@@ -139,8 +153,8 @@ TitleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 TitleBar.Parent = MainFrame
 
 local TitleText = Instance.new("TextLabel")
-TitleText.Text = "H HUB"
-TitleText.Size = UDim2.new(0.4, 0, 1, 0)
+TitleText.Text = "H HUB OFFICIAL"
+TitleText.Size = UDim2.new(0.6, 0, 1, 0)
 TitleText.TextColor3 = Color3.new(1, 1, 1)
 TitleText.BackgroundTransparency = 1
 TitleText.Font = Enum.Font.SourceSansBold
@@ -149,7 +163,7 @@ TitleText.Parent = TitleBar
 
 local FpsLabel = Instance.new("TextLabel")
 FpsLabel.Size = UDim2.new(0, 60, 0, 40)
-FpsLabel.Position = UDim2.new(0.35, 0, 0, 0)
+FpsLabel.Position = UDim2.new(0.5, 0, 0, 0)
 FpsLabel.TextColor3 = Color3.fromRGB(0, 255, 127)
 FpsLabel.BackgroundTransparency = 1
 FpsLabel.TextSize = 14
@@ -212,6 +226,43 @@ CloseBtn.MouseButton1Click:Connect(function() ConfirmFrame.Visible = true end)
 BackBtn.MouseButton1Click:Connect(function() ConfirmFrame.Visible = false end)
 ExitBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
+-- PHẦN NHẬN BIẾT NGƯỜI CHƠI (USER INFO)
+local UserFrame = Instance.new("Frame")
+UserFrame.Size = UDim2.new(1, -10, 0, 55)
+UserFrame.Position = UDim2.new(0, 5, 1, -60)
+UserFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+UserFrame.Parent = MainFrame
+Instance.new("UICorner", UserFrame)
+
+local UserImage = Instance.new("ImageLabel")
+UserImage.Size = UDim2.new(0, 40, 0, 40)
+UserImage.Position = UDim2.new(0, 8, 0.5, -20)
+UserImage.Image = "rbxthumb://type=AvatarHeadShot&id="..player.UserId.."&w=150&h=150"
+UserImage.Parent = UserFrame
+Instance.new("UICorner", UserImage).CornerRadius = UDim.new(1, 0)
+
+local UserName = Instance.new("TextLabel")
+UserName.Size = UDim2.new(1, -60, 0, 20)
+UserName.Position = UDim2.new(0, 55, 0.2, 0)
+UserName.Text = player.DisplayName
+UserName.TextColor3 = Color3.new(1, 1, 1)
+UserName.Font = Enum.Font.SourceSansBold
+UserName.TextSize = 15
+UserName.TextXAlignment = Enum.TextXAlignment.Left
+UserName.BackgroundTransparency = 1
+UserName.Parent = UserFrame
+
+local UserID = Instance.new("TextLabel")
+UserID.Size = UDim2.new(1, -60, 0, 20)
+UserID.Position = UDim2.new(0, 55, 0.55, 0)
+UserID.Text = "@" .. player.Name
+UserID.TextColor3 = Color3.fromRGB(160, 160, 160)
+UserID.Font = Enum.Font.SourceSans
+UserID.TextSize = 13
+UserID.TextXAlignment = Enum.TextXAlignment.Left
+UserID.BackgroundTransparency = 1
+UserID.Parent = UserFrame
+
 -- 9. HÀM TẠO BỘ ĐIỀU CHỈNH (+/-)
 local function CreateAdjuster(name, defaultVal, callback)
     local frame = Instance.new("Frame")
@@ -236,9 +287,9 @@ end
 -- 10. CÁC TÍNH NĂNG CHÍNH
 local function CreateHackBtn(txt, callback)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 180, 0, 40)
+    btn.Size = UDim2.new(0, 200, 0, 40)
     btn.Text = txt
-    btn.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Mặc định là Đỏ (Tắt)
+    btn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.SourceSansBold
     btn.Parent = ContentFolder
@@ -257,7 +308,9 @@ local function ToggleBtnUI(btn, state, baseText)
     btn.BackgroundColor3 = state and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(200, 50, 50)
 end
 
--- NHẢY VÔ HẠN
+-- MỤC NGƯỜI CHƠI
+CreateCategory("NGƯỜI CHƠI")
+
 local infJump = false
 local btnInf = CreateHackBtn("Nhảy Vô Hạn: TẮT", function(btn)
     infJump = not infJump
@@ -267,7 +320,66 @@ UserInputService.JumpRequest:Connect(function()
     if infJump then player.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping") end
 end)
 
--- FIX LAG
+local noclip = false
+local btnNoc = CreateHackBtn("Xuyên Tường: TẮT", function(btn)
+    noclip = not noclip
+    ToggleBtnUI(btn, noclip, "Xuyên Tường")
+end)
+RunService.Stepped:Connect(function()
+    if noclip and player.Character then
+        for _, v in pairs(player.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
+    end
+end)
+
+local invis = false
+local btnInvis = CreateHackBtn("Tàng Hình: TẮT", function(btn)
+    invis = not invis
+    ToggleBtnUI(btn, invis, "Tàng Hình")
+    if player.Character then
+        for _, v in pairs(player.Character:GetDescendants()) do
+            if (v:IsA("BasePart") or v:IsA("Decal")) and v.Name ~= "HumanoidRootPart" then
+                v.Transparency = invis and 0.8 or 0
+            end
+        end
+    end
+end)
+
+CreateAdjuster("Tốc Độ", 16, function(v) if player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.WalkSpeed = v end end)
+CreateAdjuster("Sức Nhảy", 50, function(v) if player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.UseJumpPower = true; player.Character.Humanoid.JumpPower = v end end)
+
+-- MỤC ESP
+CreateCategory("ESP")
+
+local function UpdateESP()
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("Head") then
+            if not p.Character.Head:FindFirstChild("H_ESP") then
+                local bbg = Instance.new("BillboardGui", p.Character.Head)
+                bbg.Name = "H_ESP"; bbg.AlwaysOnTop = true; bbg.Size = UDim2.new(0, 100, 0, 50); bbg.ExtentsOffset = Vector3.new(0, 3, 0)
+                local nam = Instance.new("TextLabel", bbg)
+                nam.Size = UDim2.new(1, 0, 1, 0); nam.BackgroundTransparency = 1; nam.Text = p.DisplayName; nam.TextColor3 = Color3.new(1, 1, 1); nam.TextStrokeTransparency = 0; nam.Font = Enum.Font.SourceSansBold; nam.TextSize = 14
+            end
+        end
+    end
+end
+
+local espEnabled = false
+local btnEsp = CreateHackBtn("ESP Người Chơi: TẮT", function(btn)
+    espEnabled = not espEnabled
+    ToggleBtnUI(btn, espEnabled, "ESP Người Chơi")
+    if espEnabled then
+        _G.ESPLoop = RunService.RenderStepped:Connect(UpdateESP)
+    else
+        if _G.ESPLoop then _G.ESPLoop:Disconnect() end
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character and p.Character.Head:FindFirstChild("H_ESP") then p.Character.Head.H_ESP:Destroy() end
+        end
+    end
+end)
+
+-- MỤC TIỆN ÍCH
+CreateCategory("HỆ THỐNG")
+
 CreateHackBtn("🚀 FIX LAG (MƯỢT)", function(btn)
     settings().Rendering.QualityLevel = 1
     for _, v in pairs(game:GetDescendants()) do
@@ -279,14 +391,8 @@ CreateHackBtn("🚀 FIX LAG (MƯỢT)", function(btn)
     btn.Text = "ĐÃ TỐI ƯU ✅"
 end)
 
-CreateAdjuster("Tốc Độ", 16, function(v) if player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.WalkSpeed = v end end)
-CreateAdjuster("Sức Nhảy", 50, function(v) if player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.UseJumpPower = true; player.Character.Humanoid.JumpPower = v end end)
-
-local flySpd = 50
-CreateAdjuster("Tốc Độ Bay", 50, function(v) flySpd = v end)
-
--- Nút Bay
 local flying = false
+local flySpd = 50
 local btnFly = CreateHackBtn("Bay: TẮT", function(btn)
     flying = not flying
     ToggleBtnUI(btn, flying, "Bay")
@@ -304,29 +410,4 @@ local btnFly = CreateHackBtn("Bay: TẮT", function(btn)
         end)
     end
 end)
-
--- Nút Xuyên Tường
-local noclip = false
-local btnNoc = CreateHackBtn("Xuyên Tường: TẮT", function(btn)
-    noclip = not noclip
-    ToggleBtnUI(btn, noclip, "Xuyên Tường")
-end)
-RunService.Stepped:Connect(function()
-    if noclip and player.Character then
-        for _, v in pairs(player.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
-    end
-end)
-
--- Nút Tàng Hình
-local invis = false
-local btnInvis = CreateHackBtn("Tàng Hình: TẮT", function(btn)
-    invis = not invis
-    ToggleBtnUI(btn, invis, "Tàng Hình")
-    if player.Character then
-        for _, v in pairs(player.Character:GetDescendants()) do
-            if (v:IsA("BasePart") or v:IsA("Decal")) and v.Name ~= "HumanoidRootPart" then
-                v.Transparency = invis and 0.8 or 0
-            end
-        end
-    end
-end)
+CreateAdjuster("Tốc Độ Bay", 50, function(v) flySpd = v end)
