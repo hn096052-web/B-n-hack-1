@@ -174,7 +174,7 @@ local translations = {
     }
 }
 
--- LOGIC AUTO TRANG BỊ
+-- LOGIC AUTO TRANG BỊ (ĐÃ ĐƯỢC SỬA BẬT/TẮT CỰC KỲ MƯỢT MÀ)
 local itemsToUnequip = {
 	"PieThrow", "SmallPotion", "GiantPotion", "GhostPotion", 
 	"Healing", "GravityPotion", "Bloxiade", "ClownBomb", 
@@ -184,39 +184,44 @@ local itemsToUnequip = {
 
 local function toggleAutoEquip(state)
     autoEquipEnabled = state
+    
+    if autoEquipTask then
+        task.cancel(autoEquipTask)
+        autoEquipTask = nil
+    end
+
     if autoEquipEnabled then
-        if not autoEquipTask then
-            autoEquipTask = task.spawn(function()
-                local ReplicatedStorage = game:GetService("ReplicatedStorage")
-                local equipEvent = ReplicatedStorage:WaitForChild("Equip")
-                
-                while autoEquipEnabled do
-                    -- 1. Tháo các món cần tháo
-                    for _, item in ipairs(itemsToUnequip) do
-                        if not autoEquipEnabled then break end
-                        equipEvent:FireServer("UNEQUIP", item)
-                        task.wait(0.03)
-                    end
-                    
+        autoEquipTask = task.spawn(function()
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local equipEvent = ReplicatedStorage:WaitForChild("Equip", 5)
+            if not equipEvent then return end
+            
+            while autoEquipEnabled do
+                -- 1. Tháo các món cần tháo
+                for _, item in ipairs(itemsToUnequip) do
                     if not autoEquipEnabled then break end
-                    task.wait(0.2)
-                    
-                    -- 2. Đeo lại toàn bộ các món đó
-                    for _, item in ipairs(itemsToUnequip) do
-                        if not autoEquipEnabled then break end
-                        equipEvent:FireServer("EQUIP", item)
-                        task.wait(0.03)
-                    end
-                    
-                    task.wait(1) -- Khoảng chờ nghỉ giữa các chu kỳ lặp
+                    pcall(function()
+                        equipEvent:FireServer("UNEQUIP", item)
+                    end)
+                    task.wait(0.03)
                 end
-            end)
-        end
-    else
-        if autoEquipTask then
-            task.cancel(autoEquipTask)
-            autoEquipTask = nil
-        end
+                
+                if not autoEquipEnabled then break end
+                task.wait(0.2)
+                
+                -- 2. Đeo lại toàn bộ các món đó
+                for _, item in ipairs(itemsToUnequip) do
+                    if not autoEquipEnabled then break end
+                    pcall(function()
+                        equipEvent:FireServer("EQUIP", item)
+                    end)
+                    task.wait(0.03)
+                end
+                
+                if not autoEquipEnabled then break end
+                task.wait(0.8) -- Khoảng nghỉ chu kỳ
+            end
+        end)
     end
 end
 
@@ -1348,9 +1353,8 @@ table.insert(themeButtons, autoEquipBtnToggle)
 table.insert(textElements, autoEquipBtnToggle)
 
 autoEquipBtnToggle.MouseButton1Click:Connect(function()
-    autoEquipEnabled = not autoEquipEnabled
+    toggleAutoEquip(not autoEquipEnabled)
     updateButtonVisual(autoEquipBtnToggle, autoEquipEnabled)
-    toggleAutoEquip(autoEquipEnabled)
     updateLanguage()
 end)
 
