@@ -3,10 +3,21 @@
 -- ==========================================
 
 local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
 
--- Dọn dẹp GUI cũ ngay đầu script để tránh xung đột UIStroke/TextButton trùng lặp
+-- Khắc phục lỗi nil khi chờ LocalPlayer & PlayerGui trên Mobile
+local player = Players.LocalPlayer
+if not player then
+    Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
+    player = Players.LocalPlayer
+end
+
+local playerGui = player:WaitForChild("PlayerGui", 10) or player:FindFirstChildOfClass("PlayerGui")
+if not playerGui then
+    warn("[H HUB] Không tìm thấy PlayerGui!")
+    return
+end
+
+-- Dọn dẹp GUI cũ ngay đầu script để tránh xung đột
 if playerGui:FindFirstChild("AutoFarmHubGui") then
     playerGui.AutoFarmHubGui:Destroy()
 end
