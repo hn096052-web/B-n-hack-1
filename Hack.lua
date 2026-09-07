@@ -3,21 +3,10 @@
 -- ==========================================
 
 local Players = game:GetService("Players")
-
--- Khắc phục lỗi nil khi chờ LocalPlayer & PlayerGui trên Mobile
 local player = Players.LocalPlayer
-if not player then
-    Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
-    player = Players.LocalPlayer
-end
+local playerGui = player:WaitForChild("PlayerGui")
 
-local playerGui = player:WaitForChild("PlayerGui", 10) or player:FindFirstChildOfClass("PlayerGui")
-if not playerGui then
-    warn("[H HUB] Không tìm thấy PlayerGui!")
-    return
-end
-
--- Dọn dẹp GUI cũ ngay đầu script để tránh xung đột
+-- Dọn dẹp GUI cũ ngay đầu script để tránh xung đột UIStroke/TextButton trùng lặp
 if playerGui:FindFirstChild("AutoFarmHubGui") then
     playerGui.AutoFarmHubGui:Destroy()
 end
@@ -47,6 +36,7 @@ local autoPressButtonEnabled = false
 local fixLagEnabled = false
 local hideMapOthersEnabled = false
 local muteAllSoundsEnabled = false
+local autoEquipEnabled = false
 
 -- Cấu hình mặc định
 local tpSpeed = 0.15
@@ -84,6 +74,7 @@ local fixLagTask = nil
 local fixLagChildConnection = nil
 local hideMapConnection = nil
 local muteSoundsConnection = nil
+local autoEquipTask = nil
 local originalHipHeight = nil
 local savedTransparencies = {}
 local hiddenObjects = {} 
@@ -119,6 +110,7 @@ local translations = {
         invisBtn = "Invis: ",
         infJumpBtn = "Inf Jump: ",
         freezeBtn = "Auto Freeze: ",
+        autoEquipBtn = "Auto Equip: ",
         godBtn = "God Mode Panel",
         espBtn = "ESP Wallhack: ",
         fpsBtn = "Display FPS: ",
@@ -161,6 +153,7 @@ local translations = {
         invisBtn = "Tàng hình: ",
         infJumpBtn = "Nhảy Vô Hạn: ",
         freezeBtn = "Auto Freeze: ",
+        autoEquipBtn = "Auto Trang Bị: ",
         godBtn = "Bảng God Mode",
         espBtn = "ESP Xuyên Tường: ",
         fpsBtn = "Hiện FPS: ",
@@ -180,6 +173,52 @@ local translations = {
         off = "TẮT"
     }
 }
+
+-- LOGIC AUTO TRANG BỊ
+local itemsToUnequip = {
+	"PieThrow", "SmallPotion", "GiantPotion", "GhostPotion", 
+	"Healing", "GravityPotion", "Bloxiade", "ClownBomb", 
+	"Slate", "WindPotion", "IcePotion", "Caltrops", 
+	"SlowDownGun", "GravityGun", "GravityDisruptor", "FreezeRay", "Bomb"
+}
+
+local function toggleAutoEquip(state)
+    autoEquipEnabled = state
+    if autoEquipEnabled then
+        if not autoEquipTask then
+            autoEquipTask = task.spawn(function()
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local equipEvent = ReplicatedStorage:WaitForChild("Equip")
+                
+                while autoEquipEnabled do
+                    -- 1. Tháo các món cần tháo
+                    for _, item in ipairs(itemsToUnequip) do
+                        if not autoEquipEnabled then break end
+                        equipEvent:FireServer("UNEQUIP", item)
+                        task.wait(0.03)
+                    end
+                    
+                    if not autoEquipEnabled then break end
+                    task.wait(0.2)
+                    
+                    -- 2. Đeo lại toàn bộ các món đó
+                    for _, item in ipairs(itemsToUnequip) do
+                        if not autoEquipEnabled then break end
+                        equipEvent:FireServer("EQUIP", item)
+                        task.wait(0.03)
+                    end
+                    
+                    task.wait(1) -- Khoảng chờ nghỉ giữa các chu kỳ lặp
+                end
+            end)
+        end
+    else
+        if autoEquipTask then
+            task.cancel(autoEquipTask)
+            autoEquipTask = nil
+        end
+    end
+end
 
 -- LOGIC TẮT TẤT CẢ ÂM THANH
 local function applyMuteToSound(sound)
@@ -1300,16 +1339,31 @@ freezeButton.Parent = mainTab
 table.insert(themeButtons, freezeButton)
 table.insert(textElements, freezeButton)
 
+-- NÚT AUTO TRANG BỊ
+local autoEquipBtnToggle = tpButton:Clone()
+autoEquipBtnToggle.Size = UDim2.new(1, -8, 0, 22)
+autoEquipBtnToggle.Position = UDim2.new(0, 4, 0, 142)
+autoEquipBtnToggle.Parent = mainTab
+table.insert(themeButtons, autoEquipBtnToggle)
+table.insert(textElements, autoEquipBtnToggle)
+
+autoEquipBtnToggle.MouseButton1Click:Connect(function()
+    autoEquipEnabled = not autoEquipEnabled
+    updateButtonVisual(autoEquipBtnToggle, autoEquipEnabled)
+    toggleAutoEquip(autoEquipEnabled)
+    updateLanguage()
+end)
+
 local autoPressBtnToggle = tpButton:Clone()
 autoPressBtnToggle.Size = UDim2.new(0.8, -8, 0, 22)
-autoPressBtnToggle.Position = UDim2.new(0, 4, 0, 144)
+autoPressBtnToggle.Position = UDim2.new(0, 4, 0, 168)
 autoPressBtnToggle.Parent = mainTab
 table.insert(themeButtons, autoPressBtnToggle)
 table.insert(textElements, autoPressBtnToggle)
 
 local autoPressRadiusBox = tpBox:Clone()
 autoPressRadiusBox.Size = UDim2.new(0.2, 0, 0, 22)
-autoPressRadiusBox.Position = UDim2.new(0.8, 0, 0, 144)
+autoPressRadiusBox.Position = UDim2.new(0.8, 0, 0, 168)
 autoPressRadiusBox.Text = tostring(autoPressRadius)
 autoPressRadiusBox.Parent = mainTab
 table.insert(themeButtons, autoPressRadiusBox)
@@ -1317,14 +1371,14 @@ table.insert(textElements, autoPressRadiusBox)
 
 local autoPressDelayLabel = tpLabel:Clone()
 autoPressDelayLabel.Size = UDim2.new(0.65, 0, 0, 22)
-autoPressDelayLabel.Position = UDim2.new(0, 4, 0, 170)
+autoPressDelayLabel.Position = UDim2.new(0, 4, 0, 194)
 autoPressDelayLabel.TextXAlignment = Enum.TextXAlignment.Left
 autoPressDelayLabel.Parent = mainTab
 table.insert(textElements, autoPressDelayLabel)
 
 local autoPressDelayBox = tpBox:Clone()
 autoPressDelayBox.Size = UDim2.new(0.32, 0, 0, 22)
-autoPressDelayBox.Position = UDim2.new(0.68, -4, 0, 170)
+autoPressDelayBox.Position = UDim2.new(0.68, -4, 0, 194)
 autoPressDelayBox.Text = tostring(autoPressDelay)
 autoPressDelayBox.Parent = mainTab
 table.insert(themeButtons, autoPressDelayBox)
@@ -1364,14 +1418,14 @@ end)
 
 local targetSelectBtn = tpButton:Clone()
 targetSelectBtn.Size = UDim2.new(1, -8, 0, 22)
-targetSelectBtn.Position = UDim2.new(0, 4, 0, 196)
+targetSelectBtn.Position = UDim2.new(0, 4, 0, 220)
 targetSelectBtn.Parent = mainTab
 table.insert(themeButtons, targetSelectBtn)
 table.insert(textElements, targetSelectBtn)
 
 local playerListFrame = Instance.new("ScrollingFrame")
 playerListFrame.Size = UDim2.new(1, -8, 0, 80)
-playerListFrame.Position = UDim2.new(0, 4, 0, 220)
+playerListFrame.Position = UDim2.new(0, 4, 0, 244)
 playerListFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 playerListFrame.BorderSizePixel = 1
 playerListFrame.BorderColor3 = Color3.fromRGB(50, 50, 50)
@@ -1388,7 +1442,7 @@ playerListLayout.Parent = playerListFrame
 
 local godButton = tpButton:Clone()
 godButton.Size = UDim2.new(1, -8, 0, 22)
-godButton.Position = UDim2.new(0, 4, 0, 222)
+godButton.Position = UDim2.new(0, 4, 0, 246)
 godButton.Parent = mainTab
 table.insert(themeButtons, godButton)
 table.insert(textElements, godButton)
@@ -1413,7 +1467,7 @@ local function refreshPlayerList()
     allBtn.MouseButton1Click:Connect(function()
         selectedTargetPlayer = nil
         playerListFrame.Visible = false
-        godButton.Position = UDim2.new(0, 4, 0, 222)
+        godButton.Position = UDim2.new(0, 4, 0, 246)
         updateLanguage()
     end)
 
@@ -1432,7 +1486,7 @@ local function refreshPlayerList()
             pBtn.MouseButton1Click:Connect(function()
                 selectedTargetPlayer = p
                 playerListFrame.Visible = false
-                godButton.Position = UDim2.new(0, 4, 0, 222)
+                godButton.Position = UDim2.new(0, 4, 0, 246)
                 updateLanguage()
             end)
         end
@@ -1445,9 +1499,9 @@ targetSelectBtn.MouseButton1Click:Connect(function()
     playerListFrame.Visible = not playerListFrame.Visible
     if playerListFrame.Visible then
         refreshPlayerList()
-        godButton.Position = UDim2.new(0, 4, 0, 302)
+        godButton.Position = UDim2.new(0, 4, 0, 326)
     else
-        godButton.Position = UDim2.new(0, 4, 0, 222)
+        godButton.Position = UDim2.new(0, 4, 0, 246)
     end
 end)
 
@@ -1927,6 +1981,7 @@ updateLanguage = function()
     invisButton.Text = t.invisBtn .. (invisibleEnabled and t.on or t.off)
     infJumpButton.Text = t.infJumpBtn .. (infJumpEnabled and t.on or t.off)
     freezeButton.Text = t.freezeBtn .. (freezeRayEnabled and t.on or t.off)
+    autoEquipBtnToggle.Text = t.autoEquipBtn .. (autoEquipEnabled and t.on or t.off)
     godButton.Text = t.godBtn
     espBtnToggle.Text = t.espBtn .. (espEnabled and t.on or t.off)
     fpsBtnToggle.Text = t.fpsBtn .. (fpsEnabled and t.on or t.off)
@@ -2089,6 +2144,7 @@ closeButton.MouseButton1Click:Connect(function()
     toggleFixLag(false)
     toggleHideMapAndOthers(false)
     toggleMuteAllSounds(false)
+    toggleAutoEquip(false)
     
     if gravityConnection then gravityConnection:Disconnect() gravityConnection = nil end
     Workspace.Gravity = 196.2
