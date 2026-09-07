@@ -1,174 +1,2095 @@
---[[ 
-    H HUB - V7 BRUTE FORCE EDITION
-    - Fix: Di chuyển bằng CFrame (Chống đứng yên tuyệt đối)
-    - Fix: Đầy đủ nút thu nhỏ (-), Đóng (X)
-    - Feature: Auto Play (Teleport-Follow), Smart Block
-]]
+-- ==========================================
+-- H HUB AUTOFARM (ULTRA FIX LAG + EXTREME OPTIMIZATION)
+-- ==========================================
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Dọn dẹp GUI cũ ngay đầu script để tránh xung đột UIStroke/TextButton trùng lặp
+if playerGui:FindFirstChild("AutoFarmHubGui") then
+    playerGui.AutoFarmHubGui:Destroy()
+end
 
 local TweenService = game:GetService("TweenService")
-local CoreGui = game:GetService("CoreGui")
-local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local VIM = game:GetService("VirtualInputManager")
-local LocalPlayer = Players.LocalPlayer
+local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local Lighting = game:GetService("Lighting")
+local SoundService = game:GetService("SoundService")
 
-if CoreGui:FindFirstChild("HHUB_V7") then CoreGui.HHUB_V7:Destroy() end
+-- Trạng thái tính năng
+local tpEnabled = false
+local walkEnabled = false
+local jumpEnabled = false
+local noclipEnabled = false
+local invisibleEnabled = false
+local flyEnabled = false
+local infJumpEnabled = false
+local freezeRayEnabled = false
+local espEnabled = false
+local fpsEnabled = false
+local gravityEnabled = false
+local autoPressButtonEnabled = false
+local fixLagEnabled = false
+local hideMapOthersEnabled = false
+local muteAllSoundsEnabled = false
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "HHUB_V7"
-ScreenGui.Parent = CoreGui
+-- Cấu hình mặc định
+local tpSpeed = 0.15
+local walkSpeed = 50 
+local jumpPower = 35
+local flySpeed = 25
+local customGravity = 196.2
+local coinName = "Coin"
+local freezeRadius = 150 
+local autoPressRadius = 15
+local autoPressDelay = 0.1
+local FREEZE_COOLDOWN = 6 
+local SHOT_DELAY = 1 
+local selectedTargetPlayer = nil 
 
----------------------------------------------------
--- HÀM KÉO BẢNG
----------------------------------------------------
-local function MakeDraggable(gui)
-    local dragging, dragInput, dragStart, startPos
-    gui.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = gui.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
-        end
-    end)
-    gui.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
-    end)
-    RunService.RenderStepped:Connect(function()
-        if dragging and dragInput then
-            local delta = dragInput.Position - dragStart
-            gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+-- Cấu hình ESP
+local selectedEspTarget = "Tất cả"
+local espColor = Color3.fromRGB(255, 0, 0)
+
+local frozenPlayersTable = {} 
+local currentLang = "VI" 
+ 
+-- Quản lý Kết nối & Task
+local noclipConnection = nil
+local invisibleConnection = nil
+local flyConnection = nil
+local walkConnection = nil
+local jumpConnection = nil
+local infJumpConnection = nil
+local freezeRayTask = nil
+local fpsConnection = nil
+local gravityConnection = nil
+local autoPressButtonTask = nil
+local fixLagTask = nil
+local fixLagChildConnection = nil
+local hideMapConnection = nil
+local muteSoundsConnection = nil
+local originalHipHeight = nil
+local savedTransparencies = {}
+local hiddenObjects = {} 
+local mutedSounds = {}   
+
+-- Theme UI
+local themeBackgrounds = {} 
+local themeButtons = {}     
+local textElements = {}     
+
+local translations = {
+    EN = {
+        title = "H HUB - AutoFarm",
+        tabMain = "Main",
+        tabEsp = "Players/ESP",
+        tabMisc = "Settings",
+        tabFixLag = "Fix Lag",
+        tpSpd = "TP Spd",
+        walkSpd = "Walk Spd",
+        flySpd = "Fly Spd",
+        jumpSpd = "Jump Spd",
+        gravSpd = "Gravity",
+        freezeRng = "Freeze Rng",
+        clickDelayLabel = "Click Delay (s)",
+        targetBtn = "Target: ",
+        allTarget = "All",
+        tpBtn = "TP: ",
+        walkBtn = "Speed: ",
+        jumpBtn = "Jump: ",
+        flyBtn = "Fly: ",
+        gravBtn = "Grav: ",
+        noclipBtn = "Noclip: ",
+        invisBtn = "Invis: ",
+        infJumpBtn = "Inf Jump: ",
+        freezeBtn = "Auto Freeze: ",
+        godBtn = "God Mode Panel",
+        espBtn = "ESP Wallhack: ",
+        fpsBtn = "Display FPS: ",
+        autoPressBtn = "Auto Click All (R: ",
+        fixLagBtn = "Ultra Fix Lag (Max FPS): ",
+        hideMapBtn = "Hide Map & Others: ",
+        muteSoundsBtn = "Mute All Game Sounds: ",
+        espColorLabel = "ESP Color:",
+        themeLabel = "UI Theme Color:",
+        textLabel = "Text Color:",
+        langLabel = "Language:",
+        rejoinBtn = "Rejoin Server",
+        serverHopBtn = "Server Hop",
+        refreshBtn = "Refresh Player List",
+        selected = " (Selected)",
+        on = "ON",
+        off = "OFF"
+    },
+    VI = {
+        title = "H HUB - AutoFarm",
+        tabMain = "Chính",
+        tabEsp = "Người chơi/ESP",
+        tabMisc = "Cài đặt",
+        tabFixLag = "Fix Lag",
+        tpSpd = "Tốc độ TP",
+        walkSpd = "Tốc độ Đi",
+        flySpd = "Tốc độ Bay",
+        jumpSpd = "Độ Nhảy",
+        gravSpd = "Trọng lực",
+        freezeRng = "Tầm Freeze",
+        clickDelayLabel = "Tốc độ Click (s)",
+        targetBtn = "Mục tiêu: ",
+        allTarget = "Tất cả",
+        tpBtn = "TP: ",
+        walkBtn = "Tốc độ: ",
+        jumpBtn = "Nhảy: ",
+        flyBtn = "Fly: ",
+        gravBtn = "Gravity: ",
+        noclipBtn = "Noclip: ",
+        invisBtn = "Tàng hình: ",
+        infJumpBtn = "Nhảy Vô Hạn: ",
+        freezeBtn = "Auto Freeze: ",
+        godBtn = "Bảng God Mode",
+        espBtn = "ESP Xuyên Tường: ",
+        fpsBtn = "Hiện FPS: ",
+        autoPressBtn = "Auto Click Tất Cả (R: ",
+        fixLagBtn = "Siêu Tối Ưu Đồ Họa (Max FPS): ",
+        hideMapBtn = "Ẩn Đồ Họa Map & Người Khác: ",
+        muteSoundsBtn = "Tắt Tất Cả Âm Thanh: ",
+        espColorLabel = "Màu sắc ESP:",
+        themeLabel = "Chỉnh màu giao diện:",
+        textLabel = "Chỉnh màu chữ:",
+        langLabel = "Chọn ngôn ngữ:",
+        rejoinBtn = "Vào lại Server",
+        serverHopBtn = "Đổi Server ít người",
+        refreshBtn = "Làm mới danh sách",
+        selected = " (Đã chọn)",
+        on = "BẬT",
+        off = "TẮT"
+    }
+}
+
+-- LOGIC TẮT TẤT CẢ ÂM THANH
+local function applyMuteToSound(sound)
+    if not muteAllSoundsEnabled then return end
+    pcall(function()
+        if sound:IsA("Sound") then
+            if mutedSounds[sound] == nil then
+                mutedSounds[sound] = sound.Volume
+            end
+            sound.Volume = 0
         end
     end)
 end
 
----------------------------------------------------
--- GIAO DIỆN
----------------------------------------------------
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 300, 0, 160)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -80)
-MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-MainFrame.Visible = false
-Instance.new("UICorner", MainFrame)
-local MainStroke = Instance.new("UIStroke", MainFrame)
-MainStroke.Thickness = 2
-MakeDraggable(MainFrame)
+local function toggleMuteAllSounds(state)
+    muteAllSoundsEnabled = state
 
-local Title = Instance.new("TextLabel", MainFrame)
-Title.Text = "H HUB - BRUTE FORCE V7"
-Title.Size = UDim2.new(1, 0, 0, 35)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.BackgroundTransparency = 1
-Title.Font = Enum.Font.GothamBold
+    if muteAllSoundsEnabled then
+        for _, v in ipairs(game:GetDescendants()) do
+            applyMuteToSound(v)
+        end
 
--- Nút Thu Nhỏ (-)
-local MinBtn = Instance.new("TextButton", MainFrame)
-MinBtn.Text = "-"
-MinBtn.Size = UDim2.new(0, 25, 0, 25)
-MinBtn.Position = UDim2.new(1, -60, 0, 5)
-MinBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-MinBtn.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", MinBtn)
+        if not muteSoundsConnection then
+            muteSoundsConnection = game.DescendantAdded:Connect(function(v)
+                if muteAllSoundsEnabled then
+                    applyMuteToSound(v)
+                end
+            end)
+        end
+    else
+        if muteSoundsConnection then
+            muteSoundsConnection:Disconnect()
+            muteSoundsConnection = nil
+        end
 
--- Nút Chữ H
-local MiniH = Instance.new("TextButton", ScreenGui)
-MiniH.Text = "H"
-MiniH.Size = UDim2.new(0, 50, 0, 50)
-MiniH.Position = UDim2.new(0, 10, 0.5, -25)
-MiniH.Visible = false
-MiniH.Font = Enum.Font.GothamBold
-MiniH.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", MiniH).CornerRadius = UDim.new(0, 10)
-local MiniStroke = Instance.new("UIStroke", MiniH)
-MiniStroke.Thickness = 2
-MakeDraggable(MiniH)
+        for sound, origVol in pairs(mutedSounds) do
+            if sound and sound.Parent then
+                pcall(function()
+                    sound.Volume = origVol
+                end)
+            end
+        end
+        mutedSounds = {}
+    end
+end
 
--- Nút Bật/Tắt
-local KillBtn = Instance.new("TextButton", MainFrame)
-KillBtn.Text = "START AUTO PLAY"
-KillBtn.Size = UDim2.new(0, 220, 0, 50)
-KillBtn.Position = UDim2.new(0.5, -110, 0.6, -10)
-KillBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-KillBtn.TextColor3 = Color3.new(1, 1, 1)
-KillBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", KillBtn)
-local KillStroke = Instance.new("UIStroke", KillBtn)
+-- LOGIC ẨN MAP VÀ NGƯỜI CHƠI KHÁC
+local function isMySelfOrItem(obj)
+    local char = player.Character
+    if char and (obj == char or obj:IsDescendantOf(char)) then
+        return true
+    end
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack and (obj == backpack or obj:IsDescendantOf(backpack)) then
+        return true
+    end
+    if obj:IsA("Sky") or obj:IsA("Atmosphere") or obj:IsA("SunRaysEffect") or obj:IsA("BloomEffect") then
+        return true
+    end
+    return false
+end
 
----------------------------------------------------
--- RAINBOW & EVENTS
----------------------------------------------------
-local hue = 0
-RunService.Heartbeat:Connect(function()
-    hue = (hue + 0.005) % 1
-    local color = Color3.fromHSV(hue, 1, 1)
-    MainStroke.Color = color
-    KillStroke.Color = color
-    MiniStroke.Color = color
-    MiniH.BackgroundColor3 = color
-end)
+local function applyHideToObject(v)
+    if not hideMapOthersEnabled then return end
+    if isMySelfOrItem(v) then return end
 
-local autoKill = false
-KillBtn.MouseButton1Click:Connect(function()
-    autoKill = not autoKill
-    KillBtn.Text = autoKill and "AUTO IS RUNNING..." or "START AUTO PLAY"
-    if not autoKill then VIM:SendKeyEvent(false, Enum.KeyCode.F, false, game) end
-end)
+    pcall(function()
+        if v:IsA("BasePart") then
+            if hiddenObjects[v] == nil then hiddenObjects[v] = v.LocalTransparencyModifier end
+            v.LocalTransparencyModifier = 1
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            if hiddenObjects[v] == nil then hiddenObjects[v] = v.Transparency end
+            v.Transparency = 1
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
+            if hiddenObjects[v] == nil then hiddenObjects[v] = v.Enabled end
+            v.Enabled = false
+        elseif v:IsA("BillboardGui") or v:IsA("SurfaceGui") then
+            if hiddenObjects[v] == nil then hiddenObjects[v] = v.Enabled end
+            v.Enabled = false
+        end
+    end)
+end
 
-MinBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false MiniH.Visible = true end)
-MiniH.MouseButton1Click:Connect(function() MiniH.Visible = false MainFrame.Visible = true end)
-local CloseBtn = Instance.new("TextButton", MainFrame)
-CloseBtn.Text = "X"; CloseBtn.Size = UDim2.new(0,25,0,25); CloseBtn.Position = UDim2.new(1,-30,0,5); CloseBtn.BackgroundColor3 = Color3.fromRGB(150,0,0); CloseBtn.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", CloseBtn);
-CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+local function toggleHideMapAndOthers(state)
+    hideMapOthersEnabled = state
 
----------------------------------------------------
--- CORE: BRUTE FORCE MOVE & DEFEND
----------------------------------------------------
-local function getTarget()
-    local target, dist = nil, 150
-    for _, v in pairs(workspace:GetChildren()) do
-        if v:IsA("Model") and v ~= LocalPlayer.Character and v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") then
-            if v.Humanoid.Health > 0 then
-                local d = (LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude
-                if d < dist then dist = d; target = v end
+    if hideMapOthersEnabled then
+        for _, v in ipairs(Workspace:GetDescendants()) do
+            applyHideToObject(v)
+        end
+
+        if not hideMapConnection then
+            hideMapConnection = Workspace.DescendantAdded:Connect(function(v)
+                if hideMapOthersEnabled then
+                    applyHideToObject(v)
+                end
+            end)
+        end
+    else
+        if hideMapConnection then
+            hideMapConnection:Disconnect()
+            hideMapConnection = nil
+        end
+
+        for obj, originalVal in pairs(hiddenObjects) do
+            if obj and obj.Parent then
+                pcall(function()
+                    if obj:IsA("BasePart") then
+                        obj.LocalTransparencyModifier = originalVal
+                    elseif obj:IsA("Decal") or obj:IsA("Texture") then
+                        obj.Transparency = originalVal
+                    elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
+                        obj.Enabled = originalVal
+                    elseif obj:IsA("BillboardGui") or obj:IsA("SurfaceGui") then
+                        obj.Enabled = originalVal
+                    end
+                end)
+            end
+        end
+        hiddenObjects = {}
+    end
+end
+
+-- LOGIC FIX LAG ULTRA/MAX BOOST
+local function optimizePartExtreme(v)
+    if not fixLagEnabled then return end
+    pcall(function()
+        if v:IsA("BasePart") then
+            v.Material = Enum.Material.SmoothPlastic
+            v.Reflectance = 0
+            v.CastShadow = false
+        elseif v:IsA("MeshPart") then
+            v.Material = Enum.Material.SmoothPlastic
+            v.Reflectance = 0
+            v.CastShadow = false
+            v.TextureID = ""
+        elseif v:IsA("SpecialMesh") then
+            v.TextureId = ""
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            v.Transparency = 1
+            v:Destroy()
+        elseif v:IsA("SurfaceAppearance") then
+            v:Destroy()
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") or v:IsA("Beam") then
+            v.Enabled = false
+        elseif v:IsA("PostEffect") or v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") then
+            v.Enabled = false
+        elseif v:IsA("Explosion") then
+            v.Visible = false
+        end
+    end)
+end
+
+local function toggleFixLag(state)
+    fixLagEnabled = state
+    if fixLagEnabled then
+        pcall(function()
+            Lighting.GlobalShadows = false
+            Lighting.FogEnd = 9e9
+            Lighting.FogStart = 9e9
+            Lighting.Brightness = 1
+            Lighting.Technology = Enum.Technology.Compatibility
+
+            local terrain = Workspace:FindFirstChildOfClass("Terrain")
+            if terrain then
+                terrain.WaterWaveSize = 0
+                terrain.WaterWaveSpeed = 0
+                terrain.WaterReflectance = 0
+                terrain.WaterTransparency = 0
+                terrain.Decoration = false
+            end
+        end)
+
+        for _, v in ipairs(game:GetDescendants()) do
+            optimizePartExtreme(v)
+        end
+
+        if not fixLagChildConnection then
+            fixLagChildConnection = game.DescendantAdded:Connect(function(v)
+                if fixLagEnabled then
+                    optimizePartExtreme(v)
+                end
+            end)
+        end
+
+        if not fixLagTask then
+            fixLagTask = task.spawn(function()
+                while fixLagEnabled do
+                    for _, v in ipairs(Workspace:GetDescendants()) do
+                        if not fixLagEnabled then break end
+                        optimizePartExtreme(v)
+                    end
+                    task.wait(2)
+                end
+            end)
+        end
+    else
+        if fixLagChildConnection then
+            fixLagChildConnection:Disconnect()
+            fixLagChildConnection = nil
+        end
+        if fixLagTask then
+            task.cancel(fixLagTask)
+            fixLagTask = nil
+        end
+    end
+end
+
+-- LOGIC REJOIN & SERVER HOP
+local function rejoinServer()
+    if #Players:GetPlayers() <= 1 then
+        player:Kick("\n[H HUB] Đang kết nối lại Server...")
+        task.wait()
+        TeleportService:Teleport(game.PlaceId, player)
+    else
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+    end
+end
+
+local function serverHop()
+    local placeId = game.PlaceId
+    local serversUrl = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100"
+    
+    local function getServers(cursor)
+        local url = serversUrl .. (cursor and ("&cursor=" .. cursor) or "")
+        local success, result = pcall(function()
+            return HttpService:JSONDecode(game:HttpGet(url))
+        end)
+        if success and result and result.data then
+            return result
+        end
+        return nil
+    end
+
+    task.spawn(function()
+        local cursor = nil
+        repeat
+            local serverData = getServers(cursor)
+            if serverData then
+                cursor = serverData.nextPageCursor
+                for _, server in ipairs(serverData.data) do
+                    if server.id ~= game.JobId and server.playing < server.maxPlayers and server.playing > 0 then
+                        TeleportService:TeleportToPlaceInstance(placeId, server.id, player)
+                        return
+                    end
+                end
+            end
+            task.wait(0.5)
+        until not cursor
+        
+        TeleportService:Teleport(placeId, player)
+    end)
+end
+
+-- LOGIC AUTO PRESS BUTTON
+local function toggleAutoPressButton(state)
+    autoPressButtonEnabled = state
+    if autoPressButtonEnabled then
+        if not autoPressButtonTask then
+            autoPressButtonTask = task.spawn(function()
+                while autoPressButtonEnabled do
+                    pcall(function()
+                        local char = player.Character
+                        local root = char and char:FindFirstChild("HumanoidRootPart")
+                        
+                        if root then
+                            for _, v in ipairs(Workspace:GetDescendants()) do
+                                if not autoPressButtonEnabled then break end
+                                
+                                local isNear = false
+                                if v:IsA("BasePart") then
+                                    isNear = (root.Position - v.Position).Magnitude <= autoPressRadius
+                                elseif v:IsA("PVInstance") then
+                                    isNear = (root.Position - v:GetPivot().Position).Magnitude <= autoPressRadius
+                                elseif v.Parent and v.Parent:IsA("BasePart") then
+                                    isNear = (root.Position - v.Parent.Position).Magnitude <= autoPressRadius
+                                end
+
+                                if isNear then
+                                    if v:IsA("ClickDetector") then
+                                        fireclickdetector(v)
+                                    elseif v:IsA("ProximityPrompt") then
+                                        fireproximityprompt(v)
+                                    end
+                                end
+                            end
+                        end
+                    end)
+                    task.wait(autoPressDelay > 0 and autoPressDelay or 0.05)
+                end
+            end)
+        end
+    else
+        if autoPressButtonTask then
+            task.cancel(autoPressButtonTask)
+            autoPressButtonTask = nil
+        end
+    end
+end
+
+-- LOGIC CORE
+local function toggleNoclip(state)
+    noclipEnabled = state
+    local character = player.Character
+    if not character then return end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    
+    if noclipEnabled then
+        if humanoid and not originalHipHeight then
+            originalHipHeight = humanoid.HipHeight
+            humanoid.HipHeight = originalHipHeight + 0.5
+        end
+
+        if not noclipConnection then
+            noclipConnection = RunService.Stepped:Connect(function()
+                local char = player.Character
+                if char then
+                    for _, part in ipairs(char:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        end
+    else
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+        end
+        
+        if humanoid and originalHipHeight then
+            humanoid.HipHeight = originalHipHeight
+            originalHipHeight = nil
+        end
+
+        for _, part in ipairs(character:GetDescendants()) do
+            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                part.CanCollide = true
             end
         end
     end
-    return target
 end
 
-RunService.Stepped:Connect(function()
-    if autoKill then
-        local myChar = LocalPlayer.Character
-        local enemy = getTarget()
-        
-        if myChar and enemy and myChar:FindFirstChild("HumanoidRootPart") then
-            local myHRP = myChar.HumanoidRootPart
-            local enHRP = enemy.HumanoidRootPart
-            local dist = (myHRP.Position - enHRP.Position).Magnitude
-            
-            -- ÉP DỊCH CHUYỂN (CFRAME LERP)
-            if dist > 4 then
-                myHRP.CFrame = myHRP.CFrame:Lerp(CFrame.new(myHRP.Position, Vector3.new(enHRP.Position.X, myHRP.Position.Y, enHRP.Position.Z)) * CFrame.new(0, 0, -2), 0.15)
-            end
+local function toggleInvisibility(state)
+    invisibleEnabled = state
+    local character = player.Character
+    if not character then return end
 
-            -- ĐỠ ĐÒN & TẤN CÔNG
-            local isAttacking = #enemy.Humanoid:GetPlayingAnimationTracks() > 0
-            if dist < 12 and isAttacking then
-                VIM:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+    if invisibleEnabled then
+        savedTransparencies = {}
+        if not invisibleConnection then
+            invisibleConnection = RunService.RenderStepped:Connect(function()
+                local char = player.Character
+                if char then
+                    for _, child in ipairs(char:GetDescendants()) do
+                        if child:IsA("BasePart") and child.Name ~= "HumanoidRootPart" then
+                            if not savedTransparencies[child] then
+                                savedTransparencies[child] = child.Transparency
+                            end
+                            child.Transparency = 1
+                        elseif child:IsA("Decal") or child:IsA("Texture") then
+                            if not savedTransparencies[child] then
+                                savedTransparencies[child] = child.Transparency
+                            end
+                            child.Transparency = 1
+                        elseif child:IsA("BillboardGui") or child:IsA("SurfaceGui") then
+                            child.Enabled = false
+                        end
+                    end
+                end
+            end)
+        end
+    else
+        if invisibleConnection then
+            invisibleConnection:Disconnect()
+            invisibleConnection = nil
+        end
+        
+        for child, transp in pairs(savedTransparencies) do
+            if child and child.Parent then
+                child.Transparency = transp
+            end
+        end
+        for _, child in ipairs(character:GetDescendants()) do
+            if child:IsA("BillboardGui") or child:IsA("SurfaceGui") then
+                child.Enabled = true
+            end
+        end
+        savedTransparencies = {}
+    end
+end
+
+local function toggleFly(state)
+    flyEnabled = state
+    local character = player.Character
+    if not character then return end
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    
+    if flyEnabled then
+        if not rootPart or not humanoid then return end
+        humanoid.PlatformStand = true
+        
+        local bg = Instance.new("BodyGyro")
+        bg.Name = "FlyGyro"
+        bg.P = 9e4
+        bg.maxTorque = Vector3.new(9e4, 9e4, 9e4)
+        bg.cframe = rootPart.CFrame
+        bg.Parent = rootPart
+        
+        local bv = Instance.new("BodyVelocity")
+        bv.Name = "FlyVelocity"
+        bv.velocity = Vector3.new(0, 0, 0)
+        bv.maxForce = Vector3.new(9e4, 9e4, 9e4)
+        bv.Parent = rootPart
+        
+        if flyConnection then flyConnection:Disconnect() end
+        flyConnection = RunService.RenderStepped:Connect(function()
+            if not flyEnabled or not character or not character.Parent then 
+                if bg then bg:Destroy() end
+                if bv then bv:Destroy() end
+                return 
+            end
+            
+            local cam = Workspace.CurrentCamera
+            local moveDir = humanoid.MoveDirection
+            
+            if moveDir.Magnitude > 0 then
+                local camFlatCFrame = CFrame.lookAt(Vector3.zero, cam.CFrame.LookVector * Vector3.new(1, 0, 1))
+                local localMove = camFlatCFrame:VectorToObjectSpace(moveDir)
+                local flyVector = (cam.CFrame.LookVector * -localMove.Z) + (cam.CFrame.RightVector * localMove.X)
+                
+                bv.velocity = flyVector * flySpeed
+                bg.cframe = cam.CFrame
             else
-                VIM:SendKeyEvent(false, Enum.KeyCode.F, false, game)
-                if dist < 8 then
-                    VIM:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                    VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+                bv.velocity = Vector3.new(0, 0, 0)
+                bg.cframe = cam.CFrame
+            end
+        end)
+    else
+        if flyConnection then
+            flyConnection:Disconnect()
+            flyConnection = nil
+        end
+        if rootPart then
+            local bg = rootPart:FindFirstChild("FlyGyro")
+            local bv = rootPart:FindFirstChild("FlyVelocity")
+            if bg then bg:Destroy() end
+            if bv then bv:Destroy() end
+        end
+        if humanoid then
+            humanoid.PlatformStand = false
+        end
+    end
+end
+
+local function toggleInfJump(state)
+    infJumpEnabled = state
+    if infJumpEnabled then
+        if not infJumpConnection then
+            infJumpConnection = UserInputService.JumpRequest:Connect(function()
+                if infJumpEnabled then
+                    local character = player.Character
+                    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                    end
+                end
+            end)
+        end
+    else
+        if infJumpConnection then
+            infJumpConnection:Disconnect()
+            infJumpConnection = nil
+        end
+    end
+end
+
+-- ESP LOGIC
+local function createHighlight(character, targetPlayer)
+    if not character then return end
+    
+    local head = character:FindFirstChild("Head")
+    if head and not head:FindFirstChild("H_HUB_NameESP") then
+        local billboard = Instance.new("BillboardGui")
+        billboard.Name = "H_HUB_NameESP"
+        billboard.Adornee = head
+        billboard.Size = UDim2.new(0, 150, 0, 30)
+        billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+        billboard.AlwaysOnTop = true
+
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Parent = billboard
+        textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.BackgroundTransparency = 1
+        textLabel.Text = targetPlayer.DisplayName .. " (@" .. targetPlayer.Name .. ")"
+        textLabel.TextColor3 = espColor
+        textLabel.TextStrokeTransparency = 0
+        textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+        textLabel.TextScaled = true
+        textLabel.Font = Enum.Font.SourceSansBold
+
+        billboard.Parent = head
+    end
+
+    local highlight = character:FindFirstChild("H_HUB_ESP")
+    if not highlight then
+        highlight = Instance.new("Highlight")
+        highlight.Name = "H_HUB_ESP"
+        highlight.Adornee = character
+        highlight.FillTransparency = 0.5
+        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+        highlight.OutlineTransparency = 0
+        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        highlight.Parent = character
+    end
+    
+    highlight.FillColor = espColor
+end
+
+local function removeHighlight(character)
+    if character then
+        if character:FindFirstChild("H_HUB_ESP") then
+            character.H_HUB_ESP:Destroy()
+        end
+        local head = character:FindFirstChild("Head")
+        if head and head:FindFirstChild("H_HUB_NameESP") then
+            head.H_HUB_NameESP:Destroy()
+        end
+    end
+end
+
+local function updateESP()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p.Character then
+            removeHighlight(p.Character)
+        end
+    end
+
+    if not espEnabled then return end
+
+    if selectedEspTarget == "Tất cả" then
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= player and p.Character then
+                createHighlight(p.Character, p)
+            end
+        end
+    else
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= player and (p.Name == selectedEspTarget or p.DisplayName == selectedEspTarget) then
+                if p.Character then
+                    createHighlight(p.Character, p)
+                end
+                break
+            end
+        end
+    end
+end
+
+-- Freeze Ray
+local function isPlayerInCooldown(targetPlayer)
+    if not targetPlayer then return true end
+    local lastShot = frozenPlayersTable[targetPlayer] or 0
+    return (tick() - lastShot) < FREEZE_COOLDOWN
+end
+
+local function getDirectTarget()
+    local myChar = player.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return nil, nil end
+
+    if selectedTargetPlayer and selectedTargetPlayer.Parent then
+        if not isPlayerInCooldown(selectedTargetPlayer) then
+            local targetChar = selectedTargetPlayer.Character
+            local targetRoot = targetChar and (targetChar:FindFirstChild("HumanoidRootPart") or targetChar:FindFirstChild("Torso"))
+            if targetRoot and (targetRoot.Position - myRoot.Position).Magnitude <= freezeRadius then
+                return targetRoot, selectedTargetPlayer
+            end
+        end
+        return nil, nil
+    end
+
+    local closestTarget = nil
+    local closestPlayer = nil
+    local shortestDistance = freezeRadius
+
+    for _, targetPlayer in ipairs(Players:GetPlayers()) do
+        if targetPlayer ~= player then
+            if not isPlayerInCooldown(targetPlayer) then
+                local targetChar = targetPlayer.Character
+                local targetRoot = targetChar and (targetChar:FindFirstChild("HumanoidRootPart") or targetChar:FindFirstChild("Torso"))
+
+                if targetRoot then
+                    local distance = (targetRoot.Position - myRoot.Position).Magnitude
+                    if distance <= shortestDistance then
+                        shortestDistance = distance
+                        closestTarget = targetRoot
+                        closestPlayer = targetPlayer
+                    end
                 end
             end
         end
     end
+
+    return closestTarget, closestPlayer
+end
+
+local function toggleFreezeRay(state)
+    freezeRayEnabled = state
+    if freezeRayEnabled then
+        if not freezeRayTask then
+            freezeRayTask = task.spawn(function()
+                while freezeRayEnabled do
+                    local targetPart, targetPlayerObj = getDirectTarget()
+                    
+                    if targetPart and targetPlayerObj then
+                        local character = player.Character
+                        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                        local backpack = player:FindFirstChild("Backpack")
+
+                        if character and humanoid then
+                            local freezeRayTool = character:FindFirstChild("FreezeRay") or (backpack and backpack:FindFirstChild("FreezeRay"))
+
+                            if freezeRayTool then
+                                if freezeRayTool.Parent == backpack then
+                                    humanoid:EquipTool(freezeRayTool)
+                                end
+
+                                local fireEvent = freezeRayTool:FindFirstChild("FireEvent") or freezeRayTool:FindFirstChild("RemoteEvent")
+                                if fireEvent then
+                                    fireEvent:FireServer(targetPart.Position, targetPart)
+                                    frozenPlayersTable[targetPlayerObj] = tick()
+                                end
+                            end
+                        end
+                    end
+                    task.wait(SHOT_DELAY)
+                end
+            end)
+        end
+    else
+        if freezeRayTask then
+            task.cancel(freezeRayTask)
+            freezeRayTask = nil
+        end
+    end
+end
+ 
+-- Auto Farm Coin
+local function findAllCoins()
+    local coins = {}
+    for _, part in ipairs(Workspace:GetDescendants()) do
+        if part:IsA("BasePart") and part.Name == coinName then
+            table.insert(coins, part)
+        end
+    end
+    return coins
+end
+ 
+local function teleportLoop()
+    while true do
+        if tpEnabled then
+            local character = player.Character
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+            if character and humanoid and rootPart then
+                local coins = findAllCoins()
+                for _, coin in ipairs(coins) do
+                    if not tpEnabled then break end
+                    if coin and coin.Parent then
+                        rootPart.CFrame = CFrame.new(coin.Position + Vector3.new(0, 1, 0))
+                        humanoid:Move(Vector3.new(1, 0, 0), true)
+                        humanoid.Jump = false
+                        task.wait(tpSpeed)
+                    end
+                end
+            end
+        end
+        task.wait(tpSpeed > 0 and tpSpeed or 0.1)
+    end
+end
+ 
+task.spawn(teleportLoop)
+
+-- ==========================================
+-- GIAO DIỆN GUI
+-- ==========================================
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AutoFarmHubGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+-- Nút Thu Nhỏ
+local openUIButton = Instance.new("TextButton")
+openUIButton.Size = UDim2.new(0, 45, 0, 45)
+openUIButton.Position = UDim2.new(0.05, 0, 0.4, 0)
+openUIButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+openUIButton.Text = ":>"
+openUIButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+openUIButton.Font = Enum.Font.SourceSansBold
+openUIButton.TextSize = 22
+openUIButton.Visible = false
+openUIButton.Active = true
+openUIButton.Draggable = true
+openUIButton.Parent = screenGui
+table.insert(themeBackgrounds, openUIButton)
+table.insert(textElements, openUIButton)
+
+local openUICorner = Instance.new("UICorner")
+openUICorner.CornerRadius = UDim.new(0, 8)
+openUICorner.Parent = openUIButton
+
+local openUIStroke = Instance.new("UIStroke")
+openUIStroke.Thickness = 2
+openUIStroke.Color = Color3.fromRGB(60, 60, 60)
+pcall(function()
+    openUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+end)
+openUIStroke.Parent = openUIButton
+
+-- FPS Button
+local fpsButton = Instance.new("TextButton")
+fpsButton.Name = "FPSDisplayButton"
+fpsButton.Size = UDim2.new(0, 85, 0, 32)
+fpsButton.Position = UDim2.new(1, -95, 0.1, 0)
+fpsButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+fpsButton.Text = "FPS: --"
+fpsButton.TextColor3 = Color3.fromRGB(0, 255, 0)
+fpsButton.Font = Enum.Font.SourceSansBold
+fpsButton.TextSize = 14
+fpsButton.Visible = false
+fpsButton.Active = true
+fpsButton.Draggable = true
+fpsButton.Parent = screenGui
+
+local fpsCorner = Instance.new("UICorner")
+fpsCorner.CornerRadius = UDim.new(0, 6)
+fpsCorner.Parent = fpsButton
+
+local fpsStroke = Instance.new("UIStroke")
+fpsStroke.Thickness = 1.5
+fpsStroke.Color = Color3.fromRGB(80, 80, 80)
+pcall(function()
+    fpsStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+end)
+fpsStroke.Parent = fpsButton
+
+local frameCount = 0
+local lastUpdate = tick()
+
+local function toggleFPSDisplay(state)
+    fpsEnabled = state
+    fpsButton.Visible = fpsEnabled
+
+    if fpsEnabled then
+        if not fpsConnection then
+            fpsConnection = RunService.RenderStepped:Connect(function()
+                frameCount = frameCount + 1
+                local now = tick()
+                if now - lastUpdate >= 1 then
+                    local fps = math.floor(frameCount / (now - lastUpdate))
+                    fpsButton.Text = "FPS: " .. tostring(fps)
+
+                    if fps <= 15 then
+                        fpsButton.TextColor3 = Color3.fromRGB(255, 50, 50)
+                    elseif fps <= 30 then
+                        fpsButton.TextColor3 = Color3.fromRGB(255, 200, 0)
+                    else
+                        fpsButton.TextColor3 = Color3.fromRGB(50, 255, 50)
+                    end
+
+                    frameCount = 0
+                    lastUpdate = now
+                end
+            end)
+        end
+    else
+        if fpsConnection then
+            fpsConnection:Disconnect()
+            fpsConnection = nil
+        end
+    end
+end
+ 
+-- Khung chính
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 370, 0, 290)
+frame.Position = UDim2.new(0.5, -185, 0.5, -145)
+frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+frame.Visible = true
+table.insert(themeBackgrounds, frame)
+ 
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 6)
+corner.Parent = frame
+ 
+-- Title Bar
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 25)
+titleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = frame
+table.insert(themeBackgrounds, titleBar)
+ 
+local titleText = Instance.new("TextLabel")
+titleText.Size = UDim2.new(1, -60, 1, 0)
+titleText.Position = UDim2.new(0, 8, 0, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "H HUB - AutoFarm"
+titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleText.Font = Enum.Font.SourceSansBold
+titleText.TextSize = 14
+titleText.TextXAlignment = Enum.TextXAlignment.Left
+titleText.Parent = titleBar
+table.insert(textElements, titleText)
+
+-- Minimize Button
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0, 25, 1, 0)
+minimizeButton.Position = UDim2.new(1, -50, 0, 0)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+minimizeButton.Text = "-"
+minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeButton.Font = Enum.Font.SourceSansBold
+minimizeButton.TextSize = 16
+minimizeButton.Parent = titleBar
+table.insert(themeButtons, minimizeButton)
+table.insert(textElements, minimizeButton)
+ 
+-- Close Button
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 25, 1, 0)
+closeButton.Position = UDim2.new(1, -25, 0, 0)
+closeButton.BackgroundColor3 = Color3.fromRGB(150, 35, 35)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.TextSize = 14
+closeButton.Parent = titleBar
+table.insert(textElements, closeButton)
+ 
+-- Sidebar
+local sidebar = Instance.new("Frame")
+sidebar.Size = UDim2.new(0, 100, 1, -25)
+sidebar.Position = UDim2.new(0, 0, 0, 25)
+sidebar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+sidebar.BorderSizePixel = 0
+sidebar.Parent = frame
+table.insert(themeBackgrounds, sidebar)
+
+local line = Instance.new("Frame")
+line.Size = UDim2.new(0, 1, 1, 0)
+line.Position = UDim2.new(1, 0, 0, 0)
+line.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+line.BorderSizePixel = 0
+line.Parent = sidebar
+
+-- Container
+local container = Instance.new("Frame")
+container.Size = UDim2.new(1, -101, 1, -25)
+container.Position = UDim2.new(0, 101, 0, 25)
+container.BackgroundTransparency = 1
+container.Parent = frame
+
+local tabs = {}
+local tabNames = {"Main", "ESP", "FixLag", "Misc"}
+
+for _, name in ipairs(tabNames) do
+    local tabContent = Instance.new("Frame")
+    tabContent.Size = UDim2.new(1, 0, 1, 0)
+    tabContent.BackgroundTransparency = 1
+    tabContent.Visible = false
+    tabContent.Parent = container
+    tabs[name] = tabContent
+end
+
+-- MAIN TAB
+local mainTab = tabs["Main"]
+mainTab.Visible = true
+
+local colWidth = 0.235
+local colGap = 0.015
+
+local tpLabel = Instance.new("TextLabel")
+tpLabel.Size = UDim2.new(colWidth, 0, 0, 14)
+tpLabel.Position = UDim2.new(0 * (colWidth + colGap) + colGap, 0, 0, 2)
+tpLabel.BackgroundTransparency = 1
+tpLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+tpLabel.Font = Enum.Font.SourceSansBold
+tpLabel.TextSize = 9
+tpLabel.Parent = mainTab
+table.insert(textElements, tpLabel)
+ 
+local walkLabel = tpLabel:Clone()
+walkLabel.Position = UDim2.new(1 * (colWidth + colGap) + colGap, 0, 0, 2)
+walkLabel.Parent = mainTab
+table.insert(textElements, walkLabel)
+
+local jumpLabel = tpLabel:Clone()
+jumpLabel.Position = UDim2.new(2 * (colWidth + colGap) + colGap, 0, 0, 2)
+jumpLabel.Parent = mainTab
+table.insert(textElements, jumpLabel)
+
+local flySpeedLabel = tpLabel:Clone()
+flySpeedLabel.Position = UDim2.new(3 * (colWidth + colGap) + colGap, 0, 0, 2)
+flySpeedLabel.Parent = mainTab
+table.insert(textElements, flySpeedLabel)
+
+local tpBox = Instance.new("TextBox")
+tpBox.Size = UDim2.new(colWidth, 0, 0, 20)
+tpBox.Position = UDim2.new(0 * (colWidth + colGap) + colGap, 0, 0, 18)
+tpBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+tpBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+tpBox.Text = tostring(tpSpeed)
+tpBox.Font = Enum.Font.SourceSansBold
+tpBox.TextSize = 10
+tpBox.Parent = mainTab
+table.insert(themeButtons, tpBox)
+table.insert(textElements, tpBox)
+
+local tpCorner = Instance.new("UICorner")
+tpCorner.CornerRadius = UDim.new(0, 4)
+tpCorner.Parent = tpBox
+ 
+tpBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local val = tonumber(tpBox.Text)
+        if val and val > 0 then tpSpeed = val else tpBox.Text = tostring(tpSpeed) end
+    end
+end)
+ 
+local walkBox = tpBox:Clone()
+walkBox.Position = UDim2.new(1 * (colWidth + colGap) + colGap, 0, 0, 18)
+walkBox.Text = tostring(walkSpeed)
+walkBox.Parent = mainTab
+table.insert(themeButtons, walkBox)
+table.insert(textElements, walkBox)
+ 
+walkBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local val = tonumber(walkBox.Text)
+        if val and val > 0 then
+            walkSpeed = val
+            if walkEnabled then
+                local character = player.Character
+                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                if humanoid then humanoid.WalkSpeed = walkSpeed end
+            end
+        else
+            walkBox.Text = tostring(walkSpeed)
+        end
+    end
 end)
 
--- Hiện Main
-task.wait(1.5)
-MainFrame.Visible = true
+local jumpBox = tpBox:Clone()
+jumpBox.Position = UDim2.new(2 * (colWidth + colGap) + colGap, 0, 0, 18)
+jumpBox.Text = tostring(jumpPower)
+jumpBox.Parent = mainTab
+table.insert(themeButtons, jumpBox)
+table.insert(textElements, jumpBox)
+
+jumpBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local val = tonumber(jumpBox.Text)
+        if val and val > 0 then
+            jumpPower = val
+            if jumpEnabled then
+                local character = player.Character
+                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.UseJumpPower = true
+                    humanoid.JumpPower = jumpPower
+                end
+            end
+        else
+            jumpBox.Text = tostring(jumpPower)
+        end
+    end
+end)
+
+local flySpeedBox = tpBox:Clone()
+flySpeedBox.Position = UDim2.new(3 * (colWidth + colGap) + colGap, 0, 0, 18)
+flySpeedBox.Text = tostring(flySpeed)
+flySpeedBox.Parent = mainTab
+table.insert(themeButtons, flySpeedBox)
+table.insert(textElements, flySpeedBox)
+
+flySpeedBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local val = tonumber(flySpeedBox.Text)
+        if val and val > 0 then flySpeed = val else flySpeedBox.Text = tostring(flySpeed) end
+    end
+end)
+
+local function updateButtonVisual(btn, isOn)
+    btn.BackgroundColor3 = isOn and Color3.fromRGB(150, 150, 150) or Color3.fromRGB(30, 30, 30)
+end
+
+local tpButton = Instance.new("TextButton")
+tpButton.Size = UDim2.new(colWidth, 0, 0, 24)
+tpButton.Position = UDim2.new(0 * (colWidth + colGap) + colGap, 0, 0, 42)
+tpButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+tpButton.Font = Enum.Font.SourceSansBold
+tpButton.TextSize = 10
+tpButton.Parent = mainTab
+table.insert(themeButtons, tpButton)
+table.insert(textElements, tpButton)
+ 
+local tpBtnCorner = Instance.new("UICorner")
+tpBtnCorner.CornerRadius = UDim.new(0, 4)
+tpBtnCorner.Parent = tpButton
+ 
+local walkButton = tpButton:Clone()
+walkButton.Position = UDim2.new(1 * (colWidth + colGap) + colGap, 0, 0, 42)
+walkButton.Parent = mainTab
+table.insert(themeButtons, walkButton)
+table.insert(textElements, walkButton)
+
+local jumpButton = tpButton:Clone()
+jumpButton.Position = UDim2.new(2 * (colWidth + colGap) + colGap, 0, 0, 42)
+jumpButton.Parent = mainTab
+table.insert(themeButtons, jumpButton)
+table.insert(textElements, jumpButton)
+
+local flyButton = tpButton:Clone()
+flyButton.Position = UDim2.new(3 * (colWidth + colGap) + colGap, 0, 0, 42)
+flyButton.Parent = mainTab
+table.insert(themeButtons, flyButton)
+table.insert(textElements, flyButton)
+
+local quadWidth = 0.235
+local quadGap = 0.015
+local noclipButton = tpButton:Clone()
+noclipButton.Size = UDim2.new(quadWidth, 0, 0, 24)
+noclipButton.Position = UDim2.new(0 * (quadWidth + quadGap) + quadGap, 0, 0, 72)
+noclipButton.Parent = mainTab
+table.insert(themeButtons, noclipButton)
+table.insert(textElements, noclipButton)
+
+local invisButton = tpButton:Clone()
+invisButton.Size = UDim2.new(quadWidth, 0, 0, 24)
+invisButton.Position = UDim2.new(1 * (quadWidth + quadGap) + quadGap, 0, 0, 72)
+invisButton.Parent = mainTab
+table.insert(themeButtons, invisButton)
+table.insert(textElements, invisButton)
+
+local infJumpButton = tpButton:Clone()
+infJumpButton.Size = UDim2.new(quadWidth, 0, 0, 24)
+infJumpButton.Position = UDim2.new(2 * (quadWidth + quadGap) + quadGap, 0, 0, 72)
+infJumpButton.Parent = mainTab
+table.insert(themeButtons, infJumpButton)
+table.insert(textElements, infJumpButton)
+
+local gravityButton = tpButton:Clone()
+gravityButton.Size = UDim2.new(quadWidth, 0, 0, 24)
+gravityButton.Position = UDim2.new(3 * (quadWidth + quadGap) + quadGap, 0, 0, 72)
+gravityButton.Parent = mainTab
+table.insert(themeButtons, gravityButton)
+table.insert(textElements, gravityButton)
+
+local gravLabel = tpLabel:Clone()
+gravLabel.Size = UDim2.new(0.31, 0, 0, 14)
+gravLabel.Position = UDim2.new(0, 4, 0, 100)
+gravLabel.Parent = mainTab
+table.insert(textElements, gravLabel)
+
+local gravBox = tpBox:Clone()
+gravBox.Size = UDim2.new(0.31, 0, 0, 24)
+gravBox.Position = UDim2.new(0, 4, 0, 114)
+gravBox.Text = tostring(customGravity)
+gravBox.Parent = mainTab
+table.insert(themeButtons, gravBox)
+table.insert(textElements, gravBox)
+
+gravBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local val = tonumber(gravBox.Text)
+        if val then 
+            customGravity = val
+            if gravityEnabled then Workspace.Gravity = customGravity end
+        else 
+            gravBox.Text = tostring(customGravity) 
+        end
+    end
+end)
+
+local freezeRangeLabel = tpLabel:Clone()
+freezeRangeLabel.Size = UDim2.new(0, 20, 0, 14)
+freezeRangeLabel.Position = UDim2.new(0.33, 0, 0, 100)
+freezeRangeLabel.Parent = mainTab
+table.insert(textElements, freezeRangeLabel)
+
+local freezeRangeBox = tpBox:Clone()
+freezeRangeBox.Size = UDim2.new(0.2, 0, 0, 24)
+freezeRangeBox.Position = UDim2.new(0.33, 0, 0, 114)
+freezeRangeBox.Text = tostring(freezeRadius)
+freezeRangeBox.Parent = mainTab
+table.insert(themeButtons, freezeRangeBox)
+table.insert(textElements, freezeRangeBox)
+
+freezeRangeBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local val = tonumber(freezeRangeBox.Text)
+        if val and val > 0 then freezeRadius = val else freezeRangeBox.Text = tostring(freezeRadius) end
+    end
+end)
+
+local freezeButton = tpButton:Clone()
+freezeButton.Size = UDim2.new(0.44, 0, 0, 24)
+freezeButton.Position = UDim2.new(0.54, 0, 0, 114)
+freezeButton.Parent = mainTab
+table.insert(themeButtons, freezeButton)
+table.insert(textElements, freezeButton)
+
+local autoPressBtnToggle = tpButton:Clone()
+autoPressBtnToggle.Size = UDim2.new(0.8, -8, 0, 22)
+autoPressBtnToggle.Position = UDim2.new(0, 4, 0, 144)
+autoPressBtnToggle.Parent = mainTab
+table.insert(themeButtons, autoPressBtnToggle)
+table.insert(textElements, autoPressBtnToggle)
+
+local autoPressRadiusBox = tpBox:Clone()
+autoPressRadiusBox.Size = UDim2.new(0.2, 0, 0, 22)
+autoPressRadiusBox.Position = UDim2.new(0.8, 0, 0, 144)
+autoPressRadiusBox.Text = tostring(autoPressRadius)
+autoPressRadiusBox.Parent = mainTab
+table.insert(themeButtons, autoPressRadiusBox)
+table.insert(textElements, autoPressRadiusBox)
+
+local autoPressDelayLabel = tpLabel:Clone()
+autoPressDelayLabel.Size = UDim2.new(0.65, 0, 0, 22)
+autoPressDelayLabel.Position = UDim2.new(0, 4, 0, 170)
+autoPressDelayLabel.TextXAlignment = Enum.TextXAlignment.Left
+autoPressDelayLabel.Parent = mainTab
+table.insert(textElements, autoPressDelayLabel)
+
+local autoPressDelayBox = tpBox:Clone()
+autoPressDelayBox.Size = UDim2.new(0.32, 0, 0, 22)
+autoPressDelayBox.Position = UDim2.new(0.68, -4, 0, 170)
+autoPressDelayBox.Text = tostring(autoPressDelay)
+autoPressDelayBox.Parent = mainTab
+table.insert(themeButtons, autoPressDelayBox)
+table.insert(textElements, autoPressDelayBox)
+
+local updateLanguage
+
+autoPressRadiusBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local val = tonumber(autoPressRadiusBox.Text)
+        if val and val > 0 then
+            autoPressRadius = val
+            updateLanguage()
+        else
+            autoPressRadiusBox.Text = tostring(autoPressRadius)
+        end
+    end
+end)
+
+autoPressDelayBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local val = tonumber(autoPressDelayBox.Text)
+        if val and val >= 0 then
+            autoPressDelay = val
+        else
+            autoPressDelayBox.Text = tostring(autoPressDelay)
+        end
+    end
+end)
+
+autoPressBtnToggle.MouseButton1Click:Connect(function()
+    autoPressButtonEnabled = not autoPressButtonEnabled
+    updateButtonVisual(autoPressBtnToggle, autoPressButtonEnabled)
+    toggleAutoPressButton(autoPressButtonEnabled)
+    updateLanguage()
+end)
+
+local targetSelectBtn = tpButton:Clone()
+targetSelectBtn.Size = UDim2.new(1, -8, 0, 22)
+targetSelectBtn.Position = UDim2.new(0, 4, 0, 196)
+targetSelectBtn.Parent = mainTab
+table.insert(themeButtons, targetSelectBtn)
+table.insert(textElements, targetSelectBtn)
+
+local playerListFrame = Instance.new("ScrollingFrame")
+playerListFrame.Size = UDim2.new(1, -8, 0, 80)
+playerListFrame.Position = UDim2.new(0, 4, 0, 220)
+playerListFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+playerListFrame.BorderSizePixel = 1
+playerListFrame.BorderColor3 = Color3.fromRGB(50, 50, 50)
+playerListFrame.Visible = false
+playerListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+playerListFrame.ScrollBarThickness = 4
+playerListFrame.ZIndex = 20
+playerListFrame.Parent = mainTab
+
+local playerListLayout = Instance.new("UIListLayout")
+playerListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+playerListLayout.Padding = UDim.new(0, 2)
+playerListLayout.Parent = playerListFrame
+
+local godButton = tpButton:Clone()
+godButton.Size = UDim2.new(1, -8, 0, 22)
+godButton.Position = UDim2.new(0, 4, 0, 222)
+godButton.Parent = mainTab
+table.insert(themeButtons, godButton)
+table.insert(textElements, godButton)
+
+local function refreshPlayerList()
+    for _, child in ipairs(playerListFrame:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+
+    local t = translations[currentLang]
+
+    local allBtn = Instance.new("TextButton")
+    allBtn.Size = UDim2.new(1, -8, 0, 20)
+    allBtn.BackgroundColor3 = (selectedTargetPlayer == nil) and Color3.fromRGB(80, 80, 80) or Color3.fromRGB(35, 35, 35)
+    allBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    allBtn.Font = Enum.Font.SourceSansBold
+    allBtn.TextSize = 11
+    allBtn.Text = "[ " .. t.allTarget .. " ]"
+    allBtn.ZIndex = 21
+    allBtn.Parent = playerListFrame
+
+    allBtn.MouseButton1Click:Connect(function()
+        selectedTargetPlayer = nil
+        playerListFrame.Visible = false
+        godButton.Position = UDim2.new(0, 4, 0, 222)
+        updateLanguage()
+    end)
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            local pBtn = Instance.new("TextButton")
+            pBtn.Size = UDim2.new(1, -8, 0, 20)
+            pBtn.BackgroundColor3 = (selectedTargetPlayer == p) and Color3.fromRGB(80, 80, 80) or Color3.fromRGB(35, 35, 35)
+            pBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            pBtn.Font = Enum.Font.SourceSansBold
+            pBtn.TextSize = 11
+            pBtn.Text = p.DisplayName .. " (@" .. p.Name .. ")"
+            pBtn.ZIndex = 21
+            pBtn.Parent = playerListFrame
+
+            pBtn.MouseButton1Click:Connect(function()
+                selectedTargetPlayer = p
+                playerListFrame.Visible = false
+                godButton.Position = UDim2.new(0, 4, 0, 222)
+                updateLanguage()
+            end)
+        end
+    end
+
+    playerListFrame.CanvasSize = UDim2.new(0, 0, 0, playerListLayout.AbsoluteContentSize.Y + 10)
+end
+
+targetSelectBtn.MouseButton1Click:Connect(function()
+    playerListFrame.Visible = not playerListFrame.Visible
+    if playerListFrame.Visible then
+        refreshPlayerList()
+        godButton.Position = UDim2.new(0, 4, 0, 302)
+    else
+        godButton.Position = UDim2.new(0, 4, 0, 222)
+    end
+end)
+
+godButton.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"))()
+end)
+
+-- ESP TAB
+local espTab = tabs["ESP"]
+
+local espBtnToggle = tpButton:Clone()
+espBtnToggle.Size = UDim2.new(1, -16, 0, 22)
+espBtnToggle.Position = UDim2.new(0, 8, 0, 6)
+espBtnToggle.Parent = espTab
+table.insert(themeButtons, espBtnToggle)
+table.insert(textElements, espBtnToggle)
+
+local fpsBtnToggle = tpButton:Clone()
+fpsBtnToggle.Size = UDim2.new(1, -16, 0, 22)
+fpsBtnToggle.Position = UDim2.new(0, 8, 0, 32)
+fpsBtnToggle.Parent = espTab
+table.insert(themeButtons, fpsBtnToggle)
+table.insert(textElements, fpsBtnToggle)
+
+local espColorText = Instance.new("TextLabel")
+espColorText.Size = UDim2.new(1, -16, 0, 16)
+espColorText.Position = UDim2.new(0, 8, 0, 58)
+espColorText.BackgroundTransparency = 1
+espColorText.TextColor3 = Color3.fromRGB(255, 255, 255)
+espColorText.Font = Enum.Font.SourceSansBold
+espColorText.TextSize = 11
+espColorText.TextXAlignment = Enum.TextXAlignment.Left
+espColorText.Parent = espTab
+table.insert(textElements, espColorText)
+
+local espColorPalette = Instance.new("Frame")
+espColorPalette.Size = UDim2.new(1, -16, 0, 22)
+espColorPalette.Position = UDim2.new(0, 8, 0, 76)
+espColorPalette.BackgroundTransparency = 1
+espColorPalette.Parent = espTab
+
+local espColors = {
+    Color3.fromRGB(255, 0, 0),    
+    Color3.fromRGB(0, 255, 0),    
+    Color3.fromRGB(0, 150, 255),  
+    Color3.fromRGB(255, 255, 0),  
+    Color3.fromRGB(255, 0, 255),  
+    Color3.fromRGB(255, 255, 255) 
+}
+
+for i, col in ipairs(espColors) do
+    local cBtn = Instance.new("TextButton")
+    cBtn.Size = UDim2.new(0, 22, 0, 22)
+    cBtn.Position = UDim2.new(0, (i - 1) * 26, 0, 0)
+    cBtn.BackgroundColor3 = col
+    cBtn.Text = ""
+    cBtn.Parent = espColorPalette
+
+    local cCorner = Instance.new("UICorner")
+    cCorner.CornerRadius = UDim.new(0, 4)
+    cCorner.Parent = cBtn
+
+    cBtn.MouseButton1Click:Connect(function()
+        espColor = col
+        updateESP()
+    end)
+end
+
+local espTargetSelectBtn = tpButton:Clone()
+espTargetSelectBtn.Size = UDim2.new(1, -16, 0, 22)
+espTargetSelectBtn.Position = UDim2.new(0, 8, 0, 104)
+espTargetSelectBtn.Parent = espTab
+table.insert(themeButtons, espTargetSelectBtn)
+table.insert(textElements, espTargetSelectBtn)
+
+local espPlayerListFrame = Instance.new("ScrollingFrame")
+espPlayerListFrame.Size = UDim2.new(1, -16, 0, 80)
+espPlayerListFrame.Position = UDim2.new(0, 8, 0, 128)
+espPlayerListFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+espPlayerListFrame.BorderSizePixel = 1
+espPlayerListFrame.BorderColor3 = Color3.fromRGB(50, 50, 50)
+espPlayerListFrame.Visible = false
+espPlayerListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+espPlayerListFrame.ScrollBarThickness = 4
+espPlayerListFrame.ZIndex = 20
+espPlayerListFrame.Parent = espTab
+
+local espPlayerListLayout = Instance.new("UIListLayout")
+espPlayerListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+espPlayerListLayout.Padding = UDim.new(0, 2)
+espPlayerListLayout.Parent = espPlayerListFrame
+
+local function refreshEspPlayerList()
+    for _, child in ipairs(espPlayerListFrame:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+
+    local t = translations[currentLang]
+
+    local allBtn = Instance.new("TextButton")
+    allBtn.Size = UDim2.new(1, -8, 0, 20)
+    allBtn.BackgroundColor3 = (selectedEspTarget == "Tất cả") and Color3.fromRGB(80, 80, 80) or Color3.fromRGB(35, 35, 35)
+    allBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    allBtn.Font = Enum.Font.SourceSansBold
+    allBtn.TextSize = 11
+    allBtn.Text = "[ " .. t.allTarget .. " ]"
+    allBtn.ZIndex = 21
+    allBtn.Parent = espPlayerListFrame
+
+    allBtn.MouseButton1Click:Connect(function()
+        selectedEspTarget = "Tất cả"
+        espPlayerListFrame.Visible = false
+        updateLanguage()
+        updateESP()
+    end)
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            local pBtn = Instance.new("TextButton")
+            pBtn.Size = UDim2.new(1, -8, 0, 20)
+            pBtn.BackgroundColor3 = (selectedEspTarget == p.Name) and Color3.fromRGB(80, 80, 80) or Color3.fromRGB(35, 35, 35)
+            pBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            pBtn.Font = Enum.Font.SourceSansBold
+            pBtn.TextSize = 11
+            pBtn.Text = p.DisplayName .. " (@" .. p.Name .. ")"
+            pBtn.ZIndex = 21
+            pBtn.Parent = espPlayerListFrame
+
+            pBtn.MouseButton1Click:Connect(function()
+                selectedEspTarget = p.Name
+                espPlayerListFrame.Visible = false
+                updateLanguage()
+                updateESP()
+            end)
+        end
+    end
+
+    espPlayerListFrame.CanvasSize = UDim2.new(0, 0, 0, espPlayerListLayout.AbsoluteContentSize.Y + 10)
+end
+
+espTargetSelectBtn.MouseButton1Click:Connect(function()
+    espPlayerListFrame.Visible = not espPlayerListFrame.Visible
+    if espPlayerListFrame.Visible then refreshEspPlayerList() end
+end)
+
+espBtnToggle.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    updateButtonVisual(espBtnToggle, espEnabled)
+    updateLanguage()
+    updateESP()
+end)
+
+fpsBtnToggle.MouseButton1Click:Connect(function()
+    fpsEnabled = not fpsEnabled
+    updateButtonVisual(fpsBtnToggle, fpsEnabled)
+    toggleFPSDisplay(fpsEnabled)
+    updateLanguage()
+end)
+
+-- FIX LAG TAB
+local fixLagTab = tabs["FixLag"]
+
+local fixLagBtnToggle = tpButton:Clone()
+fixLagBtnToggle.Size = UDim2.new(1, -16, 0, 24)
+fixLagBtnToggle.Position = UDim2.new(0, 8, 0, 8)
+fixLagBtnToggle.Parent = fixLagTab
+table.insert(themeButtons, fixLagBtnToggle)
+table.insert(textElements, fixLagBtnToggle)
+
+fixLagBtnToggle.MouseButton1Click:Connect(function()
+    fixLagEnabled = not fixLagEnabled
+    updateButtonVisual(fixLagBtnToggle, fixLagEnabled)
+    toggleFixLag(fixLagEnabled)
+    updateLanguage()
+end)
+
+local hideMapBtnToggle = tpButton:Clone()
+hideMapBtnToggle.Size = UDim2.new(1, -16, 0, 24)
+hideMapBtnToggle.Position = UDim2.new(0, 8, 0, 38)
+hideMapBtnToggle.Parent = fixLagTab
+table.insert(themeButtons, hideMapBtnToggle)
+table.insert(textElements, hideMapBtnToggle)
+
+hideMapBtnToggle.MouseButton1Click:Connect(function()
+    hideMapOthersEnabled = not hideMapOthersEnabled
+    updateButtonVisual(hideMapBtnToggle, hideMapOthersEnabled)
+    toggleHideMapAndOthers(hideMapOthersEnabled)
+    updateLanguage()
+end)
+
+local muteSoundsBtnToggle = tpButton:Clone()
+muteSoundsBtnToggle.Size = UDim2.new(1, -16, 0, 24)
+muteSoundsBtnToggle.Position = UDim2.new(0, 8, 0, 68)
+muteSoundsBtnToggle.Parent = fixLagTab
+table.insert(themeButtons, muteSoundsBtnToggle)
+table.insert(textElements, muteSoundsBtnToggle)
+
+muteSoundsBtnToggle.MouseButton1Click:Connect(function()
+    muteAllSoundsEnabled = not muteAllSoundsEnabled
+    updateButtonVisual(muteSoundsBtnToggle, muteAllSoundsEnabled)
+    toggleMuteAllSounds(muteAllSoundsEnabled)
+    updateLanguage()
+end)
+
+-- MISC TAB
+local miscTab = tabs["Misc"]
+
+local themeLabel = Instance.new("TextLabel")
+themeLabel.Size = UDim2.new(1, -16, 0, 14)
+themeLabel.Position = UDim2.new(0, 8, 0, 8)
+themeLabel.BackgroundTransparency = 1
+themeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+themeLabel.Font = Enum.Font.SourceSansBold
+themeLabel.TextSize = 10
+themeLabel.TextXAlignment = Enum.TextXAlignment.Left
+themeLabel.Parent = miscTab
+table.insert(textElements, themeLabel)
+
+local themeColorBox = Instance.new("TextButton")
+themeColorBox.Size = UDim2.new(0, 18, 0, 18)
+themeColorBox.Position = UDim2.new(0, 8, 0, 24)
+themeColorBox.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+themeColorBox.Text = ""
+themeColorBox.Parent = miscTab
+
+local tcbCorner = Instance.new("UICorner")
+tcbCorner.CornerRadius = UDim.new(0, 4)
+tcbCorner.Parent = themeColorBox
+table.insert(themeButtons, themeColorBox)
+
+local themePalette = Instance.new("Frame")
+themePalette.Size = UDim2.new(1, -16, 0, 18)
+themePalette.Position = UDim2.new(0, 32, 0, 24)
+themePalette.BackgroundTransparency = 1
+themePalette.Visible = false
+themePalette.Parent = miscTab
+
+local colorOptions = {
+    Color3.fromRGB(15, 15, 15),
+    Color3.fromRGB(40, 20, 20),
+    Color3.fromRGB(20, 30, 50),
+    Color3.fromRGB(20, 40, 20),
+    Color3.fromRGB(50, 35, 20)
+}
+
+for i, col in ipairs(colorOptions) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 18, 0, 18)
+    btn.Position = UDim2.new(0, (i - 1) * 22, 0, 0)
+    btn.BackgroundColor3 = col
+    btn.Text = ""
+    btn.Parent = themePalette
+
+    local bc = Instance.new("UICorner")
+    bc.CornerRadius = UDim.new(0, 4)
+    bc.Parent = btn
+
+    btn.MouseButton1Click:Connect(function()
+        for _, bg in ipairs(themeBackgrounds) do bg.BackgroundColor3 = col end
+        local btnCol = Color3.fromRGB(
+            math.clamp(col.R * 255 + 15, 0, 255),
+            math.clamp(col.G * 255 + 15, 0, 255),
+            math.clamp(col.B * 255 + 15, 0, 255)
+        )
+        for _, tBtn in ipairs(themeButtons) do tBtn.BackgroundColor3 = btnCol end
+        themeColorBox.BackgroundColor3 = col
+        openUIButton.BackgroundColor3 = col
+        themePalette.Visible = false
+    end)
+end
+
+themeColorBox.MouseButton1Click:Connect(function()
+    themePalette.Visible = not themePalette.Visible
+end)
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, -16, 0, 14)
+textLabel.Position = UDim2.new(0, 8, 0, 44)
+textLabel.BackgroundTransparency = 1
+textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+textLabel.Font = Enum.Font.SourceSansBold
+textLabel.TextSize = 10
+textLabel.TextXAlignment = Enum.TextXAlignment.Left
+textLabel.Parent = miscTab
+table.insert(textElements, textLabel)
+
+local textColorBox = Instance.new("TextButton")
+textColorBox.Size = UDim2.new(0, 18, 0, 18)
+textColorBox.Position = UDim2.new(0, 8, 0, 60)
+textColorBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+textColorBox.Text = ""
+textColorBox.Parent = miscTab
+
+local tcbCorner2 = Instance.new("UICorner")
+tcbCorner2.CornerRadius = UDim.new(0, 4)
+tcbCorner2.Parent = textColorBox
+
+local textPalette = Instance.new("Frame")
+textPalette.Size = UDim2.new(1, -16, 0, 18)
+textPalette.Position = UDim2.new(0, 32, 0, 60)
+textPalette.BackgroundTransparency = 1
+textPalette.Visible = false
+textPalette.Parent = miscTab
+
+local textColorOptions = {
+    Color3.fromRGB(255, 255, 255),
+    Color3.fromRGB(255, 80, 80),
+    Color3.fromRGB(80, 160, 255),
+    Color3.fromRGB(80, 255, 120),
+    Color3.fromRGB(255, 180, 50)
+}
+
+for i, col in ipairs(textColorOptions) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 18, 0, 18)
+    btn.Position = UDim2.new(0, (i - 1) * 22, 0, 0)
+    btn.BackgroundColor3 = col
+    btn.Text = ""
+    btn.Parent = textPalette
+
+    local bc = Instance.new("UICorner")
+    bc.CornerRadius = UDim.new(0, 4)
+    bc.Parent = btn
+
+    btn.MouseButton1Click:Connect(function()
+        for _, txt in ipairs(textElements) do txt.TextColor3 = col end
+        textColorBox.BackgroundColor3 = col
+        openUIButton.TextColor3 = col
+        textPalette.Visible = false
+    end)
+end
+
+textColorBox.MouseButton1Click:Connect(function()
+    textPalette.Visible = not textPalette.Visible
+end)
+
+local langLabel = Instance.new("TextLabel")
+langLabel.Size = UDim2.new(1, -16, 0, 14)
+langLabel.Position = UDim2.new(0, 8, 0, 80)
+langLabel.BackgroundTransparency = 1
+langLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+langLabel.Font = Enum.Font.SourceSansBold
+langLabel.TextSize = 10
+langLabel.TextXAlignment = Enum.TextXAlignment.Left
+langLabel.Parent = miscTab
+table.insert(textElements, langLabel)
+
+local btnEnglish = Instance.new("TextButton")
+btnEnglish.Size = UDim2.new(0.5, -10, 0, 20)
+btnEnglish.Position = UDim2.new(0, 8, 0, 96)
+btnEnglish.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+btnEnglish.TextColor3 = Color3.fromRGB(255, 255, 255)
+btnEnglish.Font = Enum.Font.SourceSansBold
+btnEnglish.TextSize = 10
+btnEnglish.Parent = miscTab
+table.insert(themeButtons, btnEnglish)
+table.insert(textElements, btnEnglish)
+
+local engCorner = Instance.new("UICorner")
+engCorner.CornerRadius = UDim.new(0, 4)
+engCorner.Parent = btnEnglish
+
+local btnVietnamese = Instance.new("TextButton")
+btnVietnamese.Size = UDim2.new(0.5, -10, 0, 20)
+btnVietnamese.Position = UDim2.new(0.5, 2, 0, 96)
+btnVietnamese.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+btnVietnamese.TextColor3 = Color3.fromRGB(255, 255, 255)
+btnVietnamese.Font = Enum.Font.SourceSansBold
+btnVietnamese.TextSize = 10
+btnVietnamese.Parent = miscTab
+table.insert(themeButtons, btnVietnamese)
+table.insert(textElements, btnVietnamese)
+
+local viCorner = Instance.new("UICorner")
+viCorner.CornerRadius = UDim.new(0, 4)
+viCorner.Parent = btnVietnamese
+
+local rejoinButton = Instance.new("TextButton")
+rejoinButton.Size = UDim2.new(0.5, -10, 0, 22)
+rejoinButton.Position = UDim2.new(0, 8, 0, 121)
+rejoinButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+rejoinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+rejoinButton.Font = Enum.Font.SourceSansBold
+rejoinButton.TextSize = 10
+rejoinButton.Parent = miscTab
+table.insert(themeButtons, rejoinButton)
+table.insert(textElements, rejoinButton)
+
+local rejoinCorner = Instance.new("UICorner")
+rejoinCorner.CornerRadius = UDim.new(0, 4)
+rejoinCorner.Parent = rejoinButton
+
+local serverHopButton = Instance.new("TextButton")
+serverHopButton.Size = UDim2.new(0.5, -10, 0, 22)
+serverHopButton.Position = UDim2.new(0.5, 2, 0, 121)
+serverHopButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+serverHopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+serverHopButton.Font = Enum.Font.SourceSansBold
+serverHopButton.TextSize = 10
+serverHopButton.Parent = miscTab
+table.insert(themeButtons, serverHopButton)
+table.insert(textElements, serverHopButton)
+
+local hopCorner = Instance.new("UICorner")
+hopCorner.CornerRadius = UDim.new(0, 4)
+hopCorner.Parent = serverHopButton
+
+rejoinButton.MouseButton1Click:Connect(function()
+    rejoinServer()
+end)
+
+serverHopButton.MouseButton1Click:Connect(function()
+    serverHop()
+end)
+
+-- Navigation
+local tabButtons = {}
+local yOffset = 8
+for i, name in ipairs(tabNames) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -16, 0, 26)
+    btn.Position = UDim2.new(0, 8, 0, yOffset)
+    btn.BackgroundColor3 = (i == 1) and Color3.fromRGB(45, 45, 45) or Color3.fromRGB(25, 25, 25)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 12
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.Parent = sidebar
+    table.insert(themeButtons, btn)
+    table.insert(textElements, btn)
+
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 4)
+    btnCorner.Parent = btn
+
+    btn.MouseButton1Click:Connect(function()
+        for _, t in pairs(tabs) do t.Visible = false end
+        for _, b in pairs(tabButtons) do b.BackgroundColor3 = Color3.fromRGB(25, 25, 25) end
+        tabs[name].Visible = true
+        btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    end)
+
+    tabButtons[name] = btn
+    yOffset = yOffset + 30
+end
+
+updateLanguage = function()
+    local t = translations[currentLang]
+    
+    titleText.Text = t.title
+    tabButtons["Main"].Text = "  " .. t.tabMain
+    tabButtons["ESP"].Text = "  " .. t.tabEsp
+    tabButtons["FixLag"].Text = "  " .. t.tabFixLag
+    tabButtons["Misc"].Text = "  " .. t.tabMisc
+    
+    tpLabel.Text = t.tpSpd
+    walkLabel.Text = t.walkSpd
+    jumpLabel.Text = t.jumpSpd
+    flySpeedLabel.Text = t.flySpd
+    gravLabel.Text = t.gravSpd
+    freezeRangeLabel.Text = t.freezeRng
+    autoPressDelayLabel.Text = t.clickDelayLabel
+    espColorText.Text = t.espColorLabel
+    
+    local targetName = selectedTargetPlayer and selectedTargetPlayer.DisplayName or t.allTarget
+    targetSelectBtn.Text = t.targetBtn .. targetName
+    
+    local espTargetName = (selectedEspTarget == "Tất cả") and t.allTarget or selectedEspTarget
+    espTargetSelectBtn.Text = t.targetBtn .. espTargetName
+    
+    tpButton.Text = t.tpBtn .. (tpEnabled and t.on or t.off)
+    walkButton.Text = t.walkBtn .. (walkEnabled and t.on or t.off)
+    jumpButton.Text = t.jumpBtn .. (jumpEnabled and t.on or t.off)
+    flyButton.Text = t.flyBtn .. (flyEnabled and t.on or t.off)
+    gravityButton.Text = t.gravBtn .. (gravityEnabled and t.on or t.off)
+    noclipButton.Text = t.noclipBtn .. (noclipEnabled and t.on or t.off)
+    invisButton.Text = t.invisBtn .. (invisibleEnabled and t.on or t.off)
+    infJumpButton.Text = t.infJumpBtn .. (infJumpEnabled and t.on or t.off)
+    freezeButton.Text = t.freezeBtn .. (freezeRayEnabled and t.on or t.off)
+    godButton.Text = t.godBtn
+    espBtnToggle.Text = t.espBtn .. (espEnabled and t.on or t.off)
+    fpsBtnToggle.Text = t.fpsBtn .. (fpsEnabled and t.on or t.off)
+    fixLagBtnToggle.Text = t.fixLagBtn .. (fixLagEnabled and t.on or t.off)
+    hideMapBtnToggle.Text = t.hideMapBtn .. (hideMapOthersEnabled and t.on or t.off)
+    muteSoundsBtnToggle.Text = t.muteSoundsBtn .. (muteAllSoundsEnabled and t.on or t.off)
+    
+    autoPressBtnToggle.Text = t.autoPressBtn .. tostring(autoPressRadius) .. "): " .. (autoPressButtonEnabled and t.on or t.off)
+    
+    themeLabel.Text = t.themeLabel
+    textLabel.Text = t.textLabel
+    langLabel.Text = t.langLabel
+    rejoinButton.Text = t.rejoinBtn
+    serverHopButton.Text = t.serverHopBtn
+    
+    if currentLang == "EN" then
+        btnEnglish.Text = "English" .. t.selected
+        btnVietnamese.Text = "Tiếng Việt"
+        updateButtonVisual(btnEnglish, true)
+        updateButtonVisual(btnVietnamese, false)
+    else
+        btnEnglish.Text = "English"
+        btnVietnamese.Text = "Tiếng Việt" .. t.selected
+        updateButtonVisual(btnEnglish, false)
+        updateButtonVisual(btnVietnamese, true)
+    end
+end
+
+btnEnglish.MouseButton1Click:Connect(function()
+    currentLang = "EN"
+    updateLanguage()
+end)
+
+btnVietnamese.MouseButton1Click:Connect(function()
+    currentLang = "VI"
+    updateLanguage()
+end)
+
+tpButton.MouseButton1Click:Connect(function()
+    tpEnabled = not tpEnabled
+    updateButtonVisual(tpButton, tpEnabled)
+    updateLanguage()
+end)
+
+walkButton.MouseButton1Click:Connect(function()
+    walkEnabled = not walkEnabled
+    updateButtonVisual(walkButton, walkEnabled)
+    updateLanguage()
+
+    if walkEnabled then
+        if walkConnection then walkConnection:Disconnect() end
+        walkConnection = RunService.RenderStepped:Connect(function()
+            local character = player.Character
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            if humanoid then humanoid.WalkSpeed = walkSpeed end
+        end)
+    else
+        if walkConnection then walkConnection:Disconnect() end
+        walkConnection = nil
+        local character = player.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if humanoid then humanoid.WalkSpeed = 16 end
+    end
+end)
+
+jumpButton.MouseButton1Click:Connect(function()
+    jumpEnabled = not jumpEnabled
+    updateButtonVisual(jumpButton, jumpEnabled)
+    updateLanguage()
+
+    if jumpEnabled then
+        if jumpConnection then jumpConnection:Disconnect() end
+        jumpConnection = RunService.RenderStepped:Connect(function()
+            local character = player.Character
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            if humanoid then 
+                humanoid.UseJumpPower = true
+                humanoid.JumpPower = jumpPower 
+            end
+        end)
+    else
+        if jumpConnection then jumpConnection:Disconnect() end
+        jumpConnection = nil
+        local character = player.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if humanoid then humanoid.JumpPower = 50 end
+    end
+end)
+
+flyButton.MouseButton1Click:Connect(function()
+    flyEnabled = not flyEnabled
+    updateButtonVisual(flyButton, flyEnabled)
+    updateLanguage()
+    toggleFly(flyEnabled)
+end)
+
+gravityButton.MouseButton1Click:Connect(function()
+    gravityEnabled = not gravityEnabled
+    updateButtonVisual(gravityButton, gravityEnabled)
+    updateLanguage()
+
+    if gravityEnabled then
+        if gravityConnection then gravityConnection:Disconnect() end
+        gravityConnection = RunService.RenderStepped:Connect(function()
+            Workspace.Gravity = customGravity
+        end)
+    else
+        if gravityConnection then gravityConnection:Disconnect() end
+        gravityConnection = nil
+        Workspace.Gravity = 196.2
+    end
+end)
+
+noclipButton.MouseButton1Click:Connect(function()
+    noclipEnabled = not noclipEnabled
+    updateButtonVisual(noclipButton, noclipEnabled)
+    updateLanguage()
+    toggleNoclip(noclipEnabled)
+end)
+
+invisButton.MouseButton1Click:Connect(function()
+    invisibleEnabled = not invisibleEnabled
+    updateButtonVisual(invisButton, invisibleEnabled)
+    updateLanguage()
+    toggleInvisibility(invisibleEnabled)
+end)
+
+infJumpButton.MouseButton1Click:Connect(function()
+    infJumpEnabled = not infJumpEnabled
+    updateButtonVisual(infJumpButton, infJumpEnabled)
+    updateLanguage()
+    toggleInfJump(infJumpEnabled)
+end)
+
+freezeButton.MouseButton1Click:Connect(function()
+    freezeRayEnabled = not freezeRayEnabled
+    updateButtonVisual(freezeButton, freezeRayEnabled)
+    updateLanguage()
+    toggleFreezeRay(freezeRayEnabled)
+end)
+
+minimizeButton.MouseButton1Click:Connect(function()
+    frame.Visible = false
+    openUIButton.Visible = true
+end)
+
+openUIButton.MouseButton1Click:Connect(function()
+    frame.Visible = true
+    openUIButton.Visible = false
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+    toggleNoclip(false)
+    toggleInvisibility(false)
+    toggleFly(false)
+    toggleInfJump(false)
+    toggleFreezeRay(false)
+    toggleFPSDisplay(false)
+    toggleAutoPressButton(false)
+    toggleFixLag(false)
+    toggleHideMapAndOthers(false)
+    toggleMuteAllSounds(false)
+    
+    if gravityConnection then gravityConnection:Disconnect() gravityConnection = nil end
+    Workspace.Gravity = 196.2
+    
+    espEnabled = false
+    updateESP()
+    
+    if walkConnection then walkConnection:Disconnect() walkConnection = nil end
+    if jumpConnection then jumpConnection:Disconnect() jumpConnection = nil end
+    tpEnabled = false
+    
+    screenGui:Destroy()
+end)
+ 
+updateLanguage()
