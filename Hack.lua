@@ -3,8 +3,10 @@
 -- ==========================================
 
 -- Kiểm tra và định nghĩa an toàn các hàm Executor
-local fireclickdetector = fireclickdetector or fire_click_detector or function(...) end
-local fireproximityprompt = fireproximityprompt or fire_proximity_prompt or function(...) end
+local getgenv = getgenv or function() return _G end
+local loadstring = loadstring or getgenv().loadstring
+local fireclickdetector = fireclickdetector or fire_click_detector or getgenv().fireclickdetector or function(...) end
+local fireproximityprompt = fireproximityprompt or fire_proximity_prompt or getgenv().fireproximityprompt or function(...) end
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -342,9 +344,7 @@ local function serverHop()
     local function getServers(cursor)
         local url = serversUrl .. (cursor and ("&cursor=" .. cursor) or "")
         local success, result = pcall(function()
-            if game.HttpGet then
-                return HttpService:JSONDecode(game:HttpGet(url))
-            end
+            return HttpService:JSONDecode(game:HttpGet(url))
         end)
         if success and result and result.data then return result end return nil
     end
@@ -1142,7 +1142,7 @@ table.insert(refreshFuncs, r17_2)
 local _, r17 = createToggleRow(mainTab, "autoPressBtn", autoPressButtonEnabled, function(st) toggleAutoPressButton(st) end)
 table.insert(refreshFuncs, r17)
 
--- NÚT GOD MODE (Sửa lỗi loadstring)
+-- NÚT GOD MODE (Đã sửa lỗi HttpGet & loadstring)
 local godRowFrame = Instance.new("Frame")
 godRowFrame.Size = UDim2.new(1, 0, 0, 36)
 godRowFrame.BackgroundTransparency = 1
@@ -1164,14 +1164,14 @@ godCorner.CornerRadius = UDim.new(0, 6)
 godCorner.Parent = godButton
 
 godButton.MouseButton1Click:Connect(function()
-    pcall(function()
-        if game.HttpGet then
-            local success, rawScript = pcall(game.HttpGet, game, "https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal")
-            if success and rawScript then
-                local execFunc, err = loadstring(rawScript)
-                if execFunc then
-                    execFunc()
-                end
+    task.spawn(function()
+        local success, rawScript = pcall(function()
+            return game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal")
+        end)
+        if success and rawScript and rawScript ~= "" then
+            local execFunc = loadstring(rawScript)
+            if execFunc then
+                execFunc()
             end
         end
     end)
