@@ -1,10 +1,21 @@
 -- ==========================================
--- H HUB AUTOFARM (FIXED FOR DELTA & EXECUTORS)
+-- H HUB AUTOFARM (FIXED FOR MAP & DELTA EXECUTOR)
 -- ==========================================
 
--- Kiểm tra và định nghĩa an toàn các hàm Executor
+-- 1. BỘ GIẢ LẬP VÀ AN TOÀN HÀM CHO DELTA MOBILE
 local fireclickdetector = fireclickdetector or fire_click_detector or function(...) end
 local fireproximityprompt = fireproximityprompt or fire_proximity_prompt or function(...) end
+local firetouchinterest = firetouchinterest or function(...) end
+
+local function safeExecuteString(code)
+    if not code or code == "" then return end
+    if loadstring then
+        local func, err = loadstring(code)
+        if func then
+            pcall(func)
+        end
+    end
+end
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -84,6 +95,19 @@ local textElements = {}
 
 -- Font chữ
 local GLOBAL_FONT = Enum.Font.GothamBold
+
+-- 2. HÀM KIỂM TRA MAP AN TOÀN (CHỐNG LỖI MAP NOT A VALID MEMBER)
+local function getActiveMap()
+    local map = Workspace:FindFirstChild("Map134") or Workspace:FindFirstChild("Map")
+    if not map then
+        for _, child in ipairs(Workspace:GetChildren()) do
+            if child.Name:sub(1, 3) == "Map" then
+                return child
+            end
+        end
+    end
+    return map
+end
 
 local translations = {
     EN = {
@@ -595,7 +619,13 @@ end
 
 local function findAllCoins()
     local coins = {}
-    for _, part in ipairs(Workspace:GetDescendants()) do if part:IsA("BasePart") and part.Name == coinName then table.insert(coins, part) end end
+    pcall(function()
+        for _, part in ipairs(Workspace:GetDescendants()) do 
+            if part:IsA("BasePart") and part.Name == coinName then 
+                table.insert(coins, part) 
+            end 
+        end
+    end)
     return coins
 end
 
@@ -1142,7 +1172,7 @@ table.insert(refreshFuncs, r17_2)
 local _, r17 = createToggleRow(mainTab, "autoPressBtn", autoPressButtonEnabled, function(st) toggleAutoPressButton(st) end)
 table.insert(refreshFuncs, r17)
 
--- NÚT GOD MODE
+-- NÚT GOD MODE (SỬA LỖI KHÔNG CHẠY ĐƯỢC LOADSTRING TRÊN DELTA)
 local godRowFrame = Instance.new("Frame")
 godRowFrame.Size = UDim2.new(1, 0, 0, 36)
 godRowFrame.BackgroundTransparency = 1
@@ -1165,8 +1195,9 @@ godCorner.Parent = godButton
 
 godButton.MouseButton1Click:Connect(function()
     pcall(function()
-        if loadstring and game.HttpGet then
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"))()
+        if game.HttpGet then
+            local scriptContent = game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal")
+            safeExecuteString(scriptContent)
         end
     end)
 end)
