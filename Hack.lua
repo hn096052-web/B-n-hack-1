@@ -1,5 +1,5 @@
 -- ==========================================
--- H HUB AUTOFARM (FIXED & UPDATED)
+-- H HUB AUTOFARM (FIXED & UPDATED WITH BG PARTICLES)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -37,7 +37,7 @@ local hideMapOthersEnabled = false
 local muteAllSoundsEnabled = false
 local autoEquipEnabled = false
 
--- Cấu hình mặc định (Đã cập nhật theo yêu cầu)
+-- Cấu hình mặc định
 local tpSpeed = 0.15
 local walkSpeed = 35 
 local jumpPower = 75
@@ -56,6 +56,9 @@ local selectedEspTarget = "Tất cả"
 local espColor = Color3.fromRGB(255, 0, 0)
 local currentThemeColor = Color3.fromRGB(35, 35, 45)
 local currentTextColor = Color3.fromRGB(255, 255, 255)
+local boardBgColor = Color3.fromRGB(20, 20, 25)
+local particleColor = Color3.fromRGB(150, 150, 255)
+local activeParticles = {}
 
 local frozenPlayersTable = {} 
 local currentLang = "VI" 
@@ -116,11 +119,13 @@ local translations = {
         espColorLabel = "ESP Highlight Color:",
         themeLabel = "UI Button Color:",
         textLabel = "UI Text Color:",
+        bgBoardLabel = "UI Board BG Color:",
+        particleColorLabel = "BG Particle Color:",
         langLabel = "Language:",
         rejoinBtn = "Rejoin Server",
         serverHopBtn = "Server Hop",
-        on = "BẬT",
-        off = "TẮT"
+        on = "ON",
+        off = "OFF"
     },
     VI = {
         title = "H HUB - AutoFarm",
@@ -159,6 +164,8 @@ local translations = {
         espColorLabel = "Màu ESP Xuyên Tường:",
         themeLabel = "Màu Nút Giao Diện:",
         textLabel = "Màu Chữ Giao Diện:",
+        bgBoardLabel = "Màu Nền Bảng:",
+        particleColorLabel = "Màu Hạt Nền Bay:",
         langLabel = "Ngôn ngữ / Language:",
         rejoinBtn = "Vào Lại Server",
         serverHopBtn = "Đổi Server Khác",
@@ -672,12 +679,21 @@ end
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 390, 0, 320)
 frame.Position = UDim2.new(0.5, -195, 0.5, -160)
-frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+frame.BackgroundColor3 = boardBgColor
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
+frame.ClipsDescendants = true
 frame.Parent = screenGui
 frame.Visible = true
+
+-- Container chứa hạt nền
+local particleContainer = Instance.new("Frame")
+particleContainer.Name = "ParticleContainer"
+particleContainer.Size = UDim2.new(1, 0, 1, 0)
+particleContainer.BackgroundTransparency = 1
+particleContainer.ZIndex = 1
+particleContainer.Parent = frame
 
 local gradientFrame = Instance.new("UIGradient")
 gradientFrame.Color = ColorSequence.new{
@@ -697,6 +713,47 @@ task.spawn(function()
     end
 end)
 
+-- HIỆU ỨNG HẠT NỀN BAY TỪ DƯỚI LÊN TỚI ĐỈNH BẢNG
+task.spawn(function()
+    while task.wait(0.2) do
+        if frame and frame.Parent and frame.Visible then
+            local size = math.random(3, 8)
+            local posX = math.random(2, 98) / 100
+            local speed = math.random(35, 65) / 10
+
+            local p = Instance.new("Frame")
+            p.Size = UDim2.new(0, size, 0, size)
+            p.Position = UDim2.new(posX, 0, 1, 5)
+            p.BackgroundColor3 = particleColor
+            p.BackgroundTransparency = math.random(2, 5) / 10
+            p.BorderSizePixel = 0
+            p.ZIndex = 1
+            p.Parent = particleContainer
+
+            local pCorner = Instance.new("UICorner")
+            pCorner.CornerRadius = UDim.new(1, 0)
+            pCorner.Parent = p
+
+            table.insert(activeParticles, p)
+
+            local tween = TweenService:Create(p, TweenInfo.new(speed, Enum.EasingStyle.Linear), {
+                Position = UDim2.new(posX + (math.random(-10, 10) / 100), 0, -0.1, 0),
+                BackgroundTransparency = 1
+            })
+            tween:Play()
+            tween.Completed:Connect(function()
+                for idx, item in ipairs(activeParticles) do
+                    if item == p then
+                        table.remove(activeParticles, idx)
+                        break
+                    end
+                end
+                p:Destroy()
+            end)
+        end
+    end
+end)
+
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 8)
 corner.Parent = frame
@@ -713,6 +770,7 @@ titleBar.Size = UDim2.new(1, 0, 0, 35)
 titleBar.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
 titleBar.BackgroundTransparency = 0.3
 titleBar.BorderSizePixel = 0
+titleBar.ZIndex = 2
 titleBar.Parent = frame
 
 local titleCorner = Instance.new("UICorner")
@@ -728,6 +786,7 @@ titleText.TextColor3 = currentTextColor
 titleText.Font = GLOBAL_FONT
 titleText.TextSize = 15
 titleText.TextXAlignment = Enum.TextXAlignment.Left
+titleText.ZIndex = 2
 titleText.Parent = titleBar
 table.insert(textElements, titleText)
 
@@ -739,6 +798,7 @@ minimizeButton.Text = "-"
 minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 minimizeButton.Font = GLOBAL_FONT
 minimizeButton.TextSize = 20
+minimizeButton.ZIndex = 2
 minimizeButton.Parent = titleBar
 
 local minCorner = Instance.new("UICorner")
@@ -753,6 +813,7 @@ closeButton.Text = "X"
 closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeButton.Font = GLOBAL_FONT
 closeButton.TextSize = 13
+closeButton.ZIndex = 2
 closeButton.Parent = titleBar
 
 local closeCorner = Instance.new("UICorner")
@@ -766,6 +827,7 @@ sidebar.Position = UDim2.new(0, 0, 0, 35)
 sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 sidebar.BackgroundTransparency = 0.5
 sidebar.BorderSizePixel = 0
+sidebar.ZIndex = 2
 sidebar.Parent = frame
 
 local sideCorner = Instance.new("UICorner")
@@ -777,6 +839,7 @@ line.Size = UDim2.new(0, 1, 1, 0)
 line.Position = UDim2.new(1, 0, 0, 0)
 line.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
 line.BorderSizePixel = 0
+line.ZIndex = 2
 line.Parent = sidebar
 
 -- Container
@@ -784,6 +847,7 @@ local container = Instance.new("Frame")
 container.Size = UDim2.new(1, -115, 1, -35)
 container.Position = UDim2.new(0, 115, 0, 35)
 container.BackgroundTransparency = 1
+container.ZIndex = 2
 container.Parent = frame
 
 -- TẠO TAB DẠNG SCROLLING FRAME
@@ -798,6 +862,7 @@ for _, name in ipairs(tabNames) do
     tabScroll.ScrollBarThickness = 4
     tabScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
     tabScroll.Visible = false
+    tabScroll.ZIndex = 2
     tabScroll.Parent = container
     
     local layout = Instance.new("UIListLayout")
@@ -852,10 +917,30 @@ local function applyTextColor(color)
     end
 end
 
+local function applyBoardBgColor(color)
+    boardBgColor = color
+    frame.BackgroundColor3 = boardBgColor
+    gradientFrame.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0.00, boardBgColor),
+        ColorSequenceKeypoint.new(0.50, Color3.fromRGB(math.min(boardBgColor.R * 255 + 20, 255), math.min(boardBgColor.G * 255 + 20, 255), math.min(boardBgColor.B * 255 + 20, 255))),
+        ColorSequenceKeypoint.new(1.00, boardBgColor)
+    }
+end
+
+local function applyParticleColor(color)
+    particleColor = color
+    for _, p in ipairs(activeParticles) do
+        if p and p.Parent then
+            p.BackgroundColor3 = particleColor
+        end
+    end
+end
+
 local function createToggleRow(parentTab, labelKey, stateBool, callback)
     local frameRow = Instance.new("Frame")
     frameRow.Size = UDim2.new(1, 0, 0, 32)
     frameRow.BackgroundTransparency = 1
+    frameRow.ZIndex = 2
     frameRow.Parent = parentTab
 
     local btn = Instance.new("TextButton")
@@ -864,6 +949,7 @@ local function createToggleRow(parentTab, labelKey, stateBool, callback)
     btn.TextColor3 = currentTextColor
     btn.Font = GLOBAL_FONT
     btn.TextSize = 11
+    btn.ZIndex = 2
     btn.Parent = frameRow
     table.insert(themeButtons, btn)
     table.insert(textElements, btn)
@@ -894,6 +980,7 @@ local function createInputRow(parentTab, labelKey, defaultVal, callback)
     local frameRow = Instance.new("Frame")
     frameRow.Size = UDim2.new(1, 0, 0, 30)
     frameRow.BackgroundTransparency = 1
+    frameRow.ZIndex = 2
     frameRow.Parent = parentTab
 
     local lbl = Instance.new("TextLabel")
@@ -903,6 +990,7 @@ local function createInputRow(parentTab, labelKey, defaultVal, callback)
     lbl.Font = GLOBAL_FONT
     lbl.TextSize = 11
     lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.ZIndex = 2
     lbl.Parent = frameRow
     table.insert(textElements, lbl)
 
@@ -914,6 +1002,7 @@ local function createInputRow(parentTab, labelKey, defaultVal, callback)
     box.Font = GLOBAL_FONT
     box.TextSize = 11
     box.Text = tostring(defaultVal)
+    box.ZIndex = 2
     box.Parent = frameRow
     table.insert(themeButtons, box)
     table.insert(textElements, box)
@@ -1034,7 +1123,6 @@ table.insert(refreshFuncs, r15)
 local _, r16 = createToggleRow(mainTab, "autoEquipBtn", autoEquipEnabled, function(st) toggleAutoEquip(st) end)
 table.insert(refreshFuncs, r16)
 
--- Thêm chỉnh Bán kính & Tốc độ cho Auto Click Nút
 local _, r17_1 = createInputRow(mainTab, "autoPressRadiusLabel", autoPressRadius, function(val) autoPressRadius = val end)
 table.insert(refreshFuncs, r17_1)
 local _, r17_2 = createInputRow(mainTab, "autoPressDelayLabel", autoPressDelay, function(val) autoPressDelay = val end)
@@ -1046,6 +1134,7 @@ table.insert(refreshFuncs, r17)
 local godRowFrame = Instance.new("Frame")
 godRowFrame.Size = UDim2.new(1, 0, 0, 36)
 godRowFrame.BackgroundTransparency = 1
+godRowFrame.ZIndex = 2
 godRowFrame.Parent = mainTab
 
 local godButton = Instance.new("TextButton")
@@ -1055,6 +1144,7 @@ godButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 godButton.Font = GLOBAL_FONT
 godButton.TextSize = 12
 godButton.Text = "⚡ Bảng God Mode (Bất Tử)"
+godButton.ZIndex = 2
 godButton.Parent = godRowFrame
 
 local godCorner = Instance.new("UICorner")
@@ -1083,12 +1173,14 @@ espColorLabel.TextColor3 = currentTextColor
 espColorLabel.Font = GLOBAL_FONT
 espColorLabel.TextSize = 11
 espColorLabel.TextXAlignment = Enum.TextXAlignment.Left
+espColorLabel.ZIndex = 2
 espColorLabel.Parent = espTab
 table.insert(textElements, espColorLabel)
 
 local espColorPalette = Instance.new("Frame")
 espColorPalette.Size = UDim2.new(1, 0, 0, 28)
 espColorPalette.BackgroundTransparency = 1
+espColorPalette.ZIndex = 2
 espColorPalette.Parent = espTab
 
 local espColors = {
@@ -1106,6 +1198,7 @@ for i, col in ipairs(espColors) do
     cBtn.Position = UDim2.new(0, (i - 1) * 34, 0, 0)
     cBtn.BackgroundColor3 = col
     cBtn.Text = ""
+    cBtn.ZIndex = 2
     cBtn.Parent = espColorPalette
 
     local cCorner = Instance.new("UICorner")
@@ -1130,10 +1223,11 @@ local _, rLag3 = createToggleRow(fixLagTab, "muteSoundsBtn", muteAllSoundsEnable
 table.insert(refreshFuncs, rLag3)
 
 -- ==========================================
--- TAB SETTINGS / MISC
+-- TAB SETTINGS / MISC (CÀI ĐẶT)
 -- ==========================================
 local miscTab = tabs["Misc"]
 
+-- Chỉnh màu nút UI
 local themeLabel = Instance.new("TextLabel")
 themeLabel.Size = UDim2.new(1, 0, 0, 18)
 themeLabel.BackgroundTransparency = 1
@@ -1141,12 +1235,14 @@ themeLabel.TextColor3 = currentTextColor
 themeLabel.Font = GLOBAL_FONT
 themeLabel.TextSize = 11
 themeLabel.TextXAlignment = Enum.TextXAlignment.Left
+themeLabel.ZIndex = 2
 themeLabel.Parent = miscTab
 table.insert(textElements, themeLabel)
 
 local themePalette = Instance.new("Frame")
 themePalette.Size = UDim2.new(1, 0, 0, 28)
 themePalette.BackgroundTransparency = 1
+themePalette.ZIndex = 2
 themePalette.Parent = miscTab
 
 local uiThemeColors = {
@@ -1163,6 +1259,7 @@ for i, col in ipairs(uiThemeColors) do
     cBtn.Position = UDim2.new(0, (i - 1) * 34, 0, 0)
     cBtn.BackgroundColor3 = col
     cBtn.Text = ""
+    cBtn.ZIndex = 2
     cBtn.Parent = themePalette
 
     local cCorner = Instance.new("UICorner")
@@ -1172,6 +1269,7 @@ for i, col in ipairs(uiThemeColors) do
     cBtn.MouseButton1Click:Connect(function() applyThemeColor(col) end)
 end
 
+-- Chỉnh màu chữ UI
 local textLabel = Instance.new("TextLabel")
 textLabel.Size = UDim2.new(1, 0, 0, 18)
 textLabel.BackgroundTransparency = 1
@@ -1179,12 +1277,14 @@ textLabel.TextColor3 = currentTextColor
 textLabel.Font = GLOBAL_FONT
 textLabel.TextSize = 11
 textLabel.TextXAlignment = Enum.TextXAlignment.Left
+textLabel.ZIndex = 2
 textLabel.Parent = miscTab
 table.insert(textElements, textLabel)
 
 local textPalette = Instance.new("Frame")
 textPalette.Size = UDim2.new(1, 0, 0, 28)
 textPalette.BackgroundTransparency = 1
+textPalette.ZIndex = 2
 textPalette.Parent = miscTab
 
 local uiTextColors = {
@@ -1200,6 +1300,7 @@ for i, col in ipairs(uiTextColors) do
     cBtn.Position = UDim2.new(0, (i - 1) * 34, 0, 0)
     cBtn.BackgroundColor3 = col
     cBtn.Text = ""
+    cBtn.ZIndex = 2
     cBtn.Parent = textPalette
 
     local cCorner = Instance.new("UICorner")
@@ -1209,6 +1310,91 @@ for i, col in ipairs(uiTextColors) do
     cBtn.MouseButton1Click:Connect(function() applyTextColor(col) end)
 end
 
+-- Chỉnh màu nền bảng HUB
+local bgBoardLabel = Instance.new("TextLabel")
+bgBoardLabel.Size = UDim2.new(1, 0, 0, 18)
+bgBoardLabel.BackgroundTransparency = 1
+bgBoardLabel.TextColor3 = currentTextColor
+bgBoardLabel.Font = GLOBAL_FONT
+bgBoardLabel.TextSize = 11
+bgBoardLabel.TextXAlignment = Enum.TextXAlignment.Left
+bgBoardLabel.ZIndex = 2
+bgBoardLabel.Parent = miscTab
+table.insert(textElements, bgBoardLabel)
+
+local bgBoardPalette = Instance.new("Frame")
+bgBoardPalette.Size = UDim2.new(1, 0, 0, 28)
+bgBoardPalette.BackgroundTransparency = 1
+bgBoardPalette.ZIndex = 2
+bgBoardPalette.Parent = miscTab
+
+local uiBoardColors = {
+    Color3.fromRGB(20, 20, 25),
+    Color3.fromRGB(15, 20, 35),
+    Color3.fromRGB(25, 15, 35),
+    Color3.fromRGB(35, 15, 20),
+    Color3.fromRGB(15, 30, 25)
+}
+
+for i, col in ipairs(uiBoardColors) do
+    local cBtn = Instance.new("TextButton")
+    cBtn.Size = UDim2.new(0, 28, 0, 28)
+    cBtn.Position = UDim2.new(0, (i - 1) * 34, 0, 0)
+    cBtn.BackgroundColor3 = col
+    cBtn.Text = ""
+    cBtn.ZIndex = 2
+    cBtn.Parent = bgBoardPalette
+
+    local cCorner = Instance.new("UICorner")
+    cCorner.CornerRadius = UDim.new(0, 6)
+    cCorner.Parent = cBtn
+
+    cBtn.MouseButton1Click:Connect(function() applyBoardBgColor(col) end)
+end
+
+-- Chỉnh màu Hạt Bay Nền
+local particleColorLabel = Instance.new("TextLabel")
+particleColorLabel.Size = UDim2.new(1, 0, 0, 18)
+particleColorLabel.BackgroundTransparency = 1
+particleColorLabel.TextColor3 = currentTextColor
+particleColorLabel.Font = GLOBAL_FONT
+particleColorLabel.TextSize = 11
+particleColorLabel.TextXAlignment = Enum.TextXAlignment.Left
+particleColorLabel.ZIndex = 2
+particleColorLabel.Parent = miscTab
+table.insert(textElements, particleColorLabel)
+
+local particlePalette = Instance.new("Frame")
+particlePalette.Size = UDim2.new(1, 0, 0, 28)
+particlePalette.BackgroundTransparency = 1
+particlePalette.ZIndex = 2
+particlePalette.Parent = miscTab
+
+local uiParticleColors = {
+    Color3.fromRGB(255, 255, 255),
+    Color3.fromRGB(0, 255, 255),
+    Color3.fromRGB(255, 100, 200),
+    Color3.fromRGB(255, 220, 100),
+    Color3.fromRGB(180, 100, 255)
+}
+
+for i, col in ipairs(uiParticleColors) do
+    local cBtn = Instance.new("TextButton")
+    cBtn.Size = UDim2.new(0, 28, 0, 28)
+    cBtn.Position = UDim2.new(0, (i - 1) * 34, 0, 0)
+    cBtn.BackgroundColor3 = col
+    cBtn.Text = ""
+    cBtn.ZIndex = 2
+    cBtn.Parent = particlePalette
+
+    local cCorner = Instance.new("UICorner")
+    cCorner.CornerRadius = UDim.new(0, 6)
+    cCorner.Parent = cBtn
+
+    cBtn.MouseButton1Click:Connect(function() applyParticleColor(col) end)
+end
+
+-- Chọn ngôn ngữ & Server buttons
 local langLabel = Instance.new("TextLabel")
 langLabel.Size = UDim2.new(1, 0, 0, 18)
 langLabel.BackgroundTransparency = 1
@@ -1216,12 +1402,14 @@ langLabel.TextColor3 = currentTextColor
 langLabel.Font = GLOBAL_FONT
 langLabel.TextSize = 11
 langLabel.TextXAlignment = Enum.TextXAlignment.Left
+langLabel.ZIndex = 2
 langLabel.Parent = miscTab
 table.insert(textElements, langLabel)
 
 local langFrame = Instance.new("Frame")
 langFrame.Size = UDim2.new(1, 0, 0, 30)
 langFrame.BackgroundTransparency = 1
+langFrame.ZIndex = 2
 langFrame.Parent = miscTab
 
 local btnEnglish = Instance.new("TextButton")
@@ -1231,6 +1419,7 @@ btnEnglish.TextColor3 = currentTextColor
 btnEnglish.Font = GLOBAL_FONT
 btnEnglish.TextSize = 11
 btnEnglish.Text = "English"
+btnEnglish.ZIndex = 2
 btnEnglish.Parent = langFrame
 table.insert(themeButtons, btnEnglish)
 table.insert(textElements, btnEnglish)
@@ -1242,6 +1431,7 @@ engCorner.Parent = btnEnglish
 local btnVietnamese = btnEnglish:Clone()
 btnVietnamese.Position = UDim2.new(0.52, 0, 0, 0)
 btnVietnamese.Text = "Tiếng Việt"
+btnVietnamese.ZIndex = 2
 btnVietnamese.Parent = langFrame
 table.insert(themeButtons, btnVietnamese)
 table.insert(textElements, btnVietnamese)
@@ -1249,11 +1439,13 @@ table.insert(textElements, btnVietnamese)
 local serverFrame = Instance.new("Frame")
 serverFrame.Size = UDim2.new(1, 0, 0, 32)
 serverFrame.BackgroundTransparency = 1
+serverFrame.ZIndex = 2
 serverFrame.Parent = miscTab
 
 local rejoinButton = btnEnglish:Clone()
 rejoinButton.Size = UDim2.new(0.48, 0, 1, 0)
 rejoinButton.Position = UDim2.new(0, 0, 0, 0)
+rejoinButton.ZIndex = 2
 rejoinButton.Parent = serverFrame
 table.insert(themeButtons, rejoinButton)
 table.insert(textElements, rejoinButton)
@@ -1261,6 +1453,7 @@ table.insert(textElements, rejoinButton)
 local serverHopButton = btnVietnamese:Clone()
 serverHopButton.Size = UDim2.new(0.48, 0, 1, 0)
 serverHopButton.Position = UDim2.new(0.52, 0, 0, 0)
+serverHopButton.ZIndex = 2
 serverHopButton.Parent = serverFrame
 table.insert(themeButtons, serverHopButton)
 table.insert(textElements, serverHopButton)
@@ -1275,6 +1468,8 @@ local function updateLanguage()
     espColorLabel.Text = t.espColorLabel
     themeLabel.Text = t.themeLabel
     textLabel.Text = t.textLabel
+    bgBoardLabel.Text = t.bgBoardLabel
+    particleColorLabel.Text = t.particleColorLabel
     langLabel.Text = t.langLabel
     rejoinButton.Text = t.rejoinBtn
     serverHopButton.Text = t.serverHopBtn
@@ -1297,6 +1492,7 @@ for i, name in ipairs(tabNames) do
     btn.TextColor3 = currentTextColor
     btn.Font = GLOBAL_FONT
     btn.TextSize = 11
+    btn.ZIndex = 2
     btn.Parent = sidebar
     table.insert(textElements, btn)
 
