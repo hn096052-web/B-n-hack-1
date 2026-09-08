@@ -1,6 +1,10 @@
 -- ==========================================
--- H HUB AUTOFARM (FIXED & UPDATED WITH BG PARTICLES)
+-- H HUB AUTOFARM (FIXED FOR DELTA & EXECUTORS)
 -- ==========================================
+
+-- Kiểm tra và định nghĩa an toàn các hàm Executor
+local fireclickdetector = fireclickdetector or fire_click_detector or function(...) end
+local fireproximityprompt = fireproximityprompt or fire_proximity_prompt or function(...) end
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -174,9 +178,7 @@ local translations = {
     }
 }
 
--- ==========================================
--- LOGIC TÍNH NĂNG GAME
--- ==========================================
+-- LOGIC TÍNH NĂNG
 local itemsToUnequip = {"PieThrow", "SmallPotion", "GiantPotion", "GhostPotion", "Healing", "GravityPotion", "Bloxiade", "ClownBomb", "Slate", "WindPotion", "IcePotion", "Caltrops", "SlowDownGun", "GravityGun", "GravityDisruptor", "FreezeRay", "Bomb"}
 
 local function toggleAutoEquip(state)
@@ -339,7 +341,11 @@ local function serverHop()
     local serversUrl = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100"
     local function getServers(cursor)
         local url = serversUrl .. (cursor and ("&cursor=" .. cursor) or "")
-        local success, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(url)) end)
+        local success, result = pcall(function()
+            if game.HttpGet then
+                return HttpService:JSONDecode(game:HttpGet(url))
+            end
+        end)
         if success and result and result.data then return result end return nil
     end
     task.spawn(function()
@@ -384,8 +390,11 @@ local function toggleAutoPressButton(state)
                                         end
                                     end
                                     if pos and (root.Position - pos).Magnitude <= autoPressRadius then
-                                        if v:IsA("ClickDetector") then fireclickdetector(v)
-                                        elseif v:IsA("ProximityPrompt") then fireproximityprompt(v) end
+                                        if v:IsA("ClickDetector") then 
+                                            pcall(function() fireclickdetector(v) end)
+                                        elseif v:IsA("ProximityPrompt") then 
+                                            pcall(function() fireproximityprompt(v) end) 
+                                        end
                                     end
                                 end
                             end
@@ -616,16 +625,12 @@ local function teleportLoop()
 end
 task.spawn(teleportLoop)
 
--- ==========================================
--- GIAO DIỆN GUI (KHÔNG TRÀN - CÓ BẢNG CUỘN)
--- ==========================================
-
+-- GIAO DIỆN GUI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "AutoFarmHubGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- Nút Thu Nhỏ Tròn Tròn (Mở UI)
 local openUIButton = Instance.new("TextButton")
 openUIButton.Size = UDim2.new(0, 50, 0, 50)
 openUIButton.Position = UDim2.new(0.05, 0, 0.4, 0)
@@ -648,7 +653,6 @@ openUIStroke.Thickness = 2
 openUIStroke.Color = Color3.fromRGB(80, 80, 255)
 openUIStroke.Parent = openUIButton
 
--- FPS Button
 local fpsButton = Instance.new("TextButton")
 fpsButton.Name = "FPSDisplayButton"
 fpsButton.Size = UDim2.new(0, 85, 0, 32)
@@ -693,7 +697,6 @@ local function toggleFPSDisplay(state)
     end
 end
 
--- KHUNG CHÍNH (FRAME)
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 390, 0, 320)
 frame.Position = UDim2.new(0.5, -195, 0.5, -160)
@@ -705,7 +708,6 @@ frame.ClipsDescendants = true
 frame.Parent = screenGui
 frame.Visible = true
 
--- Container chứa hạt nền
 local particleContainer = Instance.new("Frame")
 particleContainer.Name = "ParticleContainer"
 particleContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -732,7 +734,6 @@ task.spawn(function()
     end
 end)
 
--- HIỆU ỨNG HẠT NỀN BAY TỪ DƯỚI LÊN TỚI ĐỈNH BẢNG
 task.spawn(function()
     while task.wait(0.25) do
         if frame and frame.Parent and frame.Visible then
@@ -785,7 +786,6 @@ frameStroke.Thickness = 2
 frameStroke.Transparency = 0.4
 frameStroke.Parent = frame
 
--- Title Bar
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 35)
 titleBar.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
@@ -841,7 +841,6 @@ local closeCorner = Instance.new("UICorner")
 closeCorner.CornerRadius = UDim.new(0, 4)
 closeCorner.Parent = closeButton
 
--- Sidebar
 local sidebar = Instance.new("Frame")
 sidebar.Size = UDim2.new(0, 110, 1, -35)
 sidebar.Position = UDim2.new(0, 0, 0, 35)
@@ -863,7 +862,6 @@ line.BorderSizePixel = 0
 line.ZIndex = 2
 line.Parent = sidebar
 
--- Container
 local container = Instance.new("Frame")
 container.Size = UDim2.new(1, -115, 1, -35)
 container.Position = UDim2.new(0, 115, 0, 35)
@@ -871,7 +869,6 @@ container.BackgroundTransparency = 1
 container.ZIndex = 2
 container.Parent = frame
 
--- TẠO TAB DẠNG SCROLLING FRAME
 local tabs = {}
 local tabNames = {"Main", "ESP", "FixLag", "Misc"}
 
@@ -904,10 +901,6 @@ for _, name in ipairs(tabNames) do
     
     tabs[name] = tabScroll
 end
-
--- ==========================================
--- HÀM MÀU SẮC & CẬP NHẬT TRẠNG THÁI
--- ==========================================
 
 local function updateButtonVisual(btn, isOn)
     if isOn then
@@ -1046,9 +1039,7 @@ local function createInputRow(parentTab, labelKey, defaultVal, callback)
     return frameRow, refreshLabel
 end
 
--- ==========================================
--- TAB CHÍNH (MAIN TAB)
--- ==========================================
+-- TAB MAIN
 local mainTab = tabs["Main"]
 mainTab.Visible = true
 
@@ -1173,12 +1164,14 @@ godCorner.CornerRadius = UDim.new(0, 6)
 godCorner.Parent = godButton
 
 godButton.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"))()
+    pcall(function()
+        if loadstring and game.HttpGet then
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"))()
+        end
+    end)
 end)
 
--- ==========================================
--- TAB PLAYERS / ESP
--- ==========================================
+-- TAB ESP
 local espTab = tabs["ESP"]
 
 local _, rEsp = createToggleRow(espTab, "espBtn", espEnabled, function(st) espEnabled = st updateESP() end)
@@ -1229,9 +1222,7 @@ for i, col in ipairs(espColors) do
     cBtn.MouseButton1Click:Connect(function() espColor = col updateESP() end)
 end
 
--- ==========================================
 -- TAB FIX LAG
--- ==========================================
 local fixLagTab = tabs["FixLag"]
 
 local _, rLag1 = createToggleRow(fixLagTab, "fixLagBtn", fixLagEnabled, function(st) toggleFixLag(st) end)
@@ -1243,12 +1234,9 @@ table.insert(refreshFuncs, rLag2)
 local _, rLag3 = createToggleRow(fixLagTab, "muteSoundsBtn", muteAllSoundsEnabled, function(st) toggleMuteAllSounds(st) end)
 table.insert(refreshFuncs, rLag3)
 
--- ==========================================
--- TAB SETTINGS / MISC (CÀI ĐẶT)
--- ==========================================
+-- TAB MISC / SETTINGS
 local miscTab = tabs["Misc"]
 
--- Chỉnh màu nút UI
 local themeLabel = Instance.new("TextLabel")
 themeLabel.Size = UDim2.new(1, 0, 0, 18)
 themeLabel.BackgroundTransparency = 1
@@ -1290,7 +1278,6 @@ for i, col in ipairs(uiThemeColors) do
     cBtn.MouseButton1Click:Connect(function() applyThemeColor(col) end)
 end
 
--- Chỉnh màu chữ UI
 local textLabel = Instance.new("TextLabel")
 textLabel.Size = UDim2.new(1, 0, 0, 18)
 textLabel.BackgroundTransparency = 1
@@ -1331,7 +1318,6 @@ for i, col in ipairs(uiTextColors) do
     cBtn.MouseButton1Click:Connect(function() applyTextColor(col) end)
 end
 
--- Chỉnh màu nền bảng HUB
 local bgBoardLabel = Instance.new("TextLabel")
 bgBoardLabel.Size = UDim2.new(1, 0, 0, 18)
 bgBoardLabel.BackgroundTransparency = 1
@@ -1373,7 +1359,6 @@ for i, col in ipairs(uiBoardColors) do
     cBtn.MouseButton1Click:Connect(function() applyBoardBgColor(col) end)
 end
 
--- Chỉnh màu Hạt Bay Nền
 local particleColorLabel = Instance.new("TextLabel")
 particleColorLabel.Size = UDim2.new(1, 0, 0, 18)
 particleColorLabel.BackgroundTransparency = 1
@@ -1415,7 +1400,6 @@ for i, col in ipairs(uiParticleColors) do
     cBtn.MouseButton1Click:Connect(function() applyParticleColor(col) end)
 end
 
--- Chọn ngôn ngữ & Server buttons
 local langLabel = Instance.new("TextLabel")
 langLabel.Size = UDim2.new(1, 0, 0, 18)
 langLabel.BackgroundTransparency = 1
