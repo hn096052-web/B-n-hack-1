@@ -39,8 +39,8 @@ local autoEquipEnabled = false
 
 -- Cấu hình mặc định (Đã cập nhật theo yêu cầu)
 local tpSpeed = 0.15
-local walkSpeed = 75     -- Chỉnh lên 75
-local jumpPower = 35     -- Chỉnh còn 35
+local walkSpeed = 35     -- Chỉnh lên 35
+local jumpPower = 75     -- Chỉnh còn 75
 local flySpeed = 100     -- Chỉnh lên 100
 local customGravity = 196.2
 local coinName = "Coin"
