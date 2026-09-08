@@ -285,7 +285,7 @@ local function optimizePartExtreme(v)
         if v:IsA("BasePart") then v.Material = Enum.Material.SmoothPlastic v.Reflectance = 0 v.CastShadow = false
         elseif v:IsA("MeshPart") then v.Material = Enum.Material.SmoothPlastic v.Reflectance = 0 v.CastShadow = false v.TextureID = ""
         elseif v:IsA("SpecialMesh") then v.TextureId = ""
-        elseif v:IsA("Decal") or v:IsA("Texture") then v.Transparency = 1 v:Destroy()
+        elseif v:IsA("Decal") or v:IsA("Texture") then v.Transparency = 1
         elseif v:IsA("SurfaceAppearance") then v:Destroy()
         elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") or v:IsA("Beam") then v.Enabled = false
         elseif v:IsA("PostEffect") or v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") then v.Enabled = false
@@ -297,9 +297,18 @@ local function toggleFixLag(state)
     fixLagEnabled = state
     if fixLagEnabled then
         pcall(function()
-            Lighting.GlobalShadows = false; Lighting.FogEnd = 9e9; Lighting.FogStart = 9e9; Lighting.Brightness = 1; Lighting.Technology = Enum.Technology.Compatibility
+            Lighting.GlobalShadows = false
+            Lighting.FogEnd = 9e9
+            Lighting.FogStart = 9e9
+            Lighting.Brightness = 1
             local terrain = Workspace:FindFirstChildOfClass("Terrain")
-            if terrain then terrain.WaterWaveSize = 0 terrain.WaterWaveSpeed = 0 terrain.WaterReflectance = 0 terrain.WaterTransparency = 0 terrain.Decoration = false end
+            if terrain then
+                terrain.WaterWaveSize = 0
+                terrain.WaterWaveSpeed = 0
+                terrain.WaterReflectance = 0
+                terrain.WaterTransparency = 0
+                terrain.Decoration = false
+            end
         end)
         for _, v in ipairs(game:GetDescendants()) do optimizePartExtreme(v) end
         if not fixLagChildConnection then fixLagChildConnection = game.DescendantAdded:Connect(function(v) if fixLagEnabled then optimizePartExtreme(v) end end) end
@@ -307,7 +316,7 @@ local function toggleFixLag(state)
             fixLagTask = task.spawn(function()
                 while fixLagEnabled do
                     for _, v in ipairs(Workspace:GetDescendants()) do if not fixLagEnabled then break end optimizePartExtreme(v) end
-                    task.wait(2)
+                    task.wait(3)
                 end
             end)
         end
@@ -364,19 +373,25 @@ local function toggleAutoPressButton(state)
                         if root then
                             for _, v in ipairs(Workspace:GetDescendants()) do
                                 if not autoPressButtonEnabled then break end
-                                local isNear = false
-                                if v:IsA("BasePart") then isNear = (root.Position - v.Position).Magnitude <= autoPressRadius
-                                elseif v:IsA("PVInstance") then isNear = (root.Position - v:GetPivot().Position).Magnitude <= autoPressRadius
-                                elseif v.Parent and v.Parent:IsA("BasePart") then isNear = (root.Position - v.Parent.Position).Magnitude <= autoPressRadius end
-
-                                if isNear then
-                                    if v:IsA("ClickDetector") then fireclickdetector(v)
-                                    elseif v:IsA("ProximityPrompt") then fireproximityprompt(v) end
+                                if v:IsA("ClickDetector") or v:IsA("ProximityPrompt") then
+                                    local parent = v.Parent
+                                    local pos = nil
+                                    if parent then
+                                        if parent:IsA("BasePart") then
+                                            pos = parent.Position
+                                        elseif parent:IsA("PVInstance") then
+                                            pos = parent:GetPivot().Position
+                                        end
+                                    end
+                                    if pos and (root.Position - pos).Magnitude <= autoPressRadius then
+                                        if v:IsA("ClickDetector") then fireclickdetector(v)
+                                        elseif v:IsA("ProximityPrompt") then fireproximityprompt(v) end
+                                    end
                                 end
                             end
                         end
                     end)
-                    task.wait(autoPressDelay > 0 and autoPressDelay or 0.05)
+                    task.wait(autoPressDelay > 0.05 and autoPressDelay or 0.1)
                 end
             end)
         end
@@ -443,7 +458,8 @@ local function toggleFly(state)
             local cam = Workspace.CurrentCamera
             local moveDir = humanoid.MoveDirection
             if moveDir.Magnitude > 0 then
-                local camFlatCFrame = CFrame.lookAt(Vector3.zero, cam.CFrame.LookVector * Vector3.new(1, 0, 1))
+                local lookFlat = cam.CFrame.LookVector * Vector3.new(1, 0, 1)
+                local camFlatCFrame = lookFlat.Magnitude > 0.001 and CFrame.lookAt(Vector3.zero, lookFlat) or cam.CFrame
                 local localMove = camFlatCFrame:VectorToObjectSpace(moveDir)
                 local flyVector = (cam.CFrame.LookVector * -localMove.Z) + (cam.CFrame.RightVector * localMove.X)
                 bv.velocity = flyVector * flySpeed bg.cframe = cam.CFrame
@@ -497,7 +513,7 @@ end
 local function updateESP()
     for _, p in ipairs(Players:GetPlayers()) do if p.Character then removeHighlight(p.Character) end end
     if not espEnabled then return end
-    if selectedEspTarget == "Tất cả" then
+    if selectedEspTarget == "Tất cả" or selectedEspTarget == "All" then
         for _, p in ipairs(Players:GetPlayers()) do if p ~= player and p.Character then createHighlight(p.Character, p) end end
     else
         for _, p in ipairs(Players:GetPlayers()) do if p ~= player and (p.Name == selectedEspTarget or p.DisplayName == selectedEspTarget) then if p.Character then createHighlight(p.Character, p) end break end end
@@ -584,12 +600,14 @@ local function teleportLoop()
                 local coins = findAllCoins()
                 for _, coin in ipairs(coins) do
                     if not tpEnabled then break end
-                    if coin and coin.Parent then
-                        rootPart.CFrame = CFrame.new(coin.Position + Vector3.new(0, 1, 0))
-                        humanoid:Move(Vector3.new(1, 0, 0), true)
-                        humanoid.Jump = false
-                        task.wait(tpSpeed)
-                    end
+                    pcall(function()
+                        if coin and coin.Parent then
+                            rootPart.CFrame = CFrame.new(coin.Position + Vector3.new(0, 1, 0))
+                            humanoid:Move(Vector3.new(1, 0, 0), true)
+                            humanoid.Jump = false
+                        end
+                    end)
+                    task.wait(tpSpeed)
                 end
             end
         end
@@ -707,6 +725,7 @@ gradientFrame.Parent = frame
 task.spawn(function()
     local rot = 0
     while task.wait() do
+        if not gradientFrame or not gradientFrame.Parent then break end
         rot = rot + 0.5
         if rot >= 360 then rot = 0 end
         gradientFrame.Rotation = rot
@@ -715,7 +734,7 @@ end)
 
 -- HIỆU ỨNG HẠT NỀN BAY TỪ DƯỚI LÊN TỚI ĐỈNH BẢNG
 task.spawn(function()
-    while task.wait(0.2) do
+    while task.wait(0.25) do
         if frame and frame.Parent and frame.Visible then
             local size = math.random(3, 8)
             local posX = math.random(2, 98) / 100
@@ -750,6 +769,8 @@ task.spawn(function()
                 end
                 p:Destroy()
             end)
+        elseif not screenGui or not screenGui.Parent then
+            break
         end
     end
 end)
@@ -1428,13 +1449,22 @@ local engCorner = Instance.new("UICorner")
 engCorner.CornerRadius = UDim.new(0, 6)
 engCorner.Parent = btnEnglish
 
-local btnVietnamese = btnEnglish:Clone()
+local btnVietnamese = Instance.new("TextButton")
+btnVietnamese.Size = UDim2.new(0.48, 0, 1, 0)
 btnVietnamese.Position = UDim2.new(0.52, 0, 0, 0)
+btnVietnamese.BackgroundColor3 = currentThemeColor
+btnVietnamese.TextColor3 = currentTextColor
+btnVietnamese.Font = GLOBAL_FONT
+btnVietnamese.TextSize = 11
 btnVietnamese.Text = "Tiếng Việt"
 btnVietnamese.ZIndex = 2
 btnVietnamese.Parent = langFrame
 table.insert(themeButtons, btnVietnamese)
 table.insert(textElements, btnVietnamese)
+
+local vieCorner = Instance.new("UICorner")
+vieCorner.CornerRadius = UDim.new(0, 6)
+vieCorner.Parent = btnVietnamese
 
 local serverFrame = Instance.new("Frame")
 serverFrame.Size = UDim2.new(1, 0, 0, 32)
@@ -1442,21 +1472,37 @@ serverFrame.BackgroundTransparency = 1
 serverFrame.ZIndex = 2
 serverFrame.Parent = miscTab
 
-local rejoinButton = btnEnglish:Clone()
+local rejoinButton = Instance.new("TextButton")
 rejoinButton.Size = UDim2.new(0.48, 0, 1, 0)
 rejoinButton.Position = UDim2.new(0, 0, 0, 0)
+rejoinButton.BackgroundColor3 = currentThemeColor
+rejoinButton.TextColor3 = currentTextColor
+rejoinButton.Font = GLOBAL_FONT
+rejoinButton.TextSize = 11
 rejoinButton.ZIndex = 2
 rejoinButton.Parent = serverFrame
 table.insert(themeButtons, rejoinButton)
 table.insert(textElements, rejoinButton)
 
-local serverHopButton = btnVietnamese:Clone()
+local rejoinCorner = Instance.new("UICorner")
+rejoinCorner.CornerRadius = UDim.new(0, 6)
+rejoinCorner.Parent = rejoinButton
+
+local serverHopButton = Instance.new("TextButton")
 serverHopButton.Size = UDim2.new(0.48, 0, 1, 0)
 serverHopButton.Position = UDim2.new(0.52, 0, 0, 0)
+serverHopButton.BackgroundColor3 = currentThemeColor
+serverHopButton.TextColor3 = currentTextColor
+serverHopButton.Font = GLOBAL_FONT
+serverHopButton.TextSize = 11
 serverHopButton.ZIndex = 2
 serverHopButton.Parent = serverFrame
 table.insert(themeButtons, serverHopButton)
 table.insert(textElements, serverHopButton)
+
+local hopCorner = Instance.new("UICorner")
+hopCorner.CornerRadius = UDim.new(0, 6)
+hopCorner.Parent = serverHopButton
 
 rejoinButton.MouseButton1Click:Connect(rejoinServer)
 serverHopButton.MouseButton1Click:Connect(serverHop)
