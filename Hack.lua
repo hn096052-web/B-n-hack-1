@@ -1,4 +1,139 @@
--- ==========================================
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>H HUB Autofarm - Script Runner</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Hiệu ứng nền chuyển động gradient */
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #11001c);
+      background-size: 400% 400%;
+      animation: gradientBG 12s ease infinite;
+      padding: 20px;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Khung chứa bảng hiệu ứng Kính Mờ (Glassmorphism) */
+    .glass-card {
+      width: 100%;
+      max-width: 800px;
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      color: #ffffff;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header h2 {
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: linear-gradient(45deg, #00f2fe, #4facfe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .btn-copy {
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
+    }
+
+    .btn-copy:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6);
+    }
+
+    .btn-copy:active {
+      transform: translateY(0);
+    }
+
+    /* Khung hiển thị Code */
+    .code-container {
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
+      padding: 15px;
+      max-height: 450px;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Tùy chỉnh thanh cuộn */
+    .code-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .code-container::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+
+    .code-container::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    .code-container::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    code {
+      font-family: 'Consolas', 'Courier New', Courier, monospace;
+      font-size: 0.85rem;
+      color: #20e3b2;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glass-card">
+    <div class="header">
+      <h2>H HUB AutoFarm Script</h2>
+      <button class="btn-copy" onclick="copyScript()">Copy Script</button>
+    </div>
+    <div class="code-container">
+      <pre><code id="luaCode">-- ==========================================
 -- H HUB AUTOFARM (ULTRA FIX LAG + EXTREME OPTIMIZATION + UI ANIMATIONS)
 -- ==========================================
 
@@ -2200,4 +2335,26 @@ closeButton.MouseButton1Click:Connect(function()
     end)
 end)
  
-updateLanguage()
+updateLanguage()</code></pre>
+    </div>
+  </div>
+
+  <script>
+    function copyScript() {
+      const codeText = document.getElementById("luaCode").innerText;
+      navigator.clipboard.writeText(codeText).then(() => {
+        const btn = document.querySelector(".btn-copy");
+        btn.innerText = "Đã Copy!";
+        btn.style.background = "linear-gradient(135deg, #11998e, #38ef7d)";
+        
+        setTimeout(() => {
+          btn.innerText = "Copy Script";
+          btn.style.background = "linear-gradient(135deg, #00c6ff, #0072ff)";
+        }, 2000);
+      }).catch(err => {
+        console.error("Lỗi copy: ", err);
+      });
+    }
+  </script>
+</body>
+</html>
