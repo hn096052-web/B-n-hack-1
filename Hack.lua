@@ -1,5 +1,5 @@
 -- ==========================================
--- H HUB AUTOFARM (UPDATED SPEED & AUTO PRESS)
+-- H HUB AUTOFARM (FIXED & UPDATED)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -39,9 +39,9 @@ local autoEquipEnabled = false
 
 -- Cấu hình mặc định (Đã cập nhật theo yêu cầu)
 local tpSpeed = 0.15
-local walkSpeed = 35     -- Chỉnh lên 35
-local jumpPower = 75     -- Chỉnh còn 75
-local flySpeed = 100     -- Chỉnh lên 100
+local walkSpeed = 35 
+local jumpPower = 75
+local flySpeed = 100
 local customGravity = 196.2
 local coinName = "Coin"
 local freezeRadius = 150 
@@ -107,8 +107,8 @@ local translations = {
         godBtn = "⚡ Open God Mode Panel",
         espBtn = "ESP Wallhack",
         fpsBtn = "Display FPS",
-        autoPressRng = "Auto Click Radius:",
-        autoPressSpd = "Auto Click Speed (s):",
+        autoPressRadiusLabel = "Click Button Range:",
+        autoPressDelayLabel = "Click Button Delay (s):",
         autoPressBtn = "Auto Click Buttons",
         fixLagBtn = "Ultra Fix Lag (Max FPS)",
         hideMapBtn = "Hide Map & Players",
@@ -119,8 +119,8 @@ local translations = {
         langLabel = "Language:",
         rejoinBtn = "Rejoin Server",
         serverHopBtn = "Server Hop",
-        on = "ON",
-        off = "OFF"
+        on = "BẬT",
+        off = "TẮT"
     },
     VI = {
         title = "H HUB - AutoFarm",
@@ -150,9 +150,9 @@ local translations = {
         godBtn = "⚡ Bảng God Mode (Bất Tử)",
         espBtn = "ESP Nhìn Xuyên Tường",
         fpsBtn = "Hiển Thị FPS",
-        autoPressRng = "Bán Kính Auto Click:",
-        autoPressSpd = "Tốc Độ Click Nút (s):",
-        autoPressBtn = "Tự Động Click Nút",
+        autoPressRadiusLabel = "Bán kính Click Nút:",
+        autoPressDelayLabel = "Tốc độ Click Nút (s):",
+        autoPressBtn = "Auto Click Nút",
         fixLagBtn = "Siêu Giảm Lag (Max FPS)",
         hideMapBtn = "Ẩn Bản Đồ & Người Khác",
         muteSoundsBtn = "Tắt Âm Thanh Game",
@@ -592,7 +592,7 @@ end
 task.spawn(teleportLoop)
 
 -- ==========================================
--- GIAO DIỆN GUI
+-- GIAO DIỆN GUI (KHÔNG TRÀN - CÓ BẢNG CUỘN)
 -- ==========================================
 
 local screenGui = Instance.new("ScreenGui")
@@ -1034,13 +1034,11 @@ table.insert(refreshFuncs, r15)
 local _, r16 = createToggleRow(mainTab, "autoEquipBtn", autoEquipEnabled, function(st) toggleAutoEquip(st) end)
 table.insert(refreshFuncs, r16)
 
--- THÊM TÙY CHỈNH PHẠM VI VÀ TỐC ĐỘ CHO AUTO PRESS BUTTON
-local _, r17_rng = createInputRow(mainTab, "autoPressRng", autoPressRadius, function(val) autoPressRadius = val end)
-table.insert(refreshFuncs, r17_rng)
-
-local _, r17_spd = createInputRow(mainTab, "autoPressSpd", autoPressDelay, function(val) autoPressDelay = val end)
-table.insert(refreshFuncs, r17_spd)
-
+-- Thêm chỉnh Bán kính & Tốc độ cho Auto Click Nút
+local _, r17_1 = createInputRow(mainTab, "autoPressRadiusLabel", autoPressRadius, function(val) autoPressRadius = val end)
+table.insert(refreshFuncs, r17_1)
+local _, r17_2 = createInputRow(mainTab, "autoPressDelayLabel", autoPressDelay, function(val) autoPressDelay = val end)
+table.insert(refreshFuncs, r17_2)
 local _, r17 = createToggleRow(mainTab, "autoPressBtn", autoPressButtonEnabled, function(st) toggleAutoPressButton(st) end)
 table.insert(refreshFuncs, r17)
 
