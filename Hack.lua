@@ -1,5 +1,5 @@
 -- ==========================================
--- H HUB AUTOFARM (FIXED SCROLL & THEME & GODMODE)
+-- H HUB AUTOFARM (FIXED SYNTAX ERROR)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -59,12 +59,12 @@ local currentTextColor = Color3.fromRGB(255, 255, 255)
 
 local frozenPlayersTable = {} 
 local currentLang = "VI" 
- 
+
 -- Quản lý Kết nối & Task
 local noclipConnection, invisibleConnection, flyConnection
 local walkConnection, jumpConnection, infJumpConnection
 local freezeRayTask, fpsConnection, gravityConnection
-autoPressButtonTask, fixLagTask, fixLagChildConnection
+local autoPressButtonTask, fixLagTask, fixLagChildConnection
 local hideMapConnection, muteSoundsConnection, autoEquipTask
 local originalHipHeight
 local savedTransparencies = {}
@@ -556,13 +556,13 @@ local function toggleFreezeRay(state)
         if freezeRayTask then task.cancel(freezeRayTask); freezeRayTask = nil end
     end
 end
- 
+
 local function findAllCoins()
     local coins = {}
     for _, part in ipairs(Workspace:GetDescendants()) do if part:IsA("BasePart") and part.Name == coinName then table.insert(coins, part) end end
     return coins
 end
- 
+
 local function teleportLoop()
     while true do
         if tpEnabled then
@@ -663,7 +663,7 @@ local function toggleFPSDisplay(state)
         if fpsConnection then fpsConnection:Disconnect(); fpsConnection = nil end
     end
 end
- 
+
 -- KHUNG CHÍNH (FRAME)
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 390, 0, 320)
@@ -702,7 +702,7 @@ frameStroke.Color = Color3.fromRGB(60, 60, 100)
 frameStroke.Thickness = 2
 frameStroke.Transparency = 0.4
 frameStroke.Parent = frame
- 
+
 -- Title Bar
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 35)
@@ -740,7 +740,7 @@ minimizeButton.Parent = titleBar
 local minCorner = Instance.new("UICorner")
 minCorner.CornerRadius = UDim.new(0, 4)
 minCorner.Parent = minimizeButton
- 
+
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 28, 0, 22)
 closeButton.Position = UDim2.new(1, -30, 0, 6)
@@ -754,7 +754,7 @@ closeButton.Parent = titleBar
 local closeCorner = Instance.new("UICorner")
 closeCorner.CornerRadius = UDim.new(0, 4)
 closeCorner.Parent = closeButton
- 
+
 -- Sidebar
 local sidebar = Instance.new("Frame")
 sidebar.Size = UDim2.new(0, 110, 1, -35)
@@ -782,7 +782,7 @@ container.Position = UDim2.new(0, 115, 0, 35)
 container.BackgroundTransparency = 1
 container.Parent = frame
 
--- TẠO TAB DẠNG SCROLLING FRAME (VUỐT XUỐNG ĐƯỢC)
+-- TẠO TAB DẠNG SCROLLING FRAME
 local tabs = {}
 local tabNames = {"Main", "ESP", "FixLag", "Misc"}
 
@@ -808,7 +808,6 @@ for _, name in ipairs(tabNames) do
     padding.PaddingRight = UDim.new(0, 6)
     padding.Parent = tabScroll
     
-    -- Tự động tính độ dài Canvas để vuốt không đè
     layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         tabScroll.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 15)
     end)
@@ -832,7 +831,6 @@ local function applyThemeColor(color)
     currentThemeColor = color
     for _, btn in ipairs(themeButtons) do
         if btn and btn.Parent then
-            -- Chỉ đổi màu nếu nút không ở trạng thái BẬT (Xanh)
             local isBtnOn = btn:GetAttribute("IsOnState")
             if not isBtnOn then
                 btn.BackgroundColor3 = currentThemeColor
@@ -850,7 +848,6 @@ local function applyTextColor(color)
     end
 end
 
--- Hàm tạo Nút Chức Năng chuẩn Size (không bị đè hay lòi ra ngoài)
 local function createToggleRow(parentTab, labelKey, stateBool, callback)
     local frameRow = Instance.new("Frame")
     frameRow.Size = UDim2.new(1, 0, 0, 32)
@@ -889,7 +886,6 @@ local function createToggleRow(parentTab, labelKey, stateBool, callback)
     return btn, refreshStateText
 end
 
--- Hàm tạo Ô Nhập Số (Input Box Row)
 local function createInputRow(parentTab, labelKey, defaultVal, callback)
     local frameRow = Instance.new("Frame")
     frameRow.Size = UDim2.new(1, 0, 0, 30)
@@ -944,21 +940,19 @@ mainTab.Visible = true
 
 local refreshFuncs = {}
 
--- 1. Auto TP Coins
-_, r1 = createInputRow(mainTab, "tpSpd", tpSpeed, function(val) tpSpeed = val end)
+local _, r1 = createInputRow(mainTab, "tpSpd", tpSpeed, function(val) tpSpeed = val end)
 table.insert(refreshFuncs, r1)
-_, r2 = createToggleRow(mainTab, "tpBtn", tpEnabled, function(st) tpEnabled = st end)
+local _, r2 = createToggleRow(mainTab, "tpBtn", tpEnabled, function(st) tpEnabled = st end)
 table.insert(refreshFuncs, r2)
 
--- 2. Custom Speed
-_, r3 = createInputRow(mainTab, "walkSpd", walkSpeed, function(val)
+local _, r3 = createInputRow(mainTab, "walkSpd", walkSpeed, function(val)
     walkSpeed = val
     if walkEnabled and player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
         player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = walkSpeed
     end
 end)
 table.insert(refreshFuncs, r3)
-_, r4 = createToggleRow(mainTab, "walkBtn", walkEnabled, function(st)
+local _, r4 = createToggleRow(mainTab, "walkBtn", walkEnabled, function(st)
     walkEnabled = st
     if walkEnabled then
         if walkConnection then walkConnection:Disconnect() end
@@ -976,8 +970,7 @@ _, r4 = createToggleRow(mainTab, "walkBtn", walkEnabled, function(st)
 end)
 table.insert(refreshFuncs, r4)
 
--- 3. Custom Jump
-_, r5 = createInputRow(mainTab, "jumpSpd", jumpPower, function(val)
+local _, r5 = createInputRow(mainTab, "jumpSpd", jumpPower, function(val)
     jumpPower = val
     if jumpEnabled and player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
         player.Character:FindFirstChildOfClass("Humanoid").UseJumpPower = true
@@ -985,7 +978,7 @@ _, r5 = createInputRow(mainTab, "jumpSpd", jumpPower, function(val)
     end
 end)
 table.insert(refreshFuncs, r5)
-_, r6 = createToggleRow(mainTab, "jumpBtn", jumpEnabled, function(st)
+local _, r6 = createToggleRow(mainTab, "jumpBtn", jumpEnabled, function(st)
     jumpEnabled = st
     if jumpEnabled then
         if jumpConnection then jumpConnection:Disconnect() end
@@ -1003,16 +996,14 @@ _, r6 = createToggleRow(mainTab, "jumpBtn", jumpEnabled, function(st)
 end)
 table.insert(refreshFuncs, r6)
 
--- 4. Fly
-_, r7 = createInputRow(mainTab, "flySpd", flySpeed, function(val) flySpeed = val end)
+local _, r7 = createInputRow(mainTab, "flySpd", flySpeed, function(val) flySpeed = val end)
 table.insert(refreshFuncs, r7)
-_, r8 = createToggleRow(mainTab, "flyBtn", flyEnabled, function(st) toggleFly(st) end)
+local _, r8 = createToggleRow(mainTab, "flyBtn", flyEnabled, function(st) toggleFly(st) end)
 table.insert(refreshFuncs, r8)
 
--- 5. Gravity
-_, r9 = createInputRow(mainTab, "gravSpd", customGravity, function(val) customGravity = val if gravityEnabled then Workspace.Gravity = customGravity end end)
+local _, r9 = createInputRow(mainTab, "gravSpd", customGravity, function(val) customGravity = val if gravityEnabled then Workspace.Gravity = customGravity end end)
 table.insert(refreshFuncs, r9)
-_, r10 = createToggleRow(mainTab, "gravBtn", gravityEnabled, function(st)
+local _, r10 = createToggleRow(mainTab, "gravBtn", gravityEnabled, function(st)
     gravityEnabled = st
     if gravityEnabled then
         if gravityConnection then gravityConnection:Disconnect() end
@@ -1024,29 +1015,25 @@ _, r10 = createToggleRow(mainTab, "gravBtn", gravityEnabled, function(st)
 end)
 table.insert(refreshFuncs, r10)
 
--- 6. Movement Mods
-_, r11 = createToggleRow(mainTab, "noclipBtn", noclipEnabled, function(st) toggleNoclip(st) end)
+local _, r11 = createToggleRow(mainTab, "noclipBtn", noclipEnabled, function(st) toggleNoclip(st) end)
 table.insert(refreshFuncs, r11)
-_, r12 = createToggleRow(mainTab, "invisBtn", invisibleEnabled, function(st) toggleInvisibility(st) end)
+local _, r12 = createToggleRow(mainTab, "invisBtn", invisibleEnabled, function(st) toggleInvisibility(st) end)
 table.insert(refreshFuncs, r12)
-_, r13 = createToggleRow(mainTab, "infJumpBtn", infJumpEnabled, function(st) toggleInfJump(st) end)
+local _, r13 = createToggleRow(mainTab, "infJumpBtn", infJumpEnabled, function(st) toggleInfJump(st) end)
 table.insert(refreshFuncs, r13)
 
--- 7. Freeze Ray & Target
-_, r14 = createInputRow(mainTab, "freezeRng", freezeRadius, function(val) freezeRadius = val end)
+local _, r14 = createInputRow(mainTab, "freezeRng", freezeRadius, function(val) freezeRadius = val end)
 table.insert(refreshFuncs, r14)
-_, r15 = createToggleRow(mainTab, "freezeBtn", freezeRayEnabled, function(st) toggleFreezeRay(st) end)
+local _, r15 = createToggleRow(mainTab, "freezeBtn", freezeRayEnabled, function(st) toggleFreezeRay(st) end)
 table.insert(refreshFuncs, r15)
 
--- 8. Auto Equip
-_, r16 = createToggleRow(mainTab, "autoEquipBtn", autoEquipEnabled, function(st) toggleAutoEquip(st) end)
+local _, r16 = createToggleRow(mainTab, "autoEquipBtn", autoEquipEnabled, function(st) toggleAutoEquip(st) end)
 table.insert(refreshFuncs, r16)
 
--- 9. Auto Click Buttons
-_, r17 = createToggleRow(mainTab, "autoPressBtn", autoPressButtonEnabled, function(st) toggleAutoPressButton(st) end)
+local _, r17 = createToggleRow(mainTab, "autoPressBtn", autoPressButtonEnabled, function(st) toggleAutoPressButton(st) end)
 table.insert(refreshFuncs, r17)
 
--- 10. NÚT GOD MODE (ĐÃ DI CHUYỂN SANG TAB CHÍNH)
+-- NÚT GOD MODE
 local godRowFrame = Instance.new("Frame")
 godRowFrame.Size = UDim2.new(1, 0, 0, 36)
 godRowFrame.BackgroundTransparency = 1
@@ -1074,10 +1061,10 @@ end)
 -- ==========================================
 local espTab = tabs["ESP"]
 
-_, rEsp = createToggleRow(espTab, "espBtn", espEnabled, function(st) espEnabled = st updateESP() end)
+local _, rEsp = createToggleRow(espTab, "espBtn", espEnabled, function(st) espEnabled = st updateESP() end)
 table.insert(refreshFuncs, rEsp)
 
-_, rFps = createToggleRow(espTab, "fpsBtn", fpsEnabled, function(st) toggleFPSDisplay(st) end)
+local _, rFps = createToggleRow(espTab, "fpsBtn", fpsEnabled, function(st) toggleFPSDisplay(st) end)
 table.insert(refreshFuncs, rFps)
 
 local espColorLabel = Instance.new("TextLabel")
@@ -1124,21 +1111,20 @@ end
 -- ==========================================
 local fixLagTab = tabs["FixLag"]
 
-_, rLag1 = createToggleRow(fixLagTab, "fixLagBtn", fixLagEnabled, function(st) toggleFixLag(st) end)
+local _, rLag1 = createToggleRow(fixLagTab, "fixLagBtn", fixLagEnabled, function(st) toggleFixLag(st) end)
 table.insert(refreshFuncs, rLag1)
 
-_, rLag2 = createToggleRow(fixLagTab, "hideMapBtn", hideMapOthersEnabled, function(st) toggleHideMapAndOthers(st) end)
+local _, rLag2 = createToggleRow(fixLagTab, "hideMapBtn", hideMapOthersEnabled, function(st) toggleHideMapAndOthers(st) end)
 table.insert(refreshFuncs, rLag2)
 
-_, rLag3 = createToggleRow(fixLagTab, "muteSoundsBtn", muteAllSoundsEnabled, function(st) toggleMuteAllSounds(st) end)
+local _, rLag3 = createToggleRow(fixLagTab, "muteSoundsBtn", muteAllSoundsEnabled, function(st) toggleMuteAllSounds(st) end)
 table.insert(refreshFuncs, rLag3)
 
 -- ==========================================
--- TAB SETTINGS / MISC (CÀI ĐẶT MÀU & SỰ KIỆN)
+-- TAB SETTINGS / MISC
 -- ==========================================
 local miscTab = tabs["Misc"]
 
--- 1. Chỉnh màu Nút UI (Working Realtime)
 local themeLabel = Instance.new("TextLabel")
 themeLabel.Size = UDim2.new(1, 0, 0, 18)
 themeLabel.BackgroundTransparency = 1
@@ -1155,11 +1141,11 @@ themePalette.BackgroundTransparency = 1
 themePalette.Parent = miscTab
 
 local uiThemeColors = {
-    Color3.fromRGB(35, 35, 45),   -- Dark Grey
-    Color3.fromRGB(50, 40, 80),   -- Purple
-    Color3.fromRGB(30, 60, 90),   -- Blue
-    Color3.fromRGB(70, 30, 40),   -- Red/Wine
-    Color3.fromRGB(30, 70, 50)    -- Green
+    Color3.fromRGB(35, 35, 45),
+    Color3.fromRGB(50, 40, 80),
+    Color3.fromRGB(30, 60, 90),
+    Color3.fromRGB(70, 30, 40),
+    Color3.fromRGB(30, 70, 50)
 }
 
 for i, col in ipairs(uiThemeColors) do
@@ -1177,7 +1163,6 @@ for i, col in ipairs(uiThemeColors) do
     cBtn.MouseButton1Click:Connect(function() applyThemeColor(col) end)
 end
 
--- 2. Chỉnh màu Chữ UI (Working Realtime)
 local textLabel = Instance.new("TextLabel")
 textLabel.Size = UDim2.new(1, 0, 0, 18)
 textLabel.BackgroundTransparency = 1
@@ -1194,10 +1179,10 @@ textPalette.BackgroundTransparency = 1
 textPalette.Parent = miscTab
 
 local uiTextColors = {
-    Color3.fromRGB(255, 255, 255), -- White
-    Color3.fromRGB(255, 220, 100), -- Yellow
-    Color3.fromRGB(100, 255, 200), -- Cyan
-    Color3.fromRGB(255, 150, 200)  -- Pink
+    Color3.fromRGB(255, 255, 255),
+    Color3.fromRGB(255, 220, 100),
+    Color3.fromRGB(100, 255, 200),
+    Color3.fromRGB(255, 150, 200)
 }
 
 for i, col in ipairs(uiTextColors) do
@@ -1215,7 +1200,6 @@ for i, col in ipairs(uiTextColors) do
     cBtn.MouseButton1Click:Connect(function() applyTextColor(col) end)
 end
 
--- 3. Đổi Ngôn Ngữ
 local langLabel = Instance.new("TextLabel")
 langLabel.Size = UDim2.new(1, 0, 0, 18)
 langLabel.BackgroundTransparency = 1
@@ -1253,7 +1237,6 @@ btnVietnamese.Parent = langFrame
 table.insert(themeButtons, btnVietnamese)
 table.insert(textElements, btnVietnamese)
 
--- 4. Server Actions
 local serverFrame = Instance.new("Frame")
 serverFrame.Size = UDim2.new(1, 0, 0, 32)
 serverFrame.BackgroundTransparency = 1
@@ -1276,7 +1259,6 @@ table.insert(textElements, serverHopButton)
 rejoinButton.MouseButton1Click:Connect(rejoinServer)
 serverHopButton.MouseButton1Click:Connect(serverHop)
 
--- Cập nhật Ngôn Ngữ chung
 local function updateLanguage()
     local t = translations[currentLang]
     titleText.Text = t.title
@@ -1296,7 +1278,6 @@ end
 btnEnglish.MouseButton1Click:Connect(function() currentLang = "EN" updateLanguage() end)
 btnVietnamese.MouseButton1Click:Connect(function() currentLang = "VI" updateLanguage() end)
 
--- Navigation Buttons (Sidebar)
 local tabButtons = {}
 local yOffset = 10
 for i, name in ipairs(tabNames) do
@@ -1333,7 +1314,6 @@ local function updateSidebarTabNames()
     tabButtons["Misc"].Text = t.tabMisc
 end
 
--- ANIMATION NÚT (HOVER)
 for _, btn in ipairs(screenGui:GetDescendants()) do
     if btn:IsA("TextButton") then
         local scale = Instance.new("UIScale")
@@ -1345,7 +1325,6 @@ for _, btn in ipairs(screenGui:GetDescendants()) do
     end
 end
 
--- Minimize & Close
 minimizeButton.MouseButton1Click:Connect(function()
     TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0,0,0,0)}):Play()
     task.wait(0.25)
@@ -1375,6 +1354,5 @@ end)
 updateSidebarTabNames()
 updateLanguage()
 
--- Hiệu ứng mở UI ban đầu
 frame.Size = UDim2.new(0, 0, 0, 0)
 TweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 390, 0, 320)}):Play()
