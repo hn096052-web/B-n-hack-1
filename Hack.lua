@@ -1,12 +1,11 @@
 -- ==========================================
--- H HUB AUTOFARM (FIXED FOR DELTA & EXECUTORS)
+-- H HUB AUTOFARM (FIXED & OPTIMIZED FOR DELTA)
 -- ==========================================
 
 -- Kiểm tra và định nghĩa an toàn các hàm Executor
 local getgenv = getgenv or function() return _G end
-local loadstring = loadstring or getgenv().loadstring
-local fireclickdetector = fireclickdetector or fire_click_detector or getgenv().fireclickdetector or function(...) end
-local fireproximityprompt = fireproximityprompt or fire_proximity_prompt or getgenv().fireproximityprompt or function(...) end
+local fireclickdetector = fireclickdetector or fire_click_detector or (getgenv() and getgenv().fireclickdetector) or function(...) end
+local fireproximityprompt = fireproximityprompt or fire_proximity_prompt or (getgenv() and getgenv().fireproximityprompt) or function(...) end
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -113,7 +112,6 @@ local translations = {
         infJumpBtn = "Infinite Jump",
         freezeBtn = "Auto Freeze Ray",
         autoEquipBtn = "Auto Equip Items",
-        godBtn = "⚡ Open God Mode Panel",
         espBtn = "ESP Wallhack",
         fpsBtn = "Display FPS",
         autoPressRadiusLabel = "Click Button Range:",
@@ -158,7 +156,6 @@ local translations = {
         infJumpBtn = "Nhảy Vô Hạn",
         freezeBtn = "Tự Động Freeze Ray",
         autoEquipBtn = "Auto Mặc/Tháo Đồ",
-        godBtn = "⚡ Bảng God Mode (Bất Tử)",
         espBtn = "ESP Nhìn Xuyên Tường",
         fpsBtn = "Hiển Thị FPS",
         autoPressRadiusLabel = "Bán kính Click Nút:",
@@ -1142,41 +1139,6 @@ table.insert(refreshFuncs, r17_2)
 local _, r17 = createToggleRow(mainTab, "autoPressBtn", autoPressButtonEnabled, function(st) toggleAutoPressButton(st) end)
 table.insert(refreshFuncs, r17)
 
--- NÚT GOD MODE (Đã sửa lỗi HttpGet & loadstring)
-local godRowFrame = Instance.new("Frame")
-godRowFrame.Size = UDim2.new(1, 0, 0, 36)
-godRowFrame.BackgroundTransparency = 1
-godRowFrame.ZIndex = 2
-godRowFrame.Parent = mainTab
-
-local godButton = Instance.new("TextButton")
-godButton.Size = UDim2.new(1, 0, 1, 0)
-godButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-godButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-godButton.Font = GLOBAL_FONT
-godButton.TextSize = 12
-godButton.Text = "⚡ Bảng God Mode (Bất Tử)"
-godButton.ZIndex = 2
-godButton.Parent = godRowFrame
-
-local godCorner = Instance.new("UICorner")
-godCorner.CornerRadius = UDim.new(0, 6)
-godCorner.Parent = godButton
-
-godButton.MouseButton1Click:Connect(function()
-    task.spawn(function()
-        local success, rawScript = pcall(function()
-            return game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal")
-        end)
-        if success and rawScript and rawScript ~= "" then
-            local execFunc = loadstring(rawScript)
-            if execFunc then
-                execFunc()
-            end
-        end
-    end)
-end)
-
 -- TAB ESP
 local espTab = tabs["ESP"]
 
@@ -1500,7 +1462,6 @@ serverHopButton.MouseButton1Click:Connect(serverHop)
 local function updateLanguage()
     local t = translations[currentLang]
     titleText.Text = t.title
-    godButton.Text = t.godBtn
     espColorLabel.Text = t.espColorLabel
     themeLabel.Text = t.themeLabel
     textLabel.Text = t.textLabel
