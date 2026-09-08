@@ -1,12 +1,12 @@
 -- ==========================================
--- H HUB AUTOFARM (ULTRA FIX LAG + EXTREME OPTIMIZATION + UI ANIMATIONS)
+-- H HUB AUTOFARM (FIXED SCROLL & THEME & GODMODE)
 -- ==========================================
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Dọn dẹp GUI cũ
+-- Dọn dẹp GUI cũ nếu có
 if playerGui:FindFirstChild("AutoFarmHubGui") then
     playerGui.AutoFarmHubGui:Destroy()
 end
@@ -18,7 +18,6 @@ local UserInputService = game:GetService("UserInputService")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local Lighting = game:GetService("Lighting")
-local SoundService = game:GetService("SoundService")
 
 -- Trạng thái tính năng
 local tpEnabled = false
@@ -52,9 +51,11 @@ local FREEZE_COOLDOWN = 6
 local SHOT_DELAY = 1 
 local selectedTargetPlayer = nil 
 
--- Cấu hình ESP
+-- Cấu hình ESP & Màu
 local selectedEspTarget = "Tất cả"
 local espColor = Color3.fromRGB(255, 0, 0)
+local currentThemeColor = Color3.fromRGB(35, 35, 45)
+local currentTextColor = Color3.fromRGB(255, 255, 255)
 
 local frozenPlayersTable = {} 
 local currentLang = "VI" 
@@ -63,19 +64,18 @@ local currentLang = "VI"
 local noclipConnection, invisibleConnection, flyConnection
 local walkConnection, jumpConnection, infJumpConnection
 local freezeRayTask, fpsConnection, gravityConnection
-local autoPressButtonTask, fixLagTask, fixLagChildConnection
+autoPressButtonTask, fixLagTask, fixLagChildConnection
 local hideMapConnection, muteSoundsConnection, autoEquipTask
 local originalHipHeight
 local savedTransparencies = {}
 local hiddenObjects = {} 
 local mutedSounds = {}   
 
--- Theme UI
-local themeBackgrounds = {} 
+-- Theme UI Tables
 local themeButtons = {}     
 local textElements = {}     
 
--- Font chữ hiện đại
+-- Font chữ
 local GLOBAL_FONT = Enum.Font.GothamBold
 
 local translations = {
@@ -85,42 +85,40 @@ local translations = {
         tabEsp = "Players/ESP",
         tabMisc = "Settings",
         tabFixLag = "Fix Lag",
-        tpSpd = "TP Spd",
-        walkSpd = "Walk Spd",
-        flySpd = "Fly Spd",
-        jumpSpd = "Jump Spd",
-        gravSpd = "Gravity",
-        freezeRng = "Freeze Rng",
-        clickDelayLabel = "Click Delay (s)",
+        tpSpd = "TP Speed (s):",
+        walkSpd = "Walk Speed:",
+        flySpd = "Fly Speed:",
+        jumpSpd = "Jump Power:",
+        gravSpd = "Gravity:",
+        freezeRng = "Freeze Range:",
+        clickDelayLabel = "Click Delay (s):",
         targetBtn = "Target: ",
         allTarget = "All",
-        tpBtn = "TP: ",
-        walkBtn = "Speed: ",
-        jumpBtn = "Jump: ",
-        flyBtn = "Fly: ",
-        gravBtn = "Grav: ",
-        noclipBtn = "Noclip: ",
-        invisBtn = "Invis: ",
-        infJumpBtn = "Inf Jump: ",
-        freezeBtn = "Auto Freeze: ",
-        autoEquipBtn = "Auto Equip: ",
-        godBtn = "God Mode Panel",
-        espBtn = "ESP Wallhack: ",
-        fpsBtn = "Display FPS: ",
-        autoPressBtn = "Auto Click All (R: ",
-        fixLagBtn = "Ultra Fix Lag (Max FPS): ",
-        hideMapBtn = "Hide Map & Others: ",
-        muteSoundsBtn = "Mute All Game Sounds: ",
-        espColorLabel = "ESP Color:",
-        themeLabel = "UI Theme Color:",
-        textLabel = "Text Color:",
+        tpBtn = "Auto TP Coins",
+        walkBtn = "Custom Speed",
+        jumpBtn = "Custom Jump",
+        flyBtn = "Fly Mode",
+        gravBtn = "Custom Gravity",
+        noclipBtn = "Noclip Pass-Wall",
+        invisBtn = "Invisibility",
+        infJumpBtn = "Infinite Jump",
+        freezeBtn = "Auto Freeze Ray",
+        autoEquipBtn = "Auto Equip Items",
+        godBtn = "⚡ Open God Mode Panel",
+        espBtn = "ESP Wallhack",
+        fpsBtn = "Display FPS",
+        autoPressBtn = "Auto Click Buttons (Radius: ",
+        fixLagBtn = "Ultra Fix Lag (Max FPS)",
+        hideMapBtn = "Hide Map & Players",
+        muteSoundsBtn = "Mute Game Sounds",
+        espColorLabel = "ESP Highlight Color:",
+        themeLabel = "UI Button Color:",
+        textLabel = "UI Text Color:",
         langLabel = "Language:",
         rejoinBtn = "Rejoin Server",
         serverHopBtn = "Server Hop",
-        refreshBtn = "Refresh Player List",
-        selected = " (Selected)",
-        on = "ON",
-        off = "OFF"
+        on = "BẬT",
+        off = "TẮT"
     },
     VI = {
         title = "H HUB - AutoFarm",
@@ -128,47 +126,45 @@ local translations = {
         tabEsp = "Người chơi/ESP",
         tabMisc = "Cài đặt",
         tabFixLag = "Fix Lag",
-        tpSpd = "Tốc độ TP",
-        walkSpd = "Tốc độ Đi",
-        flySpd = "Tốc độ Bay",
-        jumpSpd = "Độ Nhảy",
-        gravSpd = "Trọng lực",
-        freezeRng = "Tầm Freeze",
-        clickDelayLabel = "Tốc độ Click (s)",
+        tpSpd = "Tốc độ TP (giây):",
+        walkSpd = "Tốc độ Đi bộ:",
+        flySpd = "Tốc độ Bay:",
+        jumpSpd = "Độ Cao Nhảy:",
+        gravSpd = "Trọng Lực Game:",
+        freezeRng = "Khoảng cách Freeze:",
+        clickDelayLabel = "Tốc độ Click (giây):",
         targetBtn = "Mục tiêu: ",
         allTarget = "Tất cả",
-        tpBtn = "TP: ",
-        walkBtn = "Tốc độ: ",
-        jumpBtn = "Nhảy: ",
-        flyBtn = "Fly: ",
-        gravBtn = "Gravity: ",
-        noclipBtn = "Noclip: ",
-        invisBtn = "Tàng hình: ",
-        infJumpBtn = "Nhảy Vô Hạn: ",
-        freezeBtn = "Auto Freeze: ",
-        autoEquipBtn = "Auto Trang Bị: ",
-        godBtn = "Bảng God Mode",
-        espBtn = "ESP Xuyên Tường: ",
-        fpsBtn = "Hiện FPS: ",
-        autoPressBtn = "Auto Click Tất Cả (R: ",
-        fixLagBtn = "Siêu Tối Ưu (Max FPS): ",
-        hideMapBtn = "Ẩn Map & Người Khác: ",
-        muteSoundsBtn = "Tắt Tất Cả Âm Thanh: ",
-        espColorLabel = "Màu sắc ESP:",
-        themeLabel = "Chỉnh màu giao diện:",
-        textLabel = "Chỉnh màu chữ:",
-        langLabel = "Chọn ngôn ngữ:",
-        rejoinBtn = "Vào lại Server",
-        serverHopBtn = "Đổi Server (Hop)",
-        refreshBtn = "Làm mới danh sách",
-        selected = " (Đã chọn)",
+        tpBtn = "Auto TP Nhặt Xu",
+        walkBtn = "Chỉnh Tốc Độ Đi",
+        jumpBtn = "Chỉnh Độ Nhảy",
+        flyBtn = "Chế Độ Bay",
+        gravBtn = "Trọng Lực Tùy Chỉnh",
+        noclipBtn = "Đi Xuyên Tường (Noclip)",
+        invisBtn = "Tàng Hình Nhìn Thấy",
+        infJumpBtn = "Nhảy Vô Hạn",
+        freezeBtn = "Tự Động Freeze Ray",
+        autoEquipBtn = "Auto Mặc/Tháo Đồ",
+        godBtn = "⚡ Bảng God Mode (Bất Tử)",
+        espBtn = "ESP Nhìn Xuyên Tường",
+        fpsBtn = "Hiển Thị FPS",
+        autoPressBtn = "Auto Click Nút (Bán kính: ",
+        fixLagBtn = "Siêu Giảm Lag (Max FPS)",
+        hideMapBtn = "Ẩn Bản Đồ & Người Khác",
+        muteSoundsBtn = "Tắt Âm Thanh Game",
+        espColorLabel = "Màu ESP Xuyên Tường:",
+        themeLabel = "Màu Nút Giao Diện:",
+        textLabel = "Màu Chữ Giao Diện:",
+        langLabel = "Ngôn ngữ / Language:",
+        rejoinBtn = "Vào Lại Server",
+        serverHopBtn = "Đổi Server Khác",
         on = "BẬT",
         off = "TẮT"
     }
 }
 
 -- ==========================================
--- CÁC LOGIC CHỨC NĂNG BÊN TRONG (GIỮ NGUYÊN)
+-- LOGIC TÍNH NĂNG GAME
 -- ==========================================
 local itemsToUnequip = {"PieThrow", "SmallPotion", "GiantPotion", "GhostPotion", "Healing", "GravityPotion", "Bloxiade", "ClownBomb", "Slate", "WindPotion", "IcePotion", "Caltrops", "SlowDownGun", "GravityGun", "GravityDisruptor", "FreezeRay", "Bomb"}
 
@@ -592,7 +588,7 @@ end
 task.spawn(teleportLoop)
 
 -- ==========================================
--- GIAO DIỆN GUI - PRO STYLING
+-- GIAO DIỆN GUI (KHÔNG TRÀN - CÓ BẢNG CUỘN)
 -- ==========================================
 
 local screenGui = Instance.new("ScreenGui")
@@ -613,16 +609,14 @@ openUIButton.Visible = false
 openUIButton.Active = true
 openUIButton.Draggable = true
 openUIButton.Parent = screenGui
-table.insert(themeBackgrounds, openUIButton)
-table.insert(textElements, openUIButton)
 
 local openUICorner = Instance.new("UICorner")
-openUICorner.CornerRadius = UDim.new(1, 0) -- Tròn xoe
+openUICorner.CornerRadius = UDim.new(1, 0)
 openUICorner.Parent = openUIButton
 
 local openUIStroke = Instance.new("UIStroke")
 openUIStroke.Thickness = 2
-openUIStroke.Color = Color3.fromRGB(80, 80, 255) -- Glow nhẹ
+openUIStroke.Color = Color3.fromRGB(80, 80, 255)
 openUIStroke.Parent = openUIButton
 
 -- FPS Button
@@ -670,18 +664,17 @@ local function toggleFPSDisplay(state)
     end
 end
  
--- KHUNG CHÍNH (FRAME) - Đã nâng cấp Shadow & Transparent
+-- KHUNG CHÍNH (FRAME)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 390, 0, 310) -- Tăng size tí xíu cho rộng rãi
-frame.Position = UDim2.new(0.5, -195, 0.5, -155)
-frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+frame.Size = UDim2.new(0, 390, 0, 320)
+frame.Position = UDim2.new(0.5, -195, 0.5, -160)
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
 frame.Parent = screenGui
 frame.Visible = true
 
--- Hiệu ứng nền Gradient Cuộn mượt
 local gradientFrame = Instance.new("UIGradient")
 gradientFrame.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(0.00, Color3.fromRGB(15, 15, 20)),
@@ -691,7 +684,6 @@ gradientFrame.Color = ColorSequence.new{
 gradientFrame.Rotation = 45
 gradientFrame.Parent = frame
 
--- Animate gradient
 task.spawn(function()
     local rot = 0
     while task.wait() do
@@ -705,71 +697,58 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 8)
 corner.Parent = frame
 
--- Shadow ảo cho Frame
 local frameStroke = Instance.new("UIStroke")
-frameStroke.Color = Color3.fromRGB(50, 50, 80)
+frameStroke.Color = Color3.fromRGB(60, 60, 100)
 frameStroke.Thickness = 2
-frameStroke.Transparency = 0.5
+frameStroke.Transparency = 0.4
 frameStroke.Parent = frame
  
 -- Title Bar
 local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 30)
+titleBar.Size = UDim2.new(1, 0, 0, 35)
 titleBar.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
 titleBar.BackgroundTransparency = 0.3
 titleBar.BorderSizePixel = 0
 titleBar.Parent = frame
-table.insert(themeBackgrounds, titleBar)
 
 local titleCorner = Instance.new("UICorner")
 titleCorner.CornerRadius = UDim.new(0, 8)
 titleCorner.Parent = titleBar
 
-local titleFix = Instance.new("Frame") -- Che góc dưới để nối vuông vức với body
-titleFix.Size = UDim2.new(1, 0, 0, 10)
-titleFix.Position = UDim2.new(0, 0, 1, -10)
-titleFix.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
-titleFix.BackgroundTransparency = 0.3
-titleFix.BorderSizePixel = 0
-titleFix.Parent = titleBar
- 
 local titleText = Instance.new("TextLabel")
 titleText.Size = UDim2.new(1, -70, 1, 0)
 titleText.Position = UDim2.new(0, 12, 0, 0)
 titleText.BackgroundTransparency = 1
-titleText.Text = "H HUB - Xtreme"
-titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleText.Text = "H HUB - AutoFarm"
+titleText.TextColor3 = currentTextColor
 titleText.Font = GLOBAL_FONT
 titleText.TextSize = 15
 titleText.TextXAlignment = Enum.TextXAlignment.Left
 titleText.Parent = titleBar
 table.insert(textElements, titleText)
 
--- Minimize Button
 local minimizeButton = Instance.new("TextButton")
-minimizeButton.Size = UDim2.new(0, 30, 0, 20)
-minimizeButton.Position = UDim2.new(1, -65, 0, 5)
+minimizeButton.Size = UDim2.new(0, 28, 0, 22)
+minimizeButton.Position = UDim2.new(1, -62, 0, 6)
 minimizeButton.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 minimizeButton.Text = "-"
 minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 minimizeButton.Font = GLOBAL_FONT
 minimizeButton.TextSize = 20
 minimizeButton.Parent = titleBar
-table.insert(themeButtons, minimizeButton)
 
 local minCorner = Instance.new("UICorner")
 minCorner.CornerRadius = UDim.new(0, 4)
 minCorner.Parent = minimizeButton
  
--- Close Button
 local closeButton = Instance.new("TextButton")
-closeButton.Size = UDim2.new(0, 30, 0, 20)
-closeButton.Position = UDim2.new(1, -32, 0, 5)
+closeButton.Size = UDim2.new(0, 28, 0, 22)
+closeButton.Position = UDim2.new(1, -30, 0, 6)
 closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 closeButton.Text = "X"
 closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeButton.Font = GLOBAL_FONT
-closeButton.TextSize = 14
+closeButton.TextSize = 13
 closeButton.Parent = titleBar
 
 local closeCorner = Instance.new("UICorner")
@@ -778,13 +757,12 @@ closeCorner.Parent = closeButton
  
 -- Sidebar
 local sidebar = Instance.new("Frame")
-sidebar.Size = UDim2.new(0, 110, 1, -30)
-sidebar.Position = UDim2.new(0, 0, 0, 30)
+sidebar.Size = UDim2.new(0, 110, 1, -35)
+sidebar.Position = UDim2.new(0, 0, 0, 35)
 sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 sidebar.BackgroundTransparency = 0.5
 sidebar.BorderSizePixel = 0
 sidebar.Parent = frame
-table.insert(themeBackgrounds, sidebar)
 
 local sideCorner = Instance.new("UICorner")
 sideCorner.CornerRadius = UDim.new(0, 8)
@@ -799,410 +777,337 @@ line.Parent = sidebar
 
 -- Container
 local container = Instance.new("Frame")
-container.Size = UDim2.new(1, -111, 1, -30)
-container.Position = UDim2.new(0, 111, 0, 30)
+container.Size = UDim2.new(1, -115, 1, -35)
+container.Position = UDim2.new(0, 115, 0, 35)
 container.BackgroundTransparency = 1
 container.Parent = frame
 
+-- TẠO TAB DẠNG SCROLLING FRAME (VUỐT XUỐNG ĐƯỢC)
 local tabs = {}
 local tabNames = {"Main", "ESP", "FixLag", "Misc"}
 
 for _, name in ipairs(tabNames) do
-    local tabContent = Instance.new("Frame")
-    tabContent.Size = UDim2.new(1, 0, 1, 0)
-    tabContent.BackgroundTransparency = 1
-    tabContent.Visible = false
-    tabContent.Parent = container
-    tabs[name] = tabContent
+    local tabScroll = Instance.new("ScrollingFrame")
+    tabScroll.Size = UDim2.new(1, -5, 1, 0)
+    tabScroll.BackgroundTransparency = 1
+    tabScroll.BorderSizePixel = 0
+    tabScroll.ScrollBarThickness = 4
+    tabScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    tabScroll.Visible = false
+    tabScroll.Parent = container
+    
+    local layout = Instance.new("UIListLayout")
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Padding = UDim.new(0, 8)
+    layout.Parent = tabScroll
+    
+    local padding = Instance.new("UIPadding")
+    padding.PaddingTop = UDim.new(0, 6)
+    padding.PaddingBottom = UDim.new(0, 10)
+    padding.PaddingLeft = UDim.new(0, 2)
+    padding.PaddingRight = UDim.new(0, 6)
+    padding.Parent = tabScroll
+    
+    -- Tự động tính độ dài Canvas để vuốt không đè
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        tabScroll.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 15)
+    end)
+    
+    tabs[name] = tabScroll
 end
 
--- MAIN TAB
-local mainTab = tabs["Main"]
-mainTab.Visible = true
-
-local colWidth = 0.235
-local colGap = 0.015
-
-local tpLabel = Instance.new("TextLabel")
-tpLabel.Size = UDim2.new(colWidth, 0, 0, 14)
-tpLabel.Position = UDim2.new(0 * (colWidth + colGap) + colGap, 0, 0, 8)
-tpLabel.BackgroundTransparency = 1
-tpLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-tpLabel.Font = GLOBAL_FONT
-tpLabel.TextSize = 10
-tpLabel.Parent = mainTab
-table.insert(textElements, tpLabel)
- 
-local walkLabel = tpLabel:Clone()
-walkLabel.Position = UDim2.new(1 * (colWidth + colGap) + colGap, 0, 0, 8)
-walkLabel.Parent = mainTab
-
-local jumpLabel = tpLabel:Clone()
-jumpLabel.Position = UDim2.new(2 * (colWidth + colGap) + colGap, 0, 0, 8)
-jumpLabel.Parent = mainTab
-
-local flySpeedLabel = tpLabel:Clone()
-flySpeedLabel.Position = UDim2.new(3 * (colWidth + colGap) + colGap, 0, 0, 8)
-flySpeedLabel.Parent = mainTab
-
-local tpBox = Instance.new("TextBox")
-tpBox.Size = UDim2.new(colWidth, 0, 0, 24)
-tpBox.Position = UDim2.new(0 * (colWidth + colGap) + colGap, 0, 0, 25)
-tpBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-tpBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-tpBox.Text = tostring(tpSpeed)
-tpBox.Font = GLOBAL_FONT
-tpBox.TextSize = 11
-tpBox.Parent = mainTab
-table.insert(themeButtons, tpBox)
-
-local tpCorner = Instance.new("UICorner")
-tpCorner.CornerRadius = UDim.new(0, 4)
-tpCorner.Parent = tpBox
- 
-tpBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local val = tonumber(tpBox.Text)
-        if val and val > 0 then tpSpeed = val else tpBox.Text = tostring(tpSpeed) end
-    end
-end)
- 
-local walkBox = tpBox:Clone()
-walkBox.Position = UDim2.new(1 * (colWidth + colGap) + colGap, 0, 0, 25)
-walkBox.Text = tostring(walkSpeed)
-walkBox.Parent = mainTab
-table.insert(themeButtons, walkBox)
- 
-walkBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local val = tonumber(walkBox.Text)
-        if val and val > 0 then
-            walkSpeed = val
-            if walkEnabled then
-                local character = player.Character
-                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-                if humanoid then humanoid.WalkSpeed = walkSpeed end
-            end
-        else walkBox.Text = tostring(walkSpeed) end
-    end
-end)
-
-local jumpBox = tpBox:Clone()
-jumpBox.Position = UDim2.new(2 * (colWidth + colGap) + colGap, 0, 0, 25)
-jumpBox.Text = tostring(jumpPower)
-jumpBox.Parent = mainTab
-table.insert(themeButtons, jumpBox)
-
-jumpBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local val = tonumber(jumpBox.Text)
-        if val and val > 0 then
-            jumpPower = val
-            if jumpEnabled then
-                local character = player.Character
-                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-                if humanoid then humanoid.UseJumpPower = true humanoid.JumpPower = jumpPower end
-            end
-        else jumpBox.Text = tostring(jumpPower) end
-    end
-end)
-
-local flySpeedBox = tpBox:Clone()
-flySpeedBox.Position = UDim2.new(3 * (colWidth + colGap) + colGap, 0, 0, 25)
-flySpeedBox.Text = tostring(flySpeed)
-flySpeedBox.Parent = mainTab
-table.insert(themeButtons, flySpeedBox)
-
-flySpeedBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local val = tonumber(flySpeedBox.Text)
-        if val and val > 0 then flySpeed = val else flySpeedBox.Text = tostring(flySpeed) end
-    end
-end)
+-- ==========================================
+-- HÀM MÀU SẮC & CẬP NHẬT TRẠNG THÁI
+-- ==========================================
 
 local function updateButtonVisual(btn, isOn)
     if isOn then
-        TweenService:Create(btn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(80, 150, 80)}):Play()
+        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 160, 85)}):Play()
     else
-        TweenService:Create(btn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}):Play()
+        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = currentThemeColor}):Play()
     end
 end
 
-local tpButton = Instance.new("TextButton")
-tpButton.Size = UDim2.new(colWidth, 0, 0, 26)
-tpButton.Position = UDim2.new(0 * (colWidth + colGap) + colGap, 0, 0, 55)
-tpButton.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-tpButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-tpButton.Font = GLOBAL_FONT
-tpButton.TextSize = 11
-tpButton.Parent = mainTab
-table.insert(themeButtons, tpButton)
- 
-local tpBtnCorner = Instance.new("UICorner")
-tpBtnCorner.CornerRadius = UDim.new(0, 4)
-tpBtnCorner.Parent = tpButton
- 
-local walkButton = tpButton:Clone()
-walkButton.Position = UDim2.new(1 * (colWidth + colGap) + colGap, 0, 0, 55)
-walkButton.Parent = mainTab
-table.insert(themeButtons, walkButton)
-
-local jumpButton = tpButton:Clone()
-jumpButton.Position = UDim2.new(2 * (colWidth + colGap) + colGap, 0, 0, 55)
-jumpButton.Parent = mainTab
-table.insert(themeButtons, jumpButton)
-
-local flyButton = tpButton:Clone()
-flyButton.Position = UDim2.new(3 * (colWidth + colGap) + colGap, 0, 0, 55)
-flyButton.Parent = mainTab
-table.insert(themeButtons, flyButton)
-
-local quadWidth = 0.235
-local quadGap = 0.015
-local noclipButton = tpButton:Clone()
-noclipButton.Size = UDim2.new(quadWidth, 0, 0, 26)
-noclipButton.Position = UDim2.new(0 * (quadWidth + quadGap) + quadGap, 0, 0, 88)
-noclipButton.Parent = mainTab
-table.insert(themeButtons, noclipButton)
-
-local invisButton = tpButton:Clone()
-invisButton.Size = UDim2.new(quadWidth, 0, 0, 26)
-invisButton.Position = UDim2.new(1 * (quadWidth + quadGap) + quadGap, 0, 0, 88)
-invisButton.Parent = mainTab
-table.insert(themeButtons, invisButton)
-
-local infJumpButton = tpButton:Clone()
-infJumpButton.Size = UDim2.new(quadWidth, 0, 0, 26)
-infJumpButton.Position = UDim2.new(2 * (quadWidth + quadGap) + quadGap, 0, 0, 88)
-infJumpButton.Parent = mainTab
-table.insert(themeButtons, infJumpButton)
-
-local gravityButton = tpButton:Clone()
-gravityButton.Size = UDim2.new(quadWidth, 0, 0, 26)
-gravityButton.Position = UDim2.new(3 * (quadWidth + quadGap) + quadGap, 0, 0, 88)
-gravityButton.Parent = mainTab
-table.insert(themeButtons, gravityButton)
-
-local gravLabel = tpLabel:Clone()
-gravLabel.Size = UDim2.new(0.31, 0, 0, 14)
-gravLabel.Position = UDim2.new(0, 4, 0, 120)
-gravLabel.Parent = mainTab
-
-local gravBox = tpBox:Clone()
-gravBox.Size = UDim2.new(0.31, 0, 0, 26)
-gravBox.Position = UDim2.new(0, 4, 0, 136)
-gravBox.Text = tostring(customGravity)
-gravBox.Parent = mainTab
-table.insert(themeButtons, gravBox)
-
-gravBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local val = tonumber(gravBox.Text)
-        if val then 
-            customGravity = val
-            if gravityEnabled then Workspace.Gravity = customGravity end
-        else gravBox.Text = tostring(customGravity) end
-    end
-end)
-
-local freezeRangeLabel = tpLabel:Clone()
-freezeRangeLabel.Size = UDim2.new(0, 20, 0, 14)
-freezeRangeLabel.Position = UDim2.new(0.33, 0, 0, 120)
-freezeRangeLabel.Parent = mainTab
-
-local freezeRangeBox = tpBox:Clone()
-freezeRangeBox.Size = UDim2.new(0.2, 0, 0, 26)
-freezeRangeBox.Position = UDim2.new(0.33, 0, 0, 136)
-freezeRangeBox.Text = tostring(freezeRadius)
-freezeRangeBox.Parent = mainTab
-table.insert(themeButtons, freezeRangeBox)
-
-freezeRangeBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local val = tonumber(freezeRangeBox.Text)
-        if val and val > 0 then freezeRadius = val else freezeRangeBox.Text = tostring(freezeRadius) end
-    end
-end)
-
-local freezeButton = tpButton:Clone()
-freezeButton.Size = UDim2.new(0.44, 0, 0, 26)
-freezeButton.Position = UDim2.new(0.54, 0, 0, 136)
-freezeButton.Parent = mainTab
-table.insert(themeButtons, freezeButton)
-
--- NÚT AUTO TRANG BỊ
-local autoEquipBtnToggle = tpButton:Clone()
-autoEquipBtnToggle.Size = UDim2.new(1, -12, 0, 26)
-autoEquipBtnToggle.Position = UDim2.new(0, 4, 0, 168)
-autoEquipBtnToggle.Parent = mainTab
-table.insert(themeButtons, autoEquipBtnToggle)
-
-autoEquipBtnToggle.MouseButton1Click:Connect(function()
-    toggleAutoEquip(not autoEquipEnabled)
-    updateButtonVisual(autoEquipBtnToggle, autoEquipEnabled)
-    updateLanguage()
-end)
-
-local autoPressBtnToggle = tpButton:Clone()
-autoPressBtnToggle.Size = UDim2.new(0.8, -8, 0, 26)
-autoPressBtnToggle.Position = UDim2.new(0, 4, 0, 200)
-autoPressBtnToggle.Parent = mainTab
-table.insert(themeButtons, autoPressBtnToggle)
-
-local autoPressRadiusBox = tpBox:Clone()
-autoPressRadiusBox.Size = UDim2.new(0.2, 0, 0, 26)
-autoPressRadiusBox.Position = UDim2.new(0.8, 0, 0, 200)
-autoPressRadiusBox.Text = tostring(autoPressRadius)
-autoPressRadiusBox.Parent = mainTab
-table.insert(themeButtons, autoPressRadiusBox)
-
-local autoPressDelayBox = tpBox:Clone()
-autoPressDelayBox.Size = UDim2.new(0.32, 0, 0, 26)
-autoPressDelayBox.Position = UDim2.new(0.66, 0, 0, 232)
-autoPressDelayBox.Text = tostring(autoPressDelay)
-autoPressDelayBox.Parent = mainTab
-table.insert(themeButtons, autoPressDelayBox)
-
-local targetSelectBtn = tpButton:Clone()
-targetSelectBtn.Size = UDim2.new(1, -12, 0, 26)
-targetSelectBtn.Position = UDim2.new(0, 4, 0, 264)
-targetSelectBtn.Parent = mainTab
-table.insert(themeButtons, targetSelectBtn)
-
-local playerListFrame = Instance.new("ScrollingFrame")
-playerListFrame.Size = UDim2.new(1, -12, 0, 80)
-playerListFrame.Position = UDim2.new(0, 4, 0, 292)
-playerListFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-playerListFrame.BorderSizePixel = 0
-playerListFrame.Visible = false
-playerListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-playerListFrame.ScrollBarThickness = 4
-playerListFrame.ZIndex = 20
-playerListFrame.Parent = mainTab
-
-local playerListLayout = Instance.new("UIListLayout")
-playerListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-playerListLayout.Padding = UDim.new(0, 4)
-playerListLayout.Parent = playerListFrame
-
--- Hàm Cập nhật Text Language chung
-local updateLanguage
-
-autoPressRadiusBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local val = tonumber(autoPressRadiusBox.Text)
-        if val and val > 0 then autoPressRadius = val updateLanguage() else autoPressRadiusBox.Text = tostring(autoPressRadius) end
-    end
-end)
-
-autoPressDelayBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local val = tonumber(autoPressDelayBox.Text)
-        if val and val >= 0 then autoPressDelay = val else autoPressDelayBox.Text = tostring(autoPressDelay) end
-    end
-end)
-
-autoPressBtnToggle.MouseButton1Click:Connect(function()
-    autoPressButtonEnabled = not autoPressButtonEnabled
-    updateButtonVisual(autoPressBtnToggle, autoPressButtonEnabled)
-    toggleAutoPressButton(autoPressButtonEnabled)
-    updateLanguage()
-end)
-
-local function refreshPlayerList()
-    for _, child in ipairs(playerListFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
-    local t = translations[currentLang]
-    local allBtn = Instance.new("TextButton")
-    allBtn.Size = UDim2.new(1, -8, 0, 24)
-    allBtn.BackgroundColor3 = (selectedTargetPlayer == nil) and Color3.fromRGB(80, 80, 150) or Color3.fromRGB(40, 40, 50)
-    allBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    allBtn.Font = GLOBAL_FONT
-    allBtn.TextSize = 11
-    allBtn.Text = "[ " .. t.allTarget .. " ]"
-    allBtn.ZIndex = 21
-    local btnCorner = Instance.new("UICorner") btnCorner.CornerRadius = UDim.new(0, 4) btnCorner.Parent = allBtn
-    allBtn.Parent = playerListFrame
-
-    allBtn.MouseButton1Click:Connect(function()
-        selectedTargetPlayer = nil
-        playerListFrame.Visible = false
-        updateLanguage()
-    end)
-
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= player then
-            local pBtn = Instance.new("TextButton")
-            pBtn.Size = UDim2.new(1, -8, 0, 24)
-            pBtn.BackgroundColor3 = (selectedTargetPlayer == p) and Color3.fromRGB(80, 80, 150) or Color3.fromRGB(40, 40, 50)
-            pBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            pBtn.Font = GLOBAL_FONT
-            pBtn.TextSize = 11
-            pBtn.Text = p.DisplayName .. " (@" .. p.Name .. ")"
-            pBtn.ZIndex = 21
-            local bCorner = Instance.new("UICorner") bCorner.CornerRadius = UDim.new(0, 4) bCorner.Parent = pBtn
-            pBtn.Parent = playerListFrame
-
-            pBtn.MouseButton1Click:Connect(function()
-                selectedTargetPlayer = p
-                playerListFrame.Visible = false
-                updateLanguage()
-            end)
+local function applyThemeColor(color)
+    currentThemeColor = color
+    for _, btn in ipairs(themeButtons) do
+        if btn and btn.Parent then
+            -- Chỉ đổi màu nếu nút không ở trạng thái BẬT (Xanh)
+            local isBtnOn = btn:GetAttribute("IsOnState")
+            if not isBtnOn then
+                btn.BackgroundColor3 = currentThemeColor
+            end
         end
     end
-    playerListFrame.CanvasSize = UDim2.new(0, 0, 0, playerListLayout.AbsoluteContentSize.Y + 10)
 end
 
-targetSelectBtn.MouseButton1Click:Connect(function()
-    playerListFrame.Visible = not playerListFrame.Visible
-    if playerListFrame.Visible then refreshPlayerList() end
+local function applyTextColor(color)
+    currentTextColor = color
+    for _, txt in ipairs(textElements) do
+        if txt and txt.Parent then
+            txt.TextColor3 = currentTextColor
+        end
+    end
+end
+
+-- Hàm tạo Nút Chức Năng chuẩn Size (không bị đè hay lòi ra ngoài)
+local function createToggleRow(parentTab, labelKey, stateBool, callback)
+    local frameRow = Instance.new("Frame")
+    frameRow.Size = UDim2.new(1, 0, 0, 32)
+    frameRow.BackgroundTransparency = 1
+    frameRow.Parent = parentTab
+
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 1, 0)
+    btn.BackgroundColor3 = currentThemeColor
+    btn.TextColor3 = currentTextColor
+    btn.Font = GLOBAL_FONT
+    btn.TextSize = 11
+    btn.Parent = frameRow
+    table.insert(themeButtons, btn)
+    table.insert(textElements, btn)
+
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.Parent = btn
+
+    local function refreshStateText()
+        local t = translations[currentLang]
+        local statusStr = stateBool and (" [" .. t.on .. "]") or (" [" .. t.off .. "]")
+        btn.Text = (t[labelKey] or labelKey) .. statusStr
+        btn:SetAttribute("IsOnState", stateBool)
+        updateButtonVisual(btn, stateBool)
+    end
+
+    btn.MouseButton1Click:Connect(function()
+        stateBool = not stateBool
+        refreshStateText()
+        callback(stateBool)
+    end)
+
+    refreshStateText()
+    return btn, refreshStateText
+end
+
+-- Hàm tạo Ô Nhập Số (Input Box Row)
+local function createInputRow(parentTab, labelKey, defaultVal, callback)
+    local frameRow = Instance.new("Frame")
+    frameRow.Size = UDim2.new(1, 0, 0, 30)
+    frameRow.BackgroundTransparency = 1
+    frameRow.Parent = parentTab
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0.6, 0, 1, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.TextColor3 = currentTextColor
+    lbl.Font = GLOBAL_FONT
+    lbl.TextSize = 11
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = frameRow
+    table.insert(textElements, lbl)
+
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(0.38, 0, 1, 0)
+    box.Position = UDim2.new(0.62, 0, 0, 0)
+    box.BackgroundColor3 = currentThemeColor
+    box.TextColor3 = currentTextColor
+    box.Font = GLOBAL_FONT
+    box.TextSize = 11
+    box.Text = tostring(defaultVal)
+    box.Parent = frameRow
+    table.insert(themeButtons, box)
+    table.insert(textElements, box)
+
+    local boxCorner = Instance.new("UICorner")
+    boxCorner.CornerRadius = UDim.new(0, 6)
+    boxCorner.Parent = box
+
+    box.FocusLost:Connect(function(enter)
+        local val = tonumber(box.Text)
+        if val then callback(val) else box.Text = tostring(defaultVal) end
+    end)
+
+    local function refreshLabel()
+        local t = translations[currentLang]
+        lbl.Text = t[labelKey] or labelKey
+    end
+    refreshLabel()
+
+    return frameRow, refreshLabel
+end
+
+-- ==========================================
+-- TAB CHÍNH (MAIN TAB)
+-- ==========================================
+local mainTab = tabs["Main"]
+mainTab.Visible = true
+
+local refreshFuncs = {}
+
+-- 1. Auto TP Coins
+_, r1 = createInputRow(mainTab, "tpSpd", tpSpeed, function(val) tpSpeed = val end)
+table.insert(refreshFuncs, r1)
+_, r2 = createToggleRow(mainTab, "tpBtn", tpEnabled, function(st) tpEnabled = st end)
+table.insert(refreshFuncs, r2)
+
+-- 2. Custom Speed
+_, r3 = createInputRow(mainTab, "walkSpd", walkSpeed, function(val)
+    walkSpeed = val
+    if walkEnabled and player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+        player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = walkSpeed
+    end
+end)
+table.insert(refreshFuncs, r3)
+_, r4 = createToggleRow(mainTab, "walkBtn", walkEnabled, function(st)
+    walkEnabled = st
+    if walkEnabled then
+        if walkConnection then walkConnection:Disconnect() end
+        walkConnection = RunService.RenderStepped:Connect(function()
+            local char = player.Character
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            if hum then hum.WalkSpeed = walkSpeed end
+        end)
+    else
+        if walkConnection then walkConnection:Disconnect(); walkConnection = nil end
+        local char = player.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        if hum then hum.WalkSpeed = 16 end
+    end
+end)
+table.insert(refreshFuncs, r4)
+
+-- 3. Custom Jump
+_, r5 = createInputRow(mainTab, "jumpSpd", jumpPower, function(val)
+    jumpPower = val
+    if jumpEnabled and player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+        player.Character:FindFirstChildOfClass("Humanoid").UseJumpPower = true
+        player.Character:FindFirstChildOfClass("Humanoid").JumpPower = jumpPower
+    end
+end)
+table.insert(refreshFuncs, r5)
+_, r6 = createToggleRow(mainTab, "jumpBtn", jumpEnabled, function(st)
+    jumpEnabled = st
+    if jumpEnabled then
+        if jumpConnection then jumpConnection:Disconnect() end
+        jumpConnection = RunService.RenderStepped:Connect(function()
+            local char = player.Character
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            if hum then hum.UseJumpPower = true hum.JumpPower = jumpPower end
+        end)
+    else
+        if jumpConnection then jumpConnection:Disconnect(); jumpConnection = nil end
+        local char = player.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        if hum then hum.JumpPower = 50 end
+    end
+end)
+table.insert(refreshFuncs, r6)
+
+-- 4. Fly
+_, r7 = createInputRow(mainTab, "flySpd", flySpeed, function(val) flySpeed = val end)
+table.insert(refreshFuncs, r7)
+_, r8 = createToggleRow(mainTab, "flyBtn", flyEnabled, function(st) toggleFly(st) end)
+table.insert(refreshFuncs, r8)
+
+-- 5. Gravity
+_, r9 = createInputRow(mainTab, "gravSpd", customGravity, function(val) customGravity = val if gravityEnabled then Workspace.Gravity = customGravity end end)
+table.insert(refreshFuncs, r9)
+_, r10 = createToggleRow(mainTab, "gravBtn", gravityEnabled, function(st)
+    gravityEnabled = st
+    if gravityEnabled then
+        if gravityConnection then gravityConnection:Disconnect() end
+        gravityConnection = RunService.RenderStepped:Connect(function() Workspace.Gravity = customGravity end)
+    else
+        if gravityConnection then gravityConnection:Disconnect(); gravityConnection = nil end
+        Workspace.Gravity = 196.2
+    end
+end)
+table.insert(refreshFuncs, r10)
+
+-- 6. Movement Mods
+_, r11 = createToggleRow(mainTab, "noclipBtn", noclipEnabled, function(st) toggleNoclip(st) end)
+table.insert(refreshFuncs, r11)
+_, r12 = createToggleRow(mainTab, "invisBtn", invisibleEnabled, function(st) toggleInvisibility(st) end)
+table.insert(refreshFuncs, r12)
+_, r13 = createToggleRow(mainTab, "infJumpBtn", infJumpEnabled, function(st) toggleInfJump(st) end)
+table.insert(refreshFuncs, r13)
+
+-- 7. Freeze Ray & Target
+_, r14 = createInputRow(mainTab, "freezeRng", freezeRadius, function(val) freezeRadius = val end)
+table.insert(refreshFuncs, r14)
+_, r15 = createToggleRow(mainTab, "freezeBtn", freezeRayEnabled, function(st) toggleFreezeRay(st) end)
+table.insert(refreshFuncs, r15)
+
+-- 8. Auto Equip
+_, r16 = createToggleRow(mainTab, "autoEquipBtn", autoEquipEnabled, function(st) toggleAutoEquip(st) end)
+table.insert(refreshFuncs, r16)
+
+-- 9. Auto Click Buttons
+_, r17 = createToggleRow(mainTab, "autoPressBtn", autoPressButtonEnabled, function(st) toggleAutoPressButton(st) end)
+table.insert(refreshFuncs, r17)
+
+-- 10. NÚT GOD MODE (ĐÃ DI CHUYỂN SANG TAB CHÍNH)
+local godRowFrame = Instance.new("Frame")
+godRowFrame.Size = UDim2.new(1, 0, 0, 36)
+godRowFrame.BackgroundTransparency = 1
+godRowFrame.Parent = mainTab
+
+local godButton = Instance.new("TextButton")
+godButton.Size = UDim2.new(1, 0, 1, 0)
+godButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+godButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+godButton.Font = GLOBAL_FONT
+godButton.TextSize = 12
+godButton.Text = "⚡ Bảng God Mode (Bất Tử)"
+godButton.Parent = godRowFrame
+
+local godCorner = Instance.new("UICorner")
+godCorner.CornerRadius = UDim.new(0, 6)
+godCorner.Parent = godButton
+
+godButton.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"))()
 end)
 
-
--- ESP TAB
+-- ==========================================
+-- TAB PLAYERS / ESP
+-- ==========================================
 local espTab = tabs["ESP"]
 
-local espBtnToggle = tpButton:Clone()
-espBtnToggle.Size = UDim2.new(1, -16, 0, 30)
-espBtnToggle.Position = UDim2.new(0, 8, 0, 10)
-espBtnToggle.Parent = espTab
-table.insert(themeButtons, espBtnToggle)
+_, rEsp = createToggleRow(espTab, "espBtn", espEnabled, function(st) espEnabled = st updateESP() end)
+table.insert(refreshFuncs, rEsp)
 
-local fpsBtnToggle = tpButton:Clone()
-fpsBtnToggle.Size = UDim2.new(1, -16, 0, 30)
-fpsBtnToggle.Position = UDim2.new(0, 8, 0, 50)
-fpsBtnToggle.Parent = espTab
-table.insert(themeButtons, fpsBtnToggle)
+_, rFps = createToggleRow(espTab, "fpsBtn", fpsEnabled, function(st) toggleFPSDisplay(st) end)
+table.insert(refreshFuncs, rFps)
 
-local espColorText = Instance.new("TextLabel")
-espColorText.Size = UDim2.new(1, -16, 0, 20)
-espColorText.Position = UDim2.new(0, 8, 0, 90)
-espColorText.BackgroundTransparency = 1
-espColorText.TextColor3 = Color3.fromRGB(255, 255, 255)
-espColorText.Font = GLOBAL_FONT
-espColorText.TextSize = 12
-espColorText.TextXAlignment = Enum.TextXAlignment.Left
-espColorText.Parent = espTab
-table.insert(textElements, espColorText)
+local espColorLabel = Instance.new("TextLabel")
+espColorLabel.Size = UDim2.new(1, 0, 0, 20)
+espColorLabel.BackgroundTransparency = 1
+espColorLabel.TextColor3 = currentTextColor
+espColorLabel.Font = GLOBAL_FONT
+espColorLabel.TextSize = 11
+espColorLabel.TextXAlignment = Enum.TextXAlignment.Left
+espColorLabel.Parent = espTab
+table.insert(textElements, espColorLabel)
 
 local espColorPalette = Instance.new("Frame")
-espColorPalette.Size = UDim2.new(1, -16, 0, 30)
-espColorPalette.Position = UDim2.new(0, 8, 0, 115)
+espColorPalette.Size = UDim2.new(1, 0, 0, 28)
 espColorPalette.BackgroundTransparency = 1
 espColorPalette.Parent = espTab
 
 local espColors = {
-    Color3.fromRGB(255, 50, 50),    
-    Color3.fromRGB(50, 255, 50),    
-    Color3.fromRGB(50, 150, 255),  
-    Color3.fromRGB(255, 255, 50),  
-    Color3.fromRGB(255, 50, 255),  
-    Color3.fromRGB(255, 255, 255) 
+    Color3.fromRGB(255, 50, 50),
+    Color3.fromRGB(50, 255, 50),
+    Color3.fromRGB(50, 150, 255),
+    Color3.fromRGB(255, 255, 50),
+    Color3.fromRGB(255, 50, 255),
+    Color3.fromRGB(255, 255, 255)
 }
 
 for i, col in ipairs(espColors) do
     local cBtn = Instance.new("TextButton")
-    cBtn.Size = UDim2.new(0, 30, 0, 30)
-    cBtn.Position = UDim2.new(0, (i - 1) * 36, 0, 0)
+    cBtn.Size = UDim2.new(0, 28, 0, 28)
+    cBtn.Position = UDim2.new(0, (i - 1) * 34, 0, 0)
     cBtn.BackgroundColor3 = col
     cBtn.Text = ""
     cBtn.Parent = espColorPalette
@@ -1214,196 +1119,196 @@ for i, col in ipairs(espColors) do
     cBtn.MouseButton1Click:Connect(function() espColor = col updateESP() end)
 end
 
-local espTargetSelectBtn = tpButton:Clone()
-espTargetSelectBtn.Size = UDim2.new(1, -16, 0, 30)
-espTargetSelectBtn.Position = UDim2.new(0, 8, 0, 160)
-espTargetSelectBtn.Parent = espTab
-table.insert(themeButtons, espTargetSelectBtn)
-
-local espPlayerListFrame = playerListFrame:Clone()
-espPlayerListFrame.Position = UDim2.new(0, 8, 0, 195)
-espPlayerListFrame.Parent = espTab
-
-local function refreshEspPlayerList()
-    for _, child in ipairs(espPlayerListFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
-    local t = translations[currentLang]
-    local allBtn = Instance.new("TextButton")
-    allBtn.Size = UDim2.new(1, -8, 0, 24)
-    allBtn.BackgroundColor3 = (selectedEspTarget == "Tất cả") and Color3.fromRGB(80, 80, 150) or Color3.fromRGB(40, 40, 50)
-    allBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    allBtn.Font = GLOBAL_FONT
-    allBtn.TextSize = 11
-    allBtn.Text = "[ " .. t.allTarget .. " ]"
-    local bCorner = Instance.new("UICorner") bCorner.CornerRadius = UDim.new(0, 4) bCorner.Parent = allBtn
-    allBtn.Parent = espPlayerListFrame
-
-    allBtn.MouseButton1Click:Connect(function()
-        selectedEspTarget = "Tất cả"
-        espPlayerListFrame.Visible = false
-        updateLanguage() updateESP()
-    end)
-
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= player then
-            local pBtn = Instance.new("TextButton")
-            pBtn.Size = UDim2.new(1, -8, 0, 24)
-            pBtn.BackgroundColor3 = (selectedEspTarget == p.Name) and Color3.fromRGB(80, 80, 150) or Color3.fromRGB(40, 40, 50)
-            pBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            pBtn.Font = GLOBAL_FONT
-            pBtn.TextSize = 11
-            pBtn.Text = p.DisplayName .. " (@" .. p.Name .. ")"
-            local bCorner2 = Instance.new("UICorner") bCorner2.CornerRadius = UDim.new(0, 4) bCorner2.Parent = pBtn
-            pBtn.Parent = espPlayerListFrame
-
-            pBtn.MouseButton1Click:Connect(function()
-                selectedEspTarget = p.Name
-                espPlayerListFrame.Visible = false
-                updateLanguage() updateESP()
-            end)
-        end
-    end
-    local layout = espPlayerListFrame:FindFirstChildOfClass("UIListLayout")
-    if layout then espPlayerListFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10) end
-end
-
-espTargetSelectBtn.MouseButton1Click:Connect(function()
-    espPlayerListFrame.Visible = not espPlayerListFrame.Visible
-    if espPlayerListFrame.Visible then refreshEspPlayerList() end
-end)
-
-espBtnToggle.MouseButton1Click:Connect(function()
-    espEnabled = not espEnabled
-    updateButtonVisual(espBtnToggle, espEnabled)
-    updateLanguage() updateESP()
-end)
-
-fpsBtnToggle.MouseButton1Click:Connect(function()
-    fpsEnabled = not fpsEnabled
-    updateButtonVisual(fpsBtnToggle, fpsEnabled)
-    toggleFPSDisplay(fpsEnabled)
-    updateLanguage()
-end)
-
-
--- FIX LAG TAB
+-- ==========================================
+-- TAB FIX LAG
+-- ==========================================
 local fixLagTab = tabs["FixLag"]
 
-local fixLagBtnToggle = tpButton:Clone()
-fixLagBtnToggle.Size = UDim2.new(1, -16, 0, 30)
-fixLagBtnToggle.Position = UDim2.new(0, 8, 0, 15)
-fixLagBtnToggle.Parent = fixLagTab
-table.insert(themeButtons, fixLagBtnToggle)
+_, rLag1 = createToggleRow(fixLagTab, "fixLagBtn", fixLagEnabled, function(st) toggleFixLag(st) end)
+table.insert(refreshFuncs, rLag1)
 
-fixLagBtnToggle.MouseButton1Click:Connect(function()
-    fixLagEnabled = not fixLagEnabled
-    updateButtonVisual(fixLagBtnToggle, fixLagEnabled)
-    toggleFixLag(fixLagEnabled)
-    updateLanguage()
-end)
+_, rLag2 = createToggleRow(fixLagTab, "hideMapBtn", hideMapOthersEnabled, function(st) toggleHideMapAndOthers(st) end)
+table.insert(refreshFuncs, rLag2)
 
-local hideMapBtnToggle = tpButton:Clone()
-hideMapBtnToggle.Size = UDim2.new(1, -16, 0, 30)
-hideMapBtnToggle.Position = UDim2.new(0, 8, 0, 55)
-hideMapBtnToggle.Parent = fixLagTab
-table.insert(themeButtons, hideMapBtnToggle)
+_, rLag3 = createToggleRow(fixLagTab, "muteSoundsBtn", muteAllSoundsEnabled, function(st) toggleMuteAllSounds(st) end)
+table.insert(refreshFuncs, rLag3)
 
-hideMapBtnToggle.MouseButton1Click:Connect(function()
-    hideMapOthersEnabled = not hideMapOthersEnabled
-    updateButtonVisual(hideMapBtnToggle, hideMapOthersEnabled)
-    toggleHideMapAndOthers(hideMapOthersEnabled)
-    updateLanguage()
-end)
-
-local muteSoundsBtnToggle = tpButton:Clone()
-muteSoundsBtnToggle.Size = UDim2.new(1, -16, 0, 30)
-muteSoundsBtnToggle.Position = UDim2.new(0, 8, 0, 95)
-muteSoundsBtnToggle.Parent = fixLagTab
-table.insert(themeButtons, muteSoundsBtnToggle)
-
-muteSoundsBtnToggle.MouseButton1Click:Connect(function()
-    muteAllSoundsEnabled = not muteAllSoundsEnabled
-    updateButtonVisual(muteSoundsBtnToggle, muteAllSoundsEnabled)
-    toggleMuteAllSounds(muteAllSoundsEnabled)
-    updateLanguage()
-end)
-
-
--- MISC TAB (SETTINGS)
+-- ==========================================
+-- TAB SETTINGS / MISC (CÀI ĐẶT MÀU & SỰ KIỆN)
+-- ==========================================
 local miscTab = tabs["Misc"]
 
+-- 1. Chỉnh màu Nút UI (Working Realtime)
 local themeLabel = Instance.new("TextLabel")
-themeLabel.Size = UDim2.new(1, -16, 0, 20)
-themeLabel.Position = UDim2.new(0, 8, 0, 10)
+themeLabel.Size = UDim2.new(1, 0, 0, 18)
 themeLabel.BackgroundTransparency = 1
-themeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+themeLabel.TextColor3 = currentTextColor
 themeLabel.Font = GLOBAL_FONT
-themeLabel.TextSize = 12
+themeLabel.TextSize = 11
 themeLabel.TextXAlignment = Enum.TextXAlignment.Left
 themeLabel.Parent = miscTab
+table.insert(textElements, themeLabel)
 
-local langLabel = themeLabel:Clone()
-langLabel.Position = UDim2.new(0, 8, 0, 50)
+local themePalette = Instance.new("Frame")
+themePalette.Size = UDim2.new(1, 0, 0, 28)
+themePalette.BackgroundTransparency = 1
+themePalette.Parent = miscTab
+
+local uiThemeColors = {
+    Color3.fromRGB(35, 35, 45),   -- Dark Grey
+    Color3.fromRGB(50, 40, 80),   -- Purple
+    Color3.fromRGB(30, 60, 90),   -- Blue
+    Color3.fromRGB(70, 30, 40),   -- Red/Wine
+    Color3.fromRGB(30, 70, 50)    -- Green
+}
+
+for i, col in ipairs(uiThemeColors) do
+    local cBtn = Instance.new("TextButton")
+    cBtn.Size = UDim2.new(0, 28, 0, 28)
+    cBtn.Position = UDim2.new(0, (i - 1) * 34, 0, 0)
+    cBtn.BackgroundColor3 = col
+    cBtn.Text = ""
+    cBtn.Parent = themePalette
+
+    local cCorner = Instance.new("UICorner")
+    cCorner.CornerRadius = UDim.new(0, 6)
+    cCorner.Parent = cBtn
+
+    cBtn.MouseButton1Click:Connect(function() applyThemeColor(col) end)
+end
+
+-- 2. Chỉnh màu Chữ UI (Working Realtime)
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 0, 18)
+textLabel.BackgroundTransparency = 1
+textLabel.TextColor3 = currentTextColor
+textLabel.Font = GLOBAL_FONT
+textLabel.TextSize = 11
+textLabel.TextXAlignment = Enum.TextXAlignment.Left
+textLabel.Parent = miscTab
+table.insert(textElements, textLabel)
+
+local textPalette = Instance.new("Frame")
+textPalette.Size = UDim2.new(1, 0, 0, 28)
+textPalette.BackgroundTransparency = 1
+textPalette.Parent = miscTab
+
+local uiTextColors = {
+    Color3.fromRGB(255, 255, 255), -- White
+    Color3.fromRGB(255, 220, 100), -- Yellow
+    Color3.fromRGB(100, 255, 200), -- Cyan
+    Color3.fromRGB(255, 150, 200)  -- Pink
+}
+
+for i, col in ipairs(uiTextColors) do
+    local cBtn = Instance.new("TextButton")
+    cBtn.Size = UDim2.new(0, 28, 0, 28)
+    cBtn.Position = UDim2.new(0, (i - 1) * 34, 0, 0)
+    cBtn.BackgroundColor3 = col
+    cBtn.Text = ""
+    cBtn.Parent = textPalette
+
+    local cCorner = Instance.new("UICorner")
+    cCorner.CornerRadius = UDim.new(0, 6)
+    cCorner.Parent = cBtn
+
+    cBtn.MouseButton1Click:Connect(function() applyTextColor(col) end)
+end
+
+-- 3. Đổi Ngôn Ngữ
+local langLabel = Instance.new("TextLabel")
+langLabel.Size = UDim2.new(1, 0, 0, 18)
+langLabel.BackgroundTransparency = 1
+langLabel.TextColor3 = currentTextColor
+langLabel.Font = GLOBAL_FONT
+langLabel.TextSize = 11
+langLabel.TextXAlignment = Enum.TextXAlignment.Left
 langLabel.Parent = miscTab
+table.insert(textElements, langLabel)
+
+local langFrame = Instance.new("Frame")
+langFrame.Size = UDim2.new(1, 0, 0, 30)
+langFrame.BackgroundTransparency = 1
+langFrame.Parent = miscTab
 
 local btnEnglish = Instance.new("TextButton")
-btnEnglish.Size = UDim2.new(0.48, 0, 0, 30)
-btnEnglish.Position = UDim2.new(0, 8, 0, 75)
-btnEnglish.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-btnEnglish.TextColor3 = Color3.fromRGB(255, 255, 255)
+btnEnglish.Size = UDim2.new(0.48, 0, 1, 0)
+btnEnglish.BackgroundColor3 = currentThemeColor
+btnEnglish.TextColor3 = currentTextColor
 btnEnglish.Font = GLOBAL_FONT
-btnEnglish.TextSize = 12
-btnEnglish.Parent = miscTab
+btnEnglish.TextSize = 11
+btnEnglish.Text = "English"
+btnEnglish.Parent = langFrame
 table.insert(themeButtons, btnEnglish)
+table.insert(textElements, btnEnglish)
 
 local engCorner = Instance.new("UICorner")
 engCorner.CornerRadius = UDim.new(0, 6)
 engCorner.Parent = btnEnglish
 
 local btnVietnamese = btnEnglish:Clone()
-btnVietnamese.Position = UDim2.new(0.52, 0, 0, 75)
-btnVietnamese.Parent = miscTab
+btnVietnamese.Position = UDim2.new(0.52, 0, 0, 0)
+btnVietnamese.Text = "Tiếng Việt"
+btnVietnamese.Parent = langFrame
 table.insert(themeButtons, btnVietnamese)
+table.insert(textElements, btnVietnamese)
+
+-- 4. Server Actions
+local serverFrame = Instance.new("Frame")
+serverFrame.Size = UDim2.new(1, 0, 0, 32)
+serverFrame.BackgroundTransparency = 1
+serverFrame.Parent = miscTab
 
 local rejoinButton = btnEnglish:Clone()
-rejoinButton.Position = UDim2.new(0, 8, 0, 115)
-rejoinButton.Parent = miscTab
+rejoinButton.Size = UDim2.new(0.48, 0, 1, 0)
+rejoinButton.Position = UDim2.new(0, 0, 0, 0)
+rejoinButton.Parent = serverFrame
 table.insert(themeButtons, rejoinButton)
+table.insert(textElements, rejoinButton)
 
 local serverHopButton = btnVietnamese:Clone()
-serverHopButton.Position = UDim2.new(0.52, 0, 0, 115)
-serverHopButton.Parent = miscTab
+serverHopButton.Size = UDim2.new(0.48, 0, 1, 0)
+serverHopButton.Position = UDim2.new(0.52, 0, 0, 0)
+serverHopButton.Parent = serverFrame
 table.insert(themeButtons, serverHopButton)
-
-local godButton = tpButton:Clone()
-godButton.Size = UDim2.new(1, -16, 0, 35)
-godButton.Position = UDim2.new(0, 8, 0, 170)
-godButton.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
-godButton.Parent = miscTab
-
-godButton.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"))()
-end)
+table.insert(textElements, serverHopButton)
 
 rejoinButton.MouseButton1Click:Connect(rejoinServer)
 serverHopButton.MouseButton1Click:Connect(serverHop)
 
+-- Cập nhật Ngôn Ngữ chung
+local function updateLanguage()
+    local t = translations[currentLang]
+    titleText.Text = t.title
+    godButton.Text = t.godBtn
+    espColorLabel.Text = t.espColorLabel
+    themeLabel.Text = t.themeLabel
+    textLabel.Text = t.textLabel
+    langLabel.Text = t.langLabel
+    rejoinButton.Text = t.rejoinBtn
+    serverHopButton.Text = t.serverHopBtn
+
+    for _, rf in ipairs(refreshFuncs) do
+        rf()
+    end
+end
+
 btnEnglish.MouseButton1Click:Connect(function() currentLang = "EN" updateLanguage() end)
 btnVietnamese.MouseButton1Click:Connect(function() currentLang = "VI" updateLanguage() end)
 
--- Navigation Buttons
+-- Navigation Buttons (Sidebar)
 local tabButtons = {}
 local yOffset = 10
 for i, name in ipairs(tabNames) do
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -16, 0, 32)
     btn.Position = UDim2.new(0, 8, 0, yOffset)
-    btn.BackgroundColor3 = (i == 1) and Color3.fromRGB(70, 70, 90) or Color3.fromRGB(35, 35, 45)
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.BackgroundColor3 = (i == 1) and Color3.fromRGB(70, 70, 90) or Color3.fromRGB(30, 30, 40)
+    btn.TextColor3 = currentTextColor
     btn.Font = GLOBAL_FONT
-    btn.TextSize = 12
-    btn.TextXAlignment = Enum.TextXAlignment.Center
+    btn.TextSize = 11
     btn.Parent = sidebar
-    table.insert(themeButtons, btn)
+    table.insert(textElements, btn)
 
     local btnCorner = Instance.new("UICorner")
     btnCorner.CornerRadius = UDim.new(0, 6)
@@ -1411,143 +1316,50 @@ for i, name in ipairs(tabNames) do
 
     btn.MouseButton1Click:Connect(function()
         for _, t in pairs(tabs) do t.Visible = false end
-        for _, b in pairs(tabButtons) do TweenService:Create(b, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 45)}):Play() end
+        for _, b in pairs(tabButtons) do TweenService:Create(b, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}):Play() end
         tabs[name].Visible = true
         TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(70, 70, 90)}):Play()
-        
-        -- Animation trượt nhẹ cho tab
-        tabs[name].Position = UDim2.new(0, 20, 0, 0)
-        tabs[name].GroupTransparency = 1
-        TweenService:Create(tabs[name], TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0), GroupTransparency = 0}):Play()
     end)
 
     tabButtons[name] = btn
     yOffset = yOffset + 40
 end
 
-updateLanguage = function()
+local function updateSidebarTabNames()
     local t = translations[currentLang]
-    
-    titleText.Text = t.title
     tabButtons["Main"].Text = t.tabMain
     tabButtons["ESP"].Text = t.tabEsp
     tabButtons["FixLag"].Text = t.tabFixLag
     tabButtons["Misc"].Text = t.tabMisc
-    
-    tpLabel.Text = t.tpSpd
-    walkLabel.Text = t.walkSpd
-    jumpLabel.Text = t.jumpSpd
-    flySpeedLabel.Text = t.flySpd
-    gravLabel.Text = t.gravSpd
-    freezeRangeLabel.Text = t.freezeRng
-    -- autoPressDelayLabel.Text = t.clickDelayLabel
-    espColorText.Text = t.espColorLabel
-    
-    local targetName = selectedTargetPlayer and selectedTargetPlayer.DisplayName or t.allTarget
-    targetSelectBtn.Text = t.targetBtn .. targetName
-    
-    local espTargetName = (selectedEspTarget == "Tất cả") and t.allTarget or selectedEspTarget
-    espTargetSelectBtn.Text = t.targetBtn .. espTargetName
-    
-    tpButton.Text = t.tpBtn .. (tpEnabled and t.on or t.off)
-    walkButton.Text = t.walkBtn .. (walkEnabled and t.on or t.off)
-    jumpButton.Text = t.jumpBtn .. (jumpEnabled and t.on or t.off)
-    flyButton.Text = t.flyBtn .. (flyEnabled and t.on or t.off)
-    gravityButton.Text = t.gravBtn .. (gravityEnabled and t.on or t.off)
-    noclipButton.Text = t.noclipBtn .. (noclipEnabled and t.on or t.off)
-    invisButton.Text = t.invisBtn .. (invisibleEnabled and t.on or t.off)
-    infJumpButton.Text = t.infJumpBtn .. (infJumpEnabled and t.on or t.off)
-    freezeButton.Text = t.freezeBtn .. (freezeRayEnabled and t.on or t.off)
-    autoEquipBtnToggle.Text = t.autoEquipBtn .. (autoEquipEnabled and t.on or t.off)
-    godButton.Text = t.godBtn
-    espBtnToggle.Text = t.espBtn .. (espEnabled and t.on or t.off)
-    fpsBtnToggle.Text = t.fpsBtn .. (fpsEnabled and t.on or t.off)
-    fixLagBtnToggle.Text = t.fixLagBtn .. (fixLagEnabled and t.on or t.off)
-    hideMapBtnToggle.Text = t.hideMapBtn .. (hideMapOthersEnabled and t.on or t.off)
-    muteSoundsBtnToggle.Text = t.muteSoundsBtn .. (muteAllSoundsEnabled and t.on or t.off)
-    
-    autoPressBtnToggle.Text = t.autoPressBtn .. tostring(autoPressRadius) .. "): " .. (autoPressButtonEnabled and t.on or t.off)
-    
-    themeLabel.Text = t.themeLabel
-    langLabel.Text = t.langLabel
-    rejoinButton.Text = t.rejoinBtn
-    serverHopButton.Text = t.serverHopBtn
-    
-    if currentLang == "EN" then
-        btnEnglish.Text = "English" .. t.selected
-        btnVietnamese.Text = "Tiếng Việt"
-        updateButtonVisual(btnEnglish, true) updateButtonVisual(btnVietnamese, false)
-    else
-        btnEnglish.Text = "English"
-        btnVietnamese.Text = "Tiếng Việt" .. t.selected
-        updateButtonVisual(btnEnglish, false) updateButtonVisual(btnVietnamese, true)
+end
+
+-- ANIMATION NÚT (HOVER)
+for _, btn in ipairs(screenGui:GetDescendants()) do
+    if btn:IsA("TextButton") then
+        local scale = Instance.new("UIScale")
+        scale.Parent = btn
+        btn.MouseEnter:Connect(function() TweenService:Create(scale, TweenInfo.new(0.12), {Scale = 1.03}):Play() end)
+        btn.MouseLeave:Connect(function() TweenService:Create(scale, TweenInfo.new(0.12), {Scale = 1.0}):Play() end)
+        btn.MouseButton1Down:Connect(function() TweenService:Create(scale, TweenInfo.new(0.08), {Scale = 0.95}):Play() end)
+        btn.MouseButton1Up:Connect(function() TweenService:Create(scale, TweenInfo.new(0.08), {Scale = 1.03}):Play() end)
     end
 end
 
--- ANIMATION CHO TẤT CẢ CÁC NÚT (HOVER & CLICK)
-local function addHoverAnimationToAllButtons()
-    for _, btn in ipairs(screenGui:GetDescendants()) do
-        if btn:IsA("TextButton") then
-            -- Thêm UIScale để phóng to mượt mà
-            local scale = Instance.new("UIScale")
-            scale.Parent = btn
-            
-            btn.MouseEnter:Connect(function()
-                TweenService:Create(scale, TweenInfo.new(0.15, Enum.EasingStyle.Sine), {Scale = 1.05}):Play()
-            end)
-            btn.MouseLeave:Connect(function()
-                TweenService:Create(scale, TweenInfo.new(0.15, Enum.EasingStyle.Sine), {Scale = 1.0}):Play()
-            end)
-            btn.MouseButton1Down:Connect(function()
-                TweenService:Create(scale, TweenInfo.new(0.1, Enum.EasingStyle.Bounce), {Scale = 0.9}):Play()
-            end)
-            btn.MouseButton1Up:Connect(function()
-                TweenService:Create(scale, TweenInfo.new(0.1, Enum.EasingStyle.Bounce), {Scale = 1.05}):Play()
-            end)
-        end
-    end
-end
-addHoverAnimationToAllButtons()
-
--- Logic Click Các Nút
-tpButton.MouseButton1Click:Connect(function() tpEnabled = not tpEnabled updateButtonVisual(tpButton, tpEnabled) updateLanguage() end)
-walkButton.MouseButton1Click:Connect(function()
-    walkEnabled = not walkEnabled updateButtonVisual(walkButton, walkEnabled) updateLanguage()
-    if walkEnabled then if walkConnection then walkConnection:Disconnect() end walkConnection = RunService.RenderStepped:Connect(function() local character = player.Character local humanoid = character and character:FindFirstChildOfClass("Humanoid") if humanoid then humanoid.WalkSpeed = walkSpeed end end)
-    else if walkConnection then walkConnection:Disconnect() end walkConnection = nil local character = player.Character local humanoid = character and character:FindFirstChildOfClass("Humanoid") if humanoid then humanoid.WalkSpeed = 16 end end
-end)
-jumpButton.MouseButton1Click:Connect(function()
-    jumpEnabled = not jumpEnabled updateButtonVisual(jumpButton, jumpEnabled) updateLanguage()
-    if jumpEnabled then if jumpConnection then jumpConnection:Disconnect() end jumpConnection = RunService.RenderStepped:Connect(function() local character = player.Character local humanoid = character and character:FindFirstChildOfClass("Humanoid") if humanoid then humanoid.UseJumpPower = true humanoid.JumpPower = jumpPower end end)
-    else if jumpConnection then jumpConnection:Disconnect() end jumpConnection = nil local character = player.Character local humanoid = character and character:FindFirstChildOfClass("Humanoid") if humanoid then humanoid.JumpPower = 50 end end
-end)
-flyButton.MouseButton1Click:Connect(function() flyEnabled = not flyEnabled updateButtonVisual(flyButton, flyEnabled) updateLanguage() toggleFly(flyEnabled) end)
-gravityButton.MouseButton1Click:Connect(function()
-    gravityEnabled = not gravityEnabled updateButtonVisual(gravityButton, gravityEnabled) updateLanguage()
-    if gravityEnabled then if gravityConnection then gravityConnection:Disconnect() end gravityConnection = RunService.RenderStepped:Connect(function() Workspace.Gravity = customGravity end)
-    else if gravityConnection then gravityConnection:Disconnect() end gravityConnection = nil Workspace.Gravity = 196.2 end
-end)
-noclipButton.MouseButton1Click:Connect(function() noclipEnabled = not noclipEnabled updateButtonVisual(noclipButton, noclipEnabled) updateLanguage() toggleNoclip(noclipEnabled) end)
-invisButton.MouseButton1Click:Connect(function() invisibleEnabled = not invisibleEnabled updateButtonVisual(invisButton, invisibleEnabled) updateLanguage() toggleInvisibility(invisibleEnabled) end)
-infJumpButton.MouseButton1Click:Connect(function() infJumpEnabled = not infJumpEnabled updateButtonVisual(infJumpButton, infJumpEnabled) updateLanguage() toggleInfJump(infJumpEnabled) end)
-freezeButton.MouseButton1Click:Connect(function() freezeRayEnabled = not freezeRayEnabled updateButtonVisual(freezeButton, freezeRayEnabled) updateLanguage() toggleFreezeRay(freezeRayEnabled) end)
-
--- MINIMIZE MƯỢT MÀ BẰNG TWEEN
+-- Minimize & Close
 minimizeButton.MouseButton1Click:Connect(function()
-    TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0,0,0,0)}):Play()
-    task.wait(0.3)
+    TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0,0,0,0)}):Play()
+    task.wait(0.25)
     frame.Visible = false
     openUIButton.Visible = true
-    openUIButton.Size = UDim2.new(0, 0, 0, 0)
-    TweenService:Create(openUIButton, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0,50,0,50)}):Play()
+    TweenService:Create(openUIButton, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0,50,0,50)}):Play()
 end)
 
 openUIButton.MouseButton1Click:Connect(function()
-    TweenService:Create(openUIButton, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0,0,0,0)}):Play()
-    task.wait(0.2)
+    TweenService:Create(openUIButton, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0,0,0,0)}):Play()
+    task.wait(0.15)
     openUIButton.Visible = false
     frame.Visible = true
-    TweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 390, 0, 310)}):Play()
+    TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 390, 0, 320)}):Play()
 end)
 
 closeButton.MouseButton1Click:Connect(function()
@@ -1557,15 +1369,12 @@ closeButton.MouseButton1Click:Connect(function()
     if walkConnection then walkConnection:Disconnect() walkConnection = nil end
     if jumpConnection then jumpConnection:Disconnect() jumpConnection = nil end
     tpEnabled = false
-    
-    -- Hiệu ứng tắt
-    TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Sine), {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}):Play()
-    task.wait(0.3)
     screenGui:Destroy()
 end)
- 
+
+updateSidebarTabNames()
 updateLanguage()
 
--- Hiện UI lên với hiệu ứng khởi động
+-- Hiệu ứng mở UI ban đầu
 frame.Size = UDim2.new(0, 0, 0, 0)
-TweenService:Create(frame, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 390, 0, 310)}):Play()
+TweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 390, 0, 320)}):Play()
