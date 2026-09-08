@@ -1,21 +1,10 @@
 -- ==========================================
--- H HUB AUTOFARM (FIXED FOR MAP & DELTA EXECUTOR)
+-- H HUB AUTOFARM (FIXED FOR DELTA & EXECUTORS)
 -- ==========================================
 
--- 1. BỘ GIẢ LẬP VÀ AN TOÀN HÀM CHO DELTA MOBILE
+-- Kiểm tra và định nghĩa an toàn các hàm Executor
 local fireclickdetector = fireclickdetector or fire_click_detector or function(...) end
 local fireproximityprompt = fireproximityprompt or fire_proximity_prompt or function(...) end
-local firetouchinterest = firetouchinterest or function(...) end
-
-local function safeExecuteString(code)
-    if not code or code == "" then return end
-    if loadstring then
-        local func, err = loadstring(code)
-        if func then
-            pcall(func)
-        end
-    end
-end
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -95,19 +84,6 @@ local textElements = {}
 
 -- Font chữ
 local GLOBAL_FONT = Enum.Font.GothamBold
-
--- 2. HÀM KIỂM TRA MAP AN TOÀN (CHỐNG LỖI MAP NOT A VALID MEMBER)
-local function getActiveMap()
-    local map = Workspace:FindFirstChild("Map134") or Workspace:FindFirstChild("Map")
-    if not map then
-        for _, child in ipairs(Workspace:GetChildren()) do
-            if child.Name:sub(1, 3) == "Map" then
-                return child
-            end
-        end
-    end
-    return map
-end
 
 local translations = {
     EN = {
@@ -483,8 +459,8 @@ local function toggleFly(state)
     if flyEnabled then
         if not rootPart or not humanoid then return end
         humanoid.PlatformStand = true
-        local bg = Instance.new("BodyGyro") bg.Name = "FlyGyro" bg.P = 9e4 bg.maxTorque = Vector3.new(9e4, 9e4, 9e4) bg.cframe = rootPart.CFrame bg.Parent = rootPart
-        local bv = Instance.new("BodyVelocity") bv.Name = "FlyVelocity" bv.velocity = Vector3.new(0, 0, 0) bv.maxForce = Vector3.new(9e4, 9e4, 9e4) bv.Parent = rootPart
+        local bg = Instance.new("BodyGyro") bg.Name = "FlyGyro" bg.P = 9e4 bg.maxTorque = Vector3.new(9e4, 9e4, 9e4) bg.CFrame = rootPart.CFrame bg.Parent = rootPart
+        local bv = Instance.new("BodyVelocity") bv.Name = "FlyVelocity" bv.Velocity = Vector3.new(0, 0, 0) bv.maxForce = Vector3.new(9e4, 9e4, 9e4) bv.Parent = rootPart
         if flyConnection then flyConnection:Disconnect() end
         flyConnection = RunService.RenderStepped:Connect(function()
             if not flyEnabled or not character or not character.Parent then if bg then bg:Destroy() end if bv then bv:Destroy() end return end
@@ -495,8 +471,8 @@ local function toggleFly(state)
                 local camFlatCFrame = lookFlat.Magnitude > 0.001 and CFrame.lookAt(Vector3.zero, lookFlat) or cam.CFrame
                 local localMove = camFlatCFrame:VectorToObjectSpace(moveDir)
                 local flyVector = (cam.CFrame.LookVector * -localMove.Z) + (cam.CFrame.RightVector * localMove.X)
-                bv.velocity = flyVector * flySpeed bg.cframe = cam.CFrame
-            else bv.velocity = Vector3.new(0, 0, 0) bg.cframe = cam.CFrame end
+                bv.Velocity = flyVector * flySpeed bg.CFrame = cam.CFrame
+            else bv.Velocity = Vector3.new(0, 0, 0) bg.CFrame = cam.CFrame end
         end)
     else
         if flyConnection then flyConnection:Disconnect() flyConnection = nil end
@@ -619,13 +595,7 @@ end
 
 local function findAllCoins()
     local coins = {}
-    pcall(function()
-        for _, part in ipairs(Workspace:GetDescendants()) do 
-            if part:IsA("BasePart") and part.Name == coinName then 
-                table.insert(coins, part) 
-            end 
-        end
-    end)
+    for _, part in ipairs(Workspace:GetDescendants()) do if part:IsA("BasePart") and part.Name == coinName then table.insert(coins, part) end end
     return coins
 end
 
@@ -1172,7 +1142,7 @@ table.insert(refreshFuncs, r17_2)
 local _, r17 = createToggleRow(mainTab, "autoPressBtn", autoPressButtonEnabled, function(st) toggleAutoPressButton(st) end)
 table.insert(refreshFuncs, r17)
 
--- NÚT GOD MODE (SỬA LỖI KHÔNG CHẠY ĐƯỢC LOADSTRING TRÊN DELTA)
+-- NÚT GOD MODE (Sửa lỗi loadstring)
 local godRowFrame = Instance.new("Frame")
 godRowFrame.Size = UDim2.new(1, 0, 0, 36)
 godRowFrame.BackgroundTransparency = 1
@@ -1196,8 +1166,13 @@ godCorner.Parent = godButton
 godButton.MouseButton1Click:Connect(function()
     pcall(function()
         if game.HttpGet then
-            local scriptContent = game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal")
-            safeExecuteString(scriptContent)
+            local success, rawScript = pcall(game.HttpGet, game, "https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal")
+            if success and rawScript then
+                local execFunc, err = loadstring(rawScript)
+                if execFunc then
+                    execFunc()
+                end
+            end
         end
     end)
 end)
