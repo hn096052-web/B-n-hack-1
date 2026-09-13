@@ -27,6 +27,7 @@ local noclipEnabled = false
 local invisibleEnabled = false
 local flyEnabled = false
 local infJumpEnabled = false
+local swimEnabled = false -- [MỚI] Trạng thái Bơi
 local freezeRayEnabled = false
 local espEnabled = false
 local fpsEnabled = false
@@ -60,7 +61,7 @@ local frozenPlayersTable = {}
 local currentLang = "VI" 
 
 -- Quản lý Kết nối & Task
-local noclipConnection, invisibleConnection, flyConnection
+local noclipConnection, invisibleConnection, flyConnection, swimConnection -- [MỚI] Thêm swimConnection
 local walkConnection, jumpConnection, infJumpConnection
 local freezeRayTask, fpsConnection, gravityConnection
 local autoPressButtonTask, fixLagTask, fixLagChildConnection
@@ -97,12 +98,13 @@ local translations = {
         walkBtn = "Custom Speed",
         jumpBtn = "Custom Jump",
         flyBtn = "Fly Mode",
+        swimBtn = "Swim Mode", -- [MỚI]
         gravBtn = "Custom Gravity",
         noclipBtn = "Noclip Pass-Wall",
         invisBtn = "Invisibility",
         infJumpBtn = "Infinite Jump",
         freezeBtn = "Auto Freeze Ray",
-        autoEquipBtn = "Equip Items (Run Once)", -- Đã đổi thành Nút 1 lần
+        autoEquipBtn = "Equip Items (Run Once)", 
         godBtn = "⚡ Open God Mode Panel",
         espBtn = "ESP Wallhack",
         fpsBtn = "Display FPS",
@@ -113,7 +115,7 @@ local translations = {
         hideMapBtn = "Hide Map & Players",
         muteSoundsBtn = "Mute Game Sounds",
         espColorLabel = "ESP Highlight Color:",
-        boardColorLabel = "Board Background Color:", -- Thêm nhãn màu bảng
+        boardColorLabel = "Board Background Color:", 
         themeLabel = "UI Button Color:",
         textLabel = "UI Text Color:",
         langLabel = "Language:",
@@ -141,12 +143,13 @@ local translations = {
         walkBtn = "Chỉnh Tốc Độ Đi",
         jumpBtn = "Chỉnh Độ Nhảy",
         flyBtn = "Chế Độ Bay",
+        swimBtn = "Chế Độ Bơi", -- [MỚI]
         gravBtn = "Trọng Lực Tùy Chỉnh",
         noclipBtn = "Đi Xuyên Tường (Noclip)",
         invisBtn = "Tàng Hình Nhìn Thấy",
         infJumpBtn = "Nhảy Vô Hạn",
         freezeBtn = "Tự Động Freeze Ray",
-        autoEquipBtn = "Trang Bị Đồ (Nhấn 1 Lần)", -- Đã đổi thành Nút 1 lần
+        autoEquipBtn = "Trang Bị Đồ (Nhấn 1 Lần)", 
         godBtn = "⚡ Bảng God Mode (Bất Tử)",
         espBtn = "ESP Nhìn Xuyên Tường",
         fpsBtn = "Hiển Thị FPS",
@@ -157,7 +160,7 @@ local translations = {
         hideMapBtn = "Ẩn Bản Đồ & Người Khác",
         muteSoundsBtn = "Tắt Âm Thanh Game",
         espColorLabel = "Màu ESP Xuyên Tường:",
-        boardColorLabel = "Màu Bảng Điều Khiển:", -- Thêm nhãn màu bảng
+        boardColorLabel = "Màu Bảng Điều Khiển:", 
         themeLabel = "Màu Nút Giao Diện:",
         textLabel = "Màu Chữ Giao Diện:",
         langLabel = "Ngôn ngữ / Language:",
@@ -171,28 +174,70 @@ local translations = {
 -- ==========================================
 -- LOGIC TÍNH NĂNG GAME
 -- ==========================================
-local itemsToUnequip = {"PieThrow", "SmallPotion", "GiantPotion", "GhostPotion", "Healing", "GravityPotion", "Bloxiade", "ClownBomb", "Slate", "WindPotion", "IcePotion", "Caltrops", "SlowDownGun", "GravityGun", "GravityDisruptor", "FreezeRay", "Bomb"}
 
--- [ĐÃ SỬA] Hàm Trang bị 1 lần duy nhất
+local allEquipItems = {
+    "PieThrow", "SmallPotion", "GiantPotion", "GhostPotion", "Healing", "GravityPotion", 
+    "Bloxiade", "ClownBomb", "Slate", "WindPotion", "IcePotion", "Caltrops", "SlowDownGun", 
+    "GravityGun", "GravityDisruptor", "FreezeRay", "Bomb", "Jetpack", "DecoyDeploy", 
+    "AprilShowers", "Balloon", "MarchingDrum", "Trumpet", "Trowel", "TeapotLauncher", 
+    "BunchOfBalloons", "BangGun", "EpicJuice", "EpicSauce", "Ball", "Torch", "Cake", 
+    "MoneyBag", "IceCreamCone", "Teddy", "Witch", "Watermelon", "Taco", "Bloxy", "Pizza", "Coco"
+}
+
 local function equipItemsOnce()
     task.spawn(function()
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local equipEvent = ReplicatedStorage:WaitForChild("Equip", 5)
         if not equipEvent then return end
         
-        -- Tháo toàn bộ
-        for _, item in ipairs(itemsToUnequip) do
+        for _, item in ipairs(allEquipItems) do
             pcall(function() equipEvent:FireServer("UNEQUIP", item) end)
             task.wait(0.03)
         end
         task.wait(0.2)
         
-        -- Mặc lại toàn bộ
-        for _, item in ipairs(itemsToUnequip) do
+        for _, item in ipairs(allEquipItems) do
             pcall(function() equipEvent:FireServer("EQUIP", item) end)
             task.wait(0.03)
         end
     end)
+end
+
+-- [MỚI] Hàm xử lý chế độ Bơi
+local function toggleSwim(state)
+    swimEnabled = state
+    local character = player.Character
+    if not character then return end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if swimEnabled then
+        if humanoid then
+            pcall(function()
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, true)
+                humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
+            end)
+        end
+        if not swimConnection then
+            swimConnection = RunService.RenderStepped:Connect(function()
+                local char = player.Character
+                local hum = char and char:FindFirstChildOfClass("Humanoid")
+                if hum and swimEnabled then
+                    pcall(function()
+                        hum:ChangeState(Enum.HumanoidStateType.Swimming)
+                    end)
+                end
+            end)
+        end
+    else
+        if swimConnection then
+            swimConnection:Disconnect()
+            swimConnection = nil
+        end
+        if humanoid then
+            pcall(function()
+                humanoid:ChangeState(Enum.HumanoidStateType.Running)
+            end)
+        end
+    end
 end
 
 local function applyMuteToSound(sound)
@@ -587,7 +632,7 @@ end
 task.spawn(teleportLoop)
 
 -- ==========================================
--- GIAO DIỆN GUI (KHÔNG TRÀN - CÓ BẢNG CUỘN)
+-- GIAO DIỆN GUI
 -- ==========================================
 
 local screenGui = Instance.new("ScreenGui")
@@ -595,7 +640,6 @@ screenGui.Name = "AutoFarmHubGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- Nút Thu Nhỏ Tròn Tròn (Mở UI)
 local openUIButton = Instance.new("TextButton")
 openUIButton.Size = UDim2.new(0, 50, 0, 50)
 openUIButton.Position = UDim2.new(0.05, 0, 0.4, 0)
@@ -618,7 +662,6 @@ openUIStroke.Thickness = 2
 openUIStroke.Color = Color3.fromRGB(80, 80, 255)
 openUIStroke.Parent = openUIButton
 
--- FPS Button
 local fpsButton = Instance.new("TextButton")
 fpsButton.Name = "FPSDisplayButton"
 fpsButton.Size = UDim2.new(0, 85, 0, 32)
@@ -663,7 +706,6 @@ local function toggleFPSDisplay(state)
     end
 end
 
--- KHUNG CHÍNH (FRAME)
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 390, 0, 320)
 frame.Position = UDim2.new(0.5, -195, 0.5, -160)
@@ -702,7 +744,6 @@ frameStroke.Thickness = 2
 frameStroke.Transparency = 0.4
 frameStroke.Parent = frame
 
--- Title Bar
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 35)
 titleBar.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
@@ -754,7 +795,6 @@ local closeCorner = Instance.new("UICorner")
 closeCorner.CornerRadius = UDim.new(0, 4)
 closeCorner.Parent = closeButton
 
--- Sidebar
 local sidebar = Instance.new("Frame")
 sidebar.Size = UDim2.new(0, 110, 1, -35)
 sidebar.Position = UDim2.new(0, 0, 0, 35)
@@ -774,14 +814,12 @@ line.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
 line.BorderSizePixel = 0
 line.Parent = sidebar
 
--- Container
 local container = Instance.new("Frame")
 container.Size = UDim2.new(1, -115, 1, -35)
 container.Position = UDim2.new(0, 115, 0, 35)
 container.BackgroundTransparency = 1
 container.Parent = frame
 
--- TẠO TAB DẠNG SCROLLING FRAME
 local tabs = {}
 local tabNames = {"Main", "ESP", "FixLag", "Misc"}
 
@@ -814,10 +852,6 @@ for _, name in ipairs(tabNames) do
     tabs[name] = tabScroll
 end
 
--- ==========================================
--- HÀM MÀU SẮC & CẬP NHẬT TRẠNG THÁI
--- ==========================================
-
 local function updateButtonVisual(btn, isOn)
     if isOn then
         TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 160, 85)}):Play()
@@ -838,21 +872,15 @@ local function applyThemeColor(color)
     end
 end
 
--- [ĐÃ SỬA] Thêm hàm áp dụng màu cho Bảng (Board)
 local function applyBoardColor(baseColor)
     local r, g, b = baseColor.R*255, baseColor.G*255, baseColor.B*255
-
-    -- Làm tối đi ở viền
     local darkColor = Color3.fromRGB(math.clamp(r-15, 0, 255), math.clamp(g-15, 0, 255), math.clamp(b-15, 0, 255))
-    -- Sáng hơn ở trung tâm
     local lightColor = Color3.fromRGB(math.clamp(r+10, 0, 255), math.clamp(g+10, 0, 255), math.clamp(b+10, 0, 255))
-
     gradientFrame.Color = ColorSequence.new{
         ColorSequenceKeypoint.new(0.00, darkColor),
         ColorSequenceKeypoint.new(0.50, lightColor),
         ColorSequenceKeypoint.new(1.00, darkColor)
     }
-
     sidebar.BackgroundColor3 = darkColor
     titleBar.BackgroundColor3 = Color3.fromRGB(math.clamp(r-20, 0, 255), math.clamp(g-20, 0, 255), math.clamp(b-20, 0, 255))
 end
@@ -866,7 +894,6 @@ local function applyTextColor(color)
     end
 end
 
--- Hàm tạo hàng công tắc (Toggle)
 local function createToggleRow(parentTab, labelKey, stateBool, callback)
     local frameRow = Instance.new("Frame")
     frameRow.Size = UDim2.new(1, 0, 0, 32)
@@ -905,7 +932,6 @@ local function createToggleRow(parentTab, labelKey, stateBool, callback)
     return btn, refreshStateText
 end
 
--- [ĐÃ SỬA] Hàm tạo hàng Nút bấm 1 lần (Click Button) cho tính năng Trang bị đồ
 local function createButtonRow(parentTab, labelKey, callback)
     local frameRow = Instance.new("Frame")
     frameRow.Size = UDim2.new(1, 0, 0, 32)
@@ -982,12 +1008,8 @@ local function createInputRow(parentTab, labelKey, defaultVal, callback)
     return frameRow, refreshLabel
 end
 
--- ==========================================
--- TAB CHÍNH (MAIN TAB)
--- ==========================================
 local mainTab = tabs["Main"]
 mainTab.Visible = true
-
 local refreshFuncs = {}
 
 local _, r1 = createInputRow(mainTab, "tpSpd", tpSpeed, function(val) tpSpeed = val end)
@@ -1051,6 +1073,10 @@ table.insert(refreshFuncs, r7)
 local _, r8 = createToggleRow(mainTab, "flyBtn", flyEnabled, function(st) toggleFly(st) end)
 table.insert(refreshFuncs, r8)
 
+-- [MỚI] Thêm nút Bơi vào Tab Chính
+local _, rSwim = createToggleRow(mainTab, "swimBtn", swimEnabled, function(st) toggleSwim(st) end)
+table.insert(refreshFuncs, rSwim)
+
 local _, r9 = createInputRow(mainTab, "gravSpd", customGravity, function(val) customGravity = val if gravityEnabled then Workspace.Gravity = customGravity end end)
 table.insert(refreshFuncs, r9)
 local _, r10 = createToggleRow(mainTab, "gravBtn", gravityEnabled, function(st)
@@ -1077,11 +1103,9 @@ table.insert(refreshFuncs, r14)
 local _, r15 = createToggleRow(mainTab, "freezeBtn", freezeRayEnabled, function(st) toggleFreezeRay(st) end)
 table.insert(refreshFuncs, r15)
 
--- [ĐÃ SỬA] Nút trang bị thành nút thường (Click 1 lần là tự chạy rồi tắt)
 local _, r16 = createButtonRow(mainTab, "autoEquipBtn", function() equipItemsOnce() end)
 table.insert(refreshFuncs, r16)
 
--- Thêm chỉnh Bán kính & Tốc độ cho Auto Click Nút
 local _, r17_1 = createInputRow(mainTab, "autoPressRadiusLabel", autoPressRadius, function(val) autoPressRadius = val end)
 table.insert(refreshFuncs, r17_1)
 local _, r17_2 = createInputRow(mainTab, "autoPressDelayLabel", autoPressDelay, function(val) autoPressDelay = val end)
@@ -1089,7 +1113,6 @@ table.insert(refreshFuncs, r17_2)
 local _, r17 = createToggleRow(mainTab, "autoPressBtn", autoPressButtonEnabled, function(st) toggleAutoPressButton(st) end)
 table.insert(refreshFuncs, r17)
 
--- NÚT GOD MODE
 local godRowFrame = Instance.new("Frame")
 godRowFrame.Size = UDim2.new(1, 0, 0, 36)
 godRowFrame.BackgroundTransparency = 1
@@ -1112,9 +1135,6 @@ godButton.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"))()
 end)
 
--- ==========================================
--- TAB PLAYERS / ESP
--- ==========================================
 local espTab = tabs["ESP"]
 
 local _, rEsp = createToggleRow(espTab, "espBtn", espEnabled, function(st) espEnabled = st updateESP() end)
@@ -1162,9 +1182,6 @@ for i, col in ipairs(espColors) do
     cBtn.MouseButton1Click:Connect(function() espColor = col updateESP() end)
 end
 
--- ==========================================
--- TAB FIX LAG
--- ==========================================
 local fixLagTab = tabs["FixLag"]
 
 local _, rLag1 = createToggleRow(fixLagTab, "fixLagBtn", fixLagEnabled, function(st) toggleFixLag(st) end)
@@ -1176,12 +1193,8 @@ table.insert(refreshFuncs, rLag2)
 local _, rLag3 = createToggleRow(fixLagTab, "muteSoundsBtn", muteAllSoundsEnabled, function(st) toggleMuteAllSounds(st) end)
 table.insert(refreshFuncs, rLag3)
 
--- ==========================================
--- TAB SETTINGS / MISC
--- ==========================================
 local miscTab = tabs["Misc"]
 
--- [ĐÃ SỬA] Chọn màu Bảng / Khung chính UI
 local boardColorLabelObj = Instance.new("TextLabel")
 boardColorLabelObj.Size = UDim2.new(1, 0, 0, 18)
 boardColorLabelObj.BackgroundTransparency = 1
@@ -1198,11 +1211,11 @@ boardPalette.BackgroundTransparency = 1
 boardPalette.Parent = miscTab
 
 local uiBoardColors = {
-    Color3.fromRGB(20, 20, 25), -- Đen nhạt (Mặc định)
-    Color3.fromRGB(40, 20, 20), -- Đỏ đô
-    Color3.fromRGB(20, 40, 20), -- Xanh rêu
-    Color3.fromRGB(20, 25, 40), -- Xanh dương đậm
-    Color3.fromRGB(40, 30, 20)  -- Nâu
+    Color3.fromRGB(20, 20, 25), 
+    Color3.fromRGB(40, 20, 20), 
+    Color3.fromRGB(20, 40, 20), 
+    Color3.fromRGB(20, 25, 40), 
+    Color3.fromRGB(40, 30, 20)  
 }
 
 for i, col in ipairs(uiBoardColors) do
@@ -1220,7 +1233,6 @@ for i, col in ipairs(uiBoardColors) do
     cBtn.MouseButton1Click:Connect(function() applyBoardColor(col) end)
 end
 
--- Chọn màu nút (Theme)
 local themeLabel = Instance.new("TextLabel")
 themeLabel.Size = UDim2.new(1, 0, 0, 18)
 themeLabel.BackgroundTransparency = 1
@@ -1259,7 +1271,6 @@ for i, col in ipairs(uiThemeColors) do
     cBtn.MouseButton1Click:Connect(function() applyThemeColor(col) end)
 end
 
--- Chọn màu Text
 local textLabel = Instance.new("TextLabel")
 textLabel.Size = UDim2.new(1, 0, 0, 18)
 textLabel.BackgroundTransparency = 1
@@ -1361,7 +1372,7 @@ local function updateLanguage()
     titleText.Text = t.title
     godButton.Text = t.godBtn
     espColorLabel.Text = t.espColorLabel
-    boardColorLabelObj.Text = t.boardColorLabel -- Update Text Màu Bảng
+    boardColorLabelObj.Text = t.boardColorLabel 
     themeLabel.Text = t.themeLabel
     textLabel.Text = t.textLabel
     langLabel.Text = t.langLabel
@@ -1440,7 +1451,7 @@ openUIButton.MouseButton1Click:Connect(function()
 end)
 
 closeButton.MouseButton1Click:Connect(function()
-    toggleNoclip(false) toggleInvisibility(false) toggleFly(false) toggleInfJump(false) toggleFreezeRay(false) toggleFPSDisplay(false) toggleAutoPressButton(false) toggleFixLag(false) toggleHideMapAndOthers(false) toggleMuteAllSounds(false)
+    toggleNoclip(false) toggleInvisibility(false) toggleFly(false) toggleInfJump(false) toggleSwim(false) toggleFreezeRay(false) toggleFPSDisplay(false) toggleAutoPressButton(false) toggleFixLag(false) toggleHideMapAndOthers(false) toggleMuteAllSounds(false)
     if gravityConnection then gravityConnection:Disconnect() gravityConnection = nil end Workspace.Gravity = 196.2
     espEnabled = false updateESP()
     if walkConnection then walkConnection:Disconnect() walkConnection = nil end
