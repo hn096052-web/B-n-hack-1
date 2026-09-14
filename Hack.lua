@@ -1,12 +1,11 @@
 -- ==========================================
--- H HUB AUTOFARM (FIXED & UPDATED + SPECTATE)
+-- H HUB AUTOFARM (FIXED ERRORS & MOBILE SAFE)
 -- ==========================================
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Dọn dẹp GUI cũ nếu có
 if playerGui:FindFirstChild("AutoFarmHubGui") then
     playerGui.AutoFarmHubGui:Destroy()
 end
@@ -19,7 +18,6 @@ local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local Lighting = game:GetService("Lighting")
 
--- Trạng thái tính năng
 local tpEnabled = false
 local walkEnabled = false
 local jumpEnabled = false
@@ -36,9 +34,8 @@ local autoPressButtonEnabled = false
 local fixLagEnabled = false
 local hideMapOthersEnabled = false
 local muteAllSoundsEnabled = false
-local spectating = false -- [MỚI] Trạng thái Spectate
+local spectating = false
 
--- Cấu hình mặc định
 local tpSpeed = 0.15
 local walkSpeed = 35 
 local jumpPower = 75
@@ -52,7 +49,6 @@ local FREEZE_COOLDOWN = 6
 local SHOT_DELAY = 1 
 local selectedTargetPlayer = nil 
 
--- Cấu hình ESP & Màu
 local selectedEspTarget = "Tất cả"
 local espColor = Color3.fromRGB(255, 0, 0)
 local currentThemeColor = Color3.fromRGB(35, 35, 45)
@@ -61,30 +57,26 @@ local currentTextColor = Color3.fromRGB(255, 255, 255)
 local frozenPlayersTable = {} 
 local currentLang = "VI" 
 
--- Quản lý Kết nối & Task
 local noclipConnection, invisibleConnection, flyConnection, swimConnection 
 local walkConnection, jumpConnection, infJumpConnection
 local freezeRayTask, fpsConnection, gravityConnection
 local autoPressButtonTask, fixLagTask, fixLagChildConnection
 local hideMapConnection, muteSoundsConnection
-local spectateConnection -- [MỚI] Connection Spectate
+local spectateConnection
 local originalHipHeight
 local savedTransparencies = {}
 local hiddenObjects = {} 
 local mutedSounds = {}   
 
--- Theme UI Tables
 local themeButtons = {}     
 local textElements = {}     
-
--- Font chữ
 local GLOBAL_FONT = Enum.Font.GothamBold
 
 local translations = {
     EN = {
         title = "H HUB - AutoFarm",
         tabMain = "Main",
-        tabPlayers = "Players", -- [MỚI]
+        tabPlayers = "Players",
         tabEsp = "ESP", 
         tabMisc = "Settings",
         tabFixLag = "Fix Lag",
@@ -117,8 +109,8 @@ local translations = {
         fixLagBtn = "Ultra Fix Lag (Max FPS)",
         hideMapBtn = "Hide Map & Players",
         muteSoundsBtn = "Mute Game Sounds",
-        spectateBtn = "Spectate Player", -- [MỚI]
-        spectateClose = "Close", -- [MỚI]
+        spectateBtn = "Spectate Player",
+        spectateClose = "Close",
         espColorLabel = "ESP Highlight Color:",
         boardColorLabel = "Board Background Color:", 
         themeLabel = "UI Button Color:",
@@ -132,7 +124,7 @@ local translations = {
     VI = {
         title = "H HUB - AutoFarm",
         tabMain = "Chính",
-        tabPlayers = "Người chơi", -- [MỚI]
+        tabPlayers = "Người chơi",
         tabEsp = "ESP", 
         tabMisc = "Cài đặt",
         tabFixLag = "Fix Lag",
@@ -165,8 +157,8 @@ local translations = {
         fixLagBtn = "Siêu Giảm Lag (Max FPS)",
         hideMapBtn = "Ẩn Bản Đồ & Người Khác",
         muteSoundsBtn = "Tắt Âm Thanh Game",
-        spectateBtn = "Xem Người Khác (Spectate)", -- [MỚI]
-        spectateClose = "Đóng", -- [MỚI]
+        spectateBtn = "Xem Người Khác (Spectate)",
+        spectateClose = "Đóng",
         espColorLabel = "Màu ESP Xuyên Tường:",
         boardColorLabel = "Màu Bảng Điều Khiển:", 
         themeLabel = "Màu Nút Giao Diện:",
@@ -179,10 +171,6 @@ local translations = {
     }
 }
 
--- ==========================================
--- LOGIC TÍNH NĂNG GAME
--- ==========================================
-
 local allEquipItems = {
     "PieThrow", "SmallPotion", "GiantPotion", "GhostPotion", "Healing", "GravityPotion", 
     "Bloxiade", "ClownBomb", "Slate", "WindPotion", "IcePotion", "Caltrops", "SlowDownGun", 
@@ -192,6 +180,7 @@ local allEquipItems = {
     "MoneyBag", "IceCreamCone", "Teddy", "Witch", "Watermelon", "Taco", "Bloxy", "Pizza", "Coco"
 }
 
+-- Sửa tốc độ Equip để tránh làm sập script vật phẩm
 local function equipItemsOnce()
     task.spawn(function()
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -200,13 +189,13 @@ local function equipItemsOnce()
         
         for _, item in ipairs(allEquipItems) do
             pcall(function() equipEvent:FireServer("UNEQUIP", item) end)
-            task.wait(0.03)
+            task.wait(0.06)
         end
         task.wait(0.2)
         
         for _, item in ipairs(allEquipItems) do
             pcall(function() equipEvent:FireServer("EQUIP", item) end)
-            task.wait(0.03)
+            task.wait(0.06)
         end
     end)
 end
@@ -235,15 +224,8 @@ local function toggleSwim(state)
             end)
         end
     else
-        if swimConnection then
-            swimConnection:Disconnect()
-            swimConnection = nil
-        end
-        if humanoid then
-            pcall(function()
-                humanoid:ChangeState(Enum.HumanoidStateType.Running)
-            end)
-        end
+        if swimConnection then swimConnection:Disconnect(); swimConnection = nil end
+        if humanoid then pcall(function() humanoid:ChangeState(Enum.HumanoidStateType.Running) end) end
     end
 end
 
@@ -638,18 +620,13 @@ local function teleportLoop()
 end
 task.spawn(teleportLoop)
 
--- ==========================================
--- GIAO DIỆN GUI
--- ==========================================
-
+-- GUI ROOT
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "AutoFarmHubGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- ==========================================
--- [MỚI] GUI XEM NGƯỜI CHƠI (SPECTATE HUD)
--- ==========================================
+-- SPECTATE HUD
 local spectateFrame = Instance.new("Frame")
 spectateFrame.Size = UDim2.new(0, 320, 0, 90)
 spectateFrame.Position = UDim2.new(0.5, -160, 0.9, -100)
@@ -732,7 +709,9 @@ local function updateSpectateCamera()
     if spectateIndex < 1 then spectateIndex = #targets end
 
     local target = targets[spectateIndex]
-    specNameLabel.Text = target.DisplayName .. " (@" .. target.Name .. ")"
+    if target then
+        specNameLabel.Text = target.DisplayName .. " (@" .. target.Name .. ")"
+    end
 end
 
 local function toggleSpectate(state)
@@ -743,7 +722,6 @@ local function toggleSpectate(state)
         spectateIndex = 1
         updateSpectateCamera()
         
-        -- Ẩn bảng chính để dễ xem
         if screenGui:FindFirstChild("MainHubFrame") then
             screenGui.MainHubFrame.Visible = false
             if screenGui:FindFirstChild("OpenHubButton") then screenGui.OpenHubButton.Visible = true end
@@ -768,7 +746,6 @@ local function toggleSpectate(state)
             spectateConnection:Disconnect()
             spectateConnection = nil
         end
-        -- Trả góc nhìn lại cho bản thân
         if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
             cam.CameraSubject = player.Character:FindFirstChildOfClass("Humanoid")
         end
@@ -788,8 +765,6 @@ end)
 specCloseBtn.MouseButton1Click:Connect(function()
     toggleSpectate(false)
 end)
-
--- ==========================================
 
 local openUIButton = Instance.new("TextButton")
 openUIButton.Name = "OpenHubButton"
@@ -973,7 +948,6 @@ container.Position = UDim2.new(0, 115, 0, 35)
 container.BackgroundTransparency = 1
 container.Parent = frame
 
--- [MỚI] Thêm tab Players vào danh sách tab
 local tabs = {}
 local tabNames = {"Main", "Players", "ESP", "FixLag", "Misc"} 
 
@@ -1284,26 +1258,26 @@ local godCorner = Instance.new("UICorner")
 godCorner.CornerRadius = UDim.new(0, 6)
 godCorner.Parent = godButton
 
+-- Sửa God Mode với pcall an toàn chống lỗi "attempt to call a nil value"
 godButton.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"))()
+    pcall(function()
+        local raw = game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal")
+        local compiled, err = loadstring(raw)
+        if compiled then
+            compiled()
+        else
+            warn("[H HUB] Lỗi tải God Mode:", err)
+        end
+    end)
 end)
 
--- ==========================================
--- [MỚI] TAB PLAYERS
--- ==========================================
 local playersTab = tabs["Players"]
-
 local _, rSpec = createButtonRow(playersTab, "spectateBtn", function() 
     toggleSpectate(true) 
 end)
 table.insert(refreshFuncs, rSpec)
 
-
--- ==========================================
--- TAB ESP
--- ==========================================
 local espTab = tabs["ESP"]
-
 local _, rEsp = createToggleRow(espTab, "espBtn", espEnabled, function(st) espEnabled = st updateESP() end)
 table.insert(refreshFuncs, rEsp)
 
@@ -1349,9 +1323,6 @@ for i, col in ipairs(espColors) do
     cBtn.MouseButton1Click:Connect(function() espColor = col updateESP() end)
 end
 
--- ==========================================
--- TAB FIX LAG & MISC
--- ==========================================
 local fixLagTab = tabs["FixLag"]
 
 local _, rLag1 = createToggleRow(fixLagTab, "fixLagBtn", fixLagEnabled, function(st) toggleFixLag(st) end)
@@ -1595,14 +1566,15 @@ local function updateSidebarTabNames()
     tabButtons["Misc"].Text = t.tabMisc
 end
 
+-- Hiệu ứng bấm nút an toàn cho Mobile (tránh lỗi mouse event)
 for _, btn in ipairs(screenGui:GetDescendants()) do
     if btn:IsA("TextButton") then
-        local scale = Instance.new("UIScale")
-        scale.Parent = btn
-        btn.MouseEnter:Connect(function() TweenService:Create(scale, TweenInfo.new(0.12), {Scale = 1.03}):Play() end)
-        btn.MouseLeave:Connect(function() TweenService:Create(scale, TweenInfo.new(0.12), {Scale = 1.0}):Play() end)
-        btn.MouseButton1Down:Connect(function() TweenService:Create(scale, TweenInfo.new(0.08), {Scale = 0.95}):Play() end)
-        btn.MouseButton1Up:Connect(function() TweenService:Create(scale, TweenInfo.new(0.08), {Scale = 1.03}):Play() end)
+        pcall(function()
+            local scale = Instance.new("UIScale")
+            scale.Parent = btn
+            btn.MouseButton1Down:Connect(function() TweenService:Create(scale, TweenInfo.new(0.08), {Scale = 0.95}):Play() end)
+            btn.MouseButton1Up:Connect(function() TweenService:Create(scale, TweenInfo.new(0.08), {Scale = 1.0}):Play() end)
+        end)
     end
 end
 
