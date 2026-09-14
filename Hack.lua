@@ -27,6 +27,7 @@ local noclipEnabled = false
 local invisibleEnabled = false
 local flyEnabled = false
 local infJumpEnabled = false
+local swimEnabled = false -- [MỚI] Trạng thái Bơi
 local freezeRayEnabled = false
 local espEnabled = false
 local fpsEnabled = false
@@ -50,20 +51,6 @@ local FREEZE_COOLDOWN = 6
 local SHOT_DELAY = 1 
 local selectedTargetPlayer = nil 
 
--- ==========================================
--- DANH SÁCH ĐỒ ƯU TIÊN (BẠN CÓ THỂ THÊM/BỚT TẠI ĐÂY)
--- Tên phải ghi chính xác tên tiếng Anh của món đồ trong game
--- ==========================================
-local priorityItems = {
-    "FreezeRay", 
-    "GravityGun", 
-    "SlowDownGun", 
-    "GhostPotion",
-    "GravityDisruptor", 
-    "Healing",
-    "WindPotion"
-}
-
 -- Cấu hình ESP & Màu
 local selectedEspTarget = "Tất cả"
 local espColor = Color3.fromRGB(255, 0, 0)
@@ -74,7 +61,7 @@ local frozenPlayersTable = {}
 local currentLang = "VI" 
 
 -- Quản lý Kết nối & Task
-local noclipConnection, invisibleConnection, flyConnection
+local noclipConnection, invisibleConnection, flyConnection, swimConnection -- [MỚI] Thêm swimConnection
 local walkConnection, jumpConnection, infJumpConnection
 local freezeRayTask, fpsConnection, gravityConnection
 local autoPressButtonTask, fixLagTask, fixLagChildConnection
@@ -111,13 +98,13 @@ local translations = {
         walkBtn = "Custom Speed",
         jumpBtn = "Custom Jump",
         flyBtn = "Fly Mode",
+        swimBtn = "Swim Mode", -- [MỚI]
         gravBtn = "Custom Gravity",
         noclipBtn = "Noclip Pass-Wall",
         invisBtn = "Invisibility",
         infJumpBtn = "Infinite Jump",
         freezeBtn = "Auto Freeze Ray",
-        autoEquipBtn = "Equip All Items", 
-        equipPriorityBtn = "⭐ Equip Priority Items Only", -- Nút mới thêm
+        autoEquipBtn = "Equip Items (Run Once)", 
         godBtn = "⚡ Open God Mode Panel",
         espBtn = "ESP Wallhack",
         fpsBtn = "Display FPS",
@@ -156,13 +143,13 @@ local translations = {
         walkBtn = "Chỉnh Tốc Độ Đi",
         jumpBtn = "Chỉnh Độ Nhảy",
         flyBtn = "Chế Độ Bay",
+        swimBtn = "Chế Độ Bơi", -- [MỚI]
         gravBtn = "Trọng Lực Tùy Chỉnh",
         noclipBtn = "Đi Xuyên Tường (Noclip)",
         invisBtn = "Tàng Hình Nhìn Thấy",
         infJumpBtn = "Nhảy Vô Hạn",
         freezeBtn = "Tự Động Freeze Ray",
-        autoEquipBtn = "Trang Bị Tất Cả Đồ", 
-        equipPriorityBtn = "⭐ Lọc & Trang Bị Đồ Ưu Tiên", -- Nút mới thêm
+        autoEquipBtn = "Trang Bị Đồ (Nhấn 1 Lần)", 
         godBtn = "⚡ Bảng God Mode (Bất Tử)",
         espBtn = "ESP Nhìn Xuyên Tường",
         fpsBtn = "Hiển Thị FPS",
@@ -187,73 +174,70 @@ local translations = {
 -- ==========================================
 -- LOGIC TÍNH NĂNG GAME
 -- ==========================================
-local itemsToUnequip = {"PieThrow", "SmallPotion", "GiantPotion", "GhostPotion", "Healing", "GravityPotion", "Bloxiade", "ClownBomb", "Slate", "WindPotion", "IcePotion", "Caltrops", "SlowDownGun", "GravityGun", "GravityDisruptor", "FreezeRay", "Bomb"}
 
--- Hàm Trang bị tất cả (Cũ)
+local allEquipItems = {
+    "PieThrow", "SmallPotion", "GiantPotion", "GhostPotion", "Healing", "GravityPotion", 
+    "Bloxiade", "ClownBomb", "Slate", "WindPotion", "IcePotion", "Caltrops", "SlowDownGun", 
+    "GravityGun", "GravityDisruptor", "FreezeRay", "Bomb", "Jetpack", "DecoyDeploy", 
+    "AprilShowers", "Balloon", "MarchingDrum", "Trumpet", "Trowel", "TeapotLauncher", 
+    "BunchOfBalloons", "BangGun", "EpicJuice", "EpicSauce", "Ball", "Torch", "Cake", 
+    "MoneyBag", "IceCreamCone", "Teddy", "Witch", "Watermelon", "Taco", "Bloxy", "Pizza", "Coco"
+}
+
 local function equipItemsOnce()
     task.spawn(function()
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local equipEvent = ReplicatedStorage:WaitForChild("Equip", 5)
         if not equipEvent then return end
         
-        for _, item in ipairs(itemsToUnequip) do
+        for _, item in ipairs(allEquipItems) do
             pcall(function() equipEvent:FireServer("UNEQUIP", item) end)
             task.wait(0.03)
         end
         task.wait(0.2)
         
-        for _, item in ipairs(itemsToUnequip) do
+        for _, item in ipairs(allEquipItems) do
             pcall(function() equipEvent:FireServer("EQUIP", item) end)
             task.wait(0.03)
         end
     end)
 end
 
--- ==========================================
--- HÀM MỚI: QUÉT VÀ TRANG BỊ ĐỒ ƯU TIÊN
--- ==========================================
-local function equipPriorityItemsOnly()
-    task.spawn(function()
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local equipEvent = ReplicatedStorage:WaitForChild("Equip", 5)
-        if not equipEvent then return end
-
-        local backpack = player:FindFirstChild("Backpack")
-        local character = player.Character
-
-        if not backpack or not character then return end
-
-        -- 1. Quét đồ đang sở hữu
-        local ownedItems = {}
-        for _, item in ipairs(backpack:GetChildren()) do
-            if item:IsA("Tool") then table.insert(ownedItems, item.Name) end
+-- [MỚI] Hàm xử lý chế độ Bơi
+local function toggleSwim(state)
+    swimEnabled = state
+    local character = player.Character
+    if not character then return end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if swimEnabled then
+        if humanoid then
+            pcall(function()
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, true)
+                humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
+            end)
         end
-        for _, item in ipairs(character:GetChildren()) do
-            if item:IsA("Tool") then table.insert(ownedItems, item.Name) end
+        if not swimConnection then
+            swimConnection = RunService.RenderStepped:Connect(function()
+                local char = player.Character
+                local hum = char and char:FindFirstChildOfClass("Humanoid")
+                if hum and swimEnabled then
+                    pcall(function()
+                        hum:ChangeState(Enum.HumanoidStateType.Swimming)
+                    end)
+                end
+            end)
         end
-
-        -- 2. Lọc ra những đồ có trong danh sách ưu tiên
-        local itemsToEquip = {}
-        for _, itemName in ipairs(ownedItems) do
-            if table.find(priorityItems, itemName) then
-                table.insert(itemsToEquip, itemName)
-            end
+    else
+        if swimConnection then
+            swimConnection:Disconnect()
+            swimConnection = nil
         end
-
-        -- 3. Tháo tất cả đồ rác / đồ đang có
-        for _, itemName in ipairs(ownedItems) do
-            pcall(function() equipEvent:FireServer("UNEQUIP", itemName) end)
-            task.wait(0.02)
+        if humanoid then
+            pcall(function()
+                humanoid:ChangeState(Enum.HumanoidStateType.Running)
+            end)
         end
-
-        task.wait(0.2)
-
-        -- 4. Chỉ trang bị lại đồ ưu tiên
-        for _, itemName in ipairs(itemsToEquip) do
-            pcall(function() equipEvent:FireServer("EQUIP", itemName) end)
-            task.wait(0.02)
-        end
-    end)
+    end
 end
 
 local function applyMuteToSound(sound)
@@ -881,7 +865,9 @@ local function applyThemeColor(color)
     for _, btn in ipairs(themeButtons) do
         if btn and btn.Parent then
             local isBtnOn = btn:GetAttribute("IsOnState")
-            if not isBtnOn then btn.BackgroundColor3 = currentThemeColor end
+            if not isBtnOn then
+                btn.BackgroundColor3 = currentThemeColor
+            end
         end
     end
 end
@@ -902,7 +888,9 @@ end
 local function applyTextColor(color)
     currentTextColor = color
     for _, txt in ipairs(textElements) do
-        if txt and txt.Parent then txt.TextColor3 = currentTextColor end
+        if txt and txt.Parent then
+            txt.TextColor3 = currentTextColor
+        end
     end
 end
 
@@ -1020,12 +1008,8 @@ local function createInputRow(parentTab, labelKey, defaultVal, callback)
     return frameRow, refreshLabel
 end
 
--- ==========================================
--- TAB CHÍNH (MAIN TAB)
--- ==========================================
 local mainTab = tabs["Main"]
 mainTab.Visible = true
-
 local refreshFuncs = {}
 
 local _, r1 = createInputRow(mainTab, "tpSpd", tpSpeed, function(val) tpSpeed = val end)
@@ -1089,6 +1073,10 @@ table.insert(refreshFuncs, r7)
 local _, r8 = createToggleRow(mainTab, "flyBtn", flyEnabled, function(st) toggleFly(st) end)
 table.insert(refreshFuncs, r8)
 
+-- [MỚI] Thêm nút Bơi vào Tab Chính
+local _, rSwim = createToggleRow(mainTab, "swimBtn", swimEnabled, function(st) toggleSwim(st) end)
+table.insert(refreshFuncs, rSwim)
+
 local _, r9 = createInputRow(mainTab, "gravSpd", customGravity, function(val) customGravity = val if gravityEnabled then Workspace.Gravity = customGravity end end)
 table.insert(refreshFuncs, r9)
 local _, r10 = createToggleRow(mainTab, "gravBtn", gravityEnabled, function(st)
@@ -1115,12 +1103,8 @@ table.insert(refreshFuncs, r14)
 local _, r15 = createToggleRow(mainTab, "freezeBtn", freezeRayEnabled, function(st) toggleFreezeRay(st) end)
 table.insert(refreshFuncs, r15)
 
--- Hai nút trang bị: Trang bị tất cả và Trang bị đồ ưu tiên
 local _, r16 = createButtonRow(mainTab, "autoEquipBtn", function() equipItemsOnce() end)
 table.insert(refreshFuncs, r16)
-
-local _, r16_5 = createButtonRow(mainTab, "equipPriorityBtn", function() equipPriorityItemsOnly() end)
-table.insert(refreshFuncs, r16_5)
 
 local _, r17_1 = createInputRow(mainTab, "autoPressRadiusLabel", autoPressRadius, function(val) autoPressRadius = val end)
 table.insert(refreshFuncs, r17_1)
@@ -1151,9 +1135,6 @@ godButton.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"))()
 end)
 
--- ==========================================
--- TAB PLAYERS / ESP
--- ==========================================
 local espTab = tabs["ESP"]
 
 local _, rEsp = createToggleRow(espTab, "espBtn", espEnabled, function(st) espEnabled = st updateESP() end)
@@ -1193,27 +1174,25 @@ for i, col in ipairs(espColors) do
     cBtn.BackgroundColor3 = col
     cBtn.Text = ""
     cBtn.Parent = espColorPalette
+
     local cCorner = Instance.new("UICorner")
     cCorner.CornerRadius = UDim.new(0, 6)
     cCorner.Parent = cBtn
+
     cBtn.MouseButton1Click:Connect(function() espColor = col updateESP() end)
 end
 
--- ==========================================
--- TAB FIX LAG
--- ==========================================
 local fixLagTab = tabs["FixLag"]
 
 local _, rLag1 = createToggleRow(fixLagTab, "fixLagBtn", fixLagEnabled, function(st) toggleFixLag(st) end)
 table.insert(refreshFuncs, rLag1)
+
 local _, rLag2 = createToggleRow(fixLagTab, "hideMapBtn", hideMapOthersEnabled, function(st) toggleHideMapAndOthers(st) end)
 table.insert(refreshFuncs, rLag2)
+
 local _, rLag3 = createToggleRow(fixLagTab, "muteSoundsBtn", muteAllSoundsEnabled, function(st) toggleMuteAllSounds(st) end)
 table.insert(refreshFuncs, rLag3)
 
--- ==========================================
--- TAB SETTINGS / MISC
--- ==========================================
 local miscTab = tabs["Misc"]
 
 local boardColorLabelObj = Instance.new("TextLabel")
@@ -1232,8 +1211,11 @@ boardPalette.BackgroundTransparency = 1
 boardPalette.Parent = miscTab
 
 local uiBoardColors = {
-    Color3.fromRGB(20, 20, 25), Color3.fromRGB(40, 20, 20), Color3.fromRGB(20, 40, 20),
-    Color3.fromRGB(20, 25, 40), Color3.fromRGB(40, 30, 20)
+    Color3.fromRGB(20, 20, 25), 
+    Color3.fromRGB(40, 20, 20), 
+    Color3.fromRGB(20, 40, 20), 
+    Color3.fromRGB(20, 25, 40), 
+    Color3.fromRGB(40, 30, 20)  
 }
 
 for i, col in ipairs(uiBoardColors) do
@@ -1243,9 +1225,11 @@ for i, col in ipairs(uiBoardColors) do
     cBtn.BackgroundColor3 = col
     cBtn.Text = ""
     cBtn.Parent = boardPalette
+
     local cCorner = Instance.new("UICorner")
     cCorner.CornerRadius = UDim.new(0, 6)
     cCorner.Parent = cBtn
+
     cBtn.MouseButton1Click:Connect(function() applyBoardColor(col) end)
 end
 
@@ -1265,8 +1249,11 @@ themePalette.BackgroundTransparency = 1
 themePalette.Parent = miscTab
 
 local uiThemeColors = {
-    Color3.fromRGB(35, 35, 45), Color3.fromRGB(50, 40, 80), Color3.fromRGB(30, 60, 90),
-    Color3.fromRGB(70, 30, 40), Color3.fromRGB(30, 70, 50)
+    Color3.fromRGB(35, 35, 45),
+    Color3.fromRGB(50, 40, 80),
+    Color3.fromRGB(30, 60, 90),
+    Color3.fromRGB(70, 30, 40),
+    Color3.fromRGB(30, 70, 50)
 }
 
 for i, col in ipairs(uiThemeColors) do
@@ -1276,9 +1263,11 @@ for i, col in ipairs(uiThemeColors) do
     cBtn.BackgroundColor3 = col
     cBtn.Text = ""
     cBtn.Parent = themePalette
+
     local cCorner = Instance.new("UICorner")
     cCorner.CornerRadius = UDim.new(0, 6)
     cCorner.Parent = cBtn
+
     cBtn.MouseButton1Click:Connect(function() applyThemeColor(col) end)
 end
 
@@ -1298,8 +1287,10 @@ textPalette.BackgroundTransparency = 1
 textPalette.Parent = miscTab
 
 local uiTextColors = {
-    Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 220, 100),
-    Color3.fromRGB(100, 255, 200), Color3.fromRGB(255, 150, 200)
+    Color3.fromRGB(255, 255, 255),
+    Color3.fromRGB(255, 220, 100),
+    Color3.fromRGB(100, 255, 200),
+    Color3.fromRGB(255, 150, 200)
 }
 
 for i, col in ipairs(uiTextColors) do
@@ -1309,9 +1300,11 @@ for i, col in ipairs(uiTextColors) do
     cBtn.BackgroundColor3 = col
     cBtn.Text = ""
     cBtn.Parent = textPalette
+
     local cCorner = Instance.new("UICorner")
     cCorner.CornerRadius = UDim.new(0, 6)
     cCorner.Parent = cBtn
+
     cBtn.MouseButton1Click:Connect(function() applyTextColor(col) end)
 end
 
@@ -1386,7 +1379,9 @@ local function updateLanguage()
     rejoinButton.Text = t.rejoinBtn
     serverHopButton.Text = t.serverHopBtn
 
-    for _, rf in ipairs(refreshFuncs) do rf() end
+    for _, rf in ipairs(refreshFuncs) do
+        rf()
+    end
 end
 
 btnEnglish.MouseButton1Click:Connect(function() currentLang = "EN" updateLanguage() end)
@@ -1456,7 +1451,7 @@ openUIButton.MouseButton1Click:Connect(function()
 end)
 
 closeButton.MouseButton1Click:Connect(function()
-    toggleNoclip(false) toggleInvisibility(false) toggleFly(false) toggleInfJump(false) toggleFreezeRay(false) toggleFPSDisplay(false) toggleAutoPressButton(false) toggleFixLag(false) toggleHideMapAndOthers(false) toggleMuteAllSounds(false)
+    toggleNoclip(false) toggleInvisibility(false) toggleFly(false) toggleInfJump(false) toggleSwim(false) toggleFreezeRay(false) toggleFPSDisplay(false) toggleAutoPressButton(false) toggleFixLag(false) toggleHideMapAndOthers(false) toggleMuteAllSounds(false)
     if gravityConnection then gravityConnection:Disconnect() gravityConnection = nil end Workspace.Gravity = 196.2
     espEnabled = false updateESP()
     if walkConnection then walkConnection:Disconnect() walkConnection = nil end
