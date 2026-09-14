@@ -1,5 +1,5 @@
 -- ==========================================
--- H HUB AUTOFARM (FIXED & UPDATED)
+-- H HUB AUTOFARM (FIXED & UPDATED + SPECTATE)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -27,6 +27,7 @@ local noclipEnabled = false
 local invisibleEnabled = false
 local flyEnabled = false
 local infJumpEnabled = false
+local swimEnabled = false 
 local freezeRayEnabled = false
 local espEnabled = false
 local fpsEnabled = false
@@ -35,6 +36,7 @@ local autoPressButtonEnabled = false
 local fixLagEnabled = false
 local hideMapOthersEnabled = false
 local muteAllSoundsEnabled = false
+local spectating = false -- [MỚI] Trạng thái Spectate
 
 -- Cấu hình mặc định
 local tpSpeed = 0.15
@@ -60,11 +62,12 @@ local frozenPlayersTable = {}
 local currentLang = "VI" 
 
 -- Quản lý Kết nối & Task
-local noclipConnection, invisibleConnection, flyConnection
+local noclipConnection, invisibleConnection, flyConnection, swimConnection 
 local walkConnection, jumpConnection, infJumpConnection
 local freezeRayTask, fpsConnection, gravityConnection
 local autoPressButtonTask, fixLagTask, fixLagChildConnection
 local hideMapConnection, muteSoundsConnection
+local spectateConnection -- [MỚI] Connection Spectate
 local originalHipHeight
 local savedTransparencies = {}
 local hiddenObjects = {} 
@@ -81,7 +84,8 @@ local translations = {
     EN = {
         title = "H HUB - AutoFarm",
         tabMain = "Main",
-        tabEsp = "Players/ESP",
+        tabPlayers = "Players", -- [MỚI]
+        tabEsp = "ESP", 
         tabMisc = "Settings",
         tabFixLag = "Fix Lag",
         tpSpd = "TP Speed (s):",
@@ -97,6 +101,7 @@ local translations = {
         walkBtn = "Custom Speed",
         jumpBtn = "Custom Jump",
         flyBtn = "Fly Mode",
+        swimBtn = "Swim Mode",
         gravBtn = "Custom Gravity",
         noclipBtn = "Noclip Pass-Wall",
         invisBtn = "Invisibility",
@@ -112,6 +117,8 @@ local translations = {
         fixLagBtn = "Ultra Fix Lag (Max FPS)",
         hideMapBtn = "Hide Map & Players",
         muteSoundsBtn = "Mute Game Sounds",
+        spectateBtn = "Spectate Player", -- [MỚI]
+        spectateClose = "Close", -- [MỚI]
         espColorLabel = "ESP Highlight Color:",
         boardColorLabel = "Board Background Color:", 
         themeLabel = "UI Button Color:",
@@ -119,13 +126,14 @@ local translations = {
         langLabel = "Language:",
         rejoinBtn = "Rejoin Server",
         serverHopBtn = "Server Hop",
-        on = "BẬT",
-        off = "TẮT"
+        on = "ON",
+        off = "OFF"
     },
     VI = {
         title = "H HUB - AutoFarm",
         tabMain = "Chính",
-        tabEsp = "Người chơi/ESP",
+        tabPlayers = "Người chơi", -- [MỚI]
+        tabEsp = "ESP", 
         tabMisc = "Cài đặt",
         tabFixLag = "Fix Lag",
         tpSpd = "Tốc độ TP (giây):",
@@ -141,6 +149,7 @@ local translations = {
         walkBtn = "Chỉnh Tốc Độ Đi",
         jumpBtn = "Chỉnh Độ Nhảy",
         flyBtn = "Chế Độ Bay",
+        swimBtn = "Chế Độ Bơi", 
         gravBtn = "Trọng Lực Tùy Chỉnh",
         noclipBtn = "Đi Xuyên Tường (Noclip)",
         invisBtn = "Tàng Hình Nhìn Thấy",
@@ -156,6 +165,8 @@ local translations = {
         fixLagBtn = "Siêu Giảm Lag (Max FPS)",
         hideMapBtn = "Ẩn Bản Đồ & Người Khác",
         muteSoundsBtn = "Tắt Âm Thanh Game",
+        spectateBtn = "Xem Người Khác (Spectate)", -- [MỚI]
+        spectateClose = "Đóng", -- [MỚI]
         espColorLabel = "Màu ESP Xuyên Tường:",
         boardColorLabel = "Màu Bảng Điều Khiển:", 
         themeLabel = "Màu Nút Giao Diện:",
@@ -172,7 +183,6 @@ local translations = {
 -- LOGIC TÍNH NĂNG GAME
 -- ==========================================
 
--- [ĐÃ CẬP NHẬT] Thêm tất cả các đồ dùng mới bạn đã cung cấp vào danh sách tổng
 local allEquipItems = {
     "PieThrow", "SmallPotion", "GiantPotion", "GhostPotion", "Healing", "GravityPotion", 
     "Bloxiade", "ClownBomb", "Slate", "WindPotion", "IcePotion", "Caltrops", "SlowDownGun", 
@@ -182,26 +192,59 @@ local allEquipItems = {
     "MoneyBag", "IceCreamCone", "Teddy", "Witch", "Watermelon", "Taco", "Bloxy", "Pizza", "Coco"
 }
 
--- Hàm Trang bị 1 lần duy nhất (Auto tháo & mặc lại tất cả)
 local function equipItemsOnce()
     task.spawn(function()
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local equipEvent = ReplicatedStorage:WaitForChild("Equip", 5)
         if not equipEvent then return end
         
-        -- Tháo toàn bộ danh sách để reset (hoặc cất vào balo)
         for _, item in ipairs(allEquipItems) do
             pcall(function() equipEvent:FireServer("UNEQUIP", item) end)
             task.wait(0.03)
         end
         task.wait(0.2)
         
-        -- Mặc lại toàn bộ
         for _, item in ipairs(allEquipItems) do
             pcall(function() equipEvent:FireServer("EQUIP", item) end)
             task.wait(0.03)
         end
     end)
+end
+
+local function toggleSwim(state)
+    swimEnabled = state
+    local character = player.Character
+    if not character then return end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if swimEnabled then
+        if humanoid then
+            pcall(function()
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, true)
+                humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
+            end)
+        end
+        if not swimConnection then
+            swimConnection = RunService.RenderStepped:Connect(function()
+                local char = player.Character
+                local hum = char and char:FindFirstChildOfClass("Humanoid")
+                if hum and swimEnabled then
+                    pcall(function()
+                        hum:ChangeState(Enum.HumanoidStateType.Swimming)
+                    end)
+                end
+            end)
+        end
+    else
+        if swimConnection then
+            swimConnection:Disconnect()
+            swimConnection = nil
+        end
+        if humanoid then
+            pcall(function()
+                humanoid:ChangeState(Enum.HumanoidStateType.Running)
+            end)
+        end
+    end
 end
 
 local function applyMuteToSound(sound)
@@ -604,7 +647,152 @@ screenGui.Name = "AutoFarmHubGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
+-- ==========================================
+-- [MỚI] GUI XEM NGƯỜI CHƠI (SPECTATE HUD)
+-- ==========================================
+local spectateFrame = Instance.new("Frame")
+spectateFrame.Size = UDim2.new(0, 320, 0, 90)
+spectateFrame.Position = UDim2.new(0.5, -160, 0.9, -100)
+spectateFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+spectateFrame.BackgroundTransparency = 0.2
+spectateFrame.BorderSizePixel = 0
+spectateFrame.Visible = false
+spectateFrame.Parent = screenGui
+
+local specCorner = Instance.new("UICorner")
+specCorner.CornerRadius = UDim.new(0, 8)
+specCorner.Parent = spectateFrame
+
+local specStroke = Instance.new("UIStroke")
+specStroke.Color = Color3.fromRGB(80, 80, 255)
+specStroke.Thickness = 2
+specStroke.Parent = spectateFrame
+
+local specNameLabel = Instance.new("TextLabel")
+specNameLabel.Size = UDim2.new(1, -100, 0, 40)
+specNameLabel.Position = UDim2.new(0, 50, 0, 10)
+specNameLabel.BackgroundTransparency = 1
+specNameLabel.Text = "Player Name"
+specNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+specNameLabel.Font = GLOBAL_FONT
+specNameLabel.TextSize = 16
+specNameLabel.TextScaled = true
+specNameLabel.Parent = spectateFrame
+
+local specPrevBtn = Instance.new("TextButton")
+specPrevBtn.Size = UDim2.new(0, 40, 0, 40)
+specPrevBtn.Position = UDim2.new(0, 10, 0, 10)
+specPrevBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+specPrevBtn.Text = "<"
+specPrevBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+specPrevBtn.Font = GLOBAL_FONT
+specPrevBtn.TextSize = 20
+specPrevBtn.Parent = spectateFrame
+Instance.new("UICorner", specPrevBtn).CornerRadius = UDim.new(0, 6)
+
+local specNextBtn = Instance.new("TextButton")
+specNextBtn.Size = UDim2.new(0, 40, 0, 40)
+specNextBtn.Position = UDim2.new(1, -50, 0, 10)
+specNextBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+specNextBtn.Text = ">"
+specNextBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+specNextBtn.Font = GLOBAL_FONT
+specNextBtn.TextSize = 20
+specNextBtn.Parent = spectateFrame
+Instance.new("UICorner", specNextBtn).CornerRadius = UDim.new(0, 6)
+
+local specCloseBtn = Instance.new("TextButton")
+specCloseBtn.Size = UDim2.new(0, 140, 0, 30)
+specCloseBtn.Position = UDim2.new(0.5, -70, 1, -35)
+specCloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+specCloseBtn.Text = "Đóng"
+specCloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+specCloseBtn.Font = GLOBAL_FONT
+specCloseBtn.TextSize = 14
+specCloseBtn.Parent = spectateFrame
+Instance.new("UICorner", specCloseBtn).CornerRadius = UDim.new(0, 6)
+
+local spectateIndex = 1
+
+local function getSpectateTargets()
+    local targets = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then table.insert(targets, p) end
+    end
+    return targets
+end
+
+local function updateSpectateCamera()
+    local targets = getSpectateTargets()
+    if #targets == 0 then
+        specNameLabel.Text = "Không có người chơi khác!"
+        return
+    end
+    if spectateIndex > #targets then spectateIndex = 1 end
+    if spectateIndex < 1 then spectateIndex = #targets end
+
+    local target = targets[spectateIndex]
+    specNameLabel.Text = target.DisplayName .. " (@" .. target.Name .. ")"
+end
+
+local function toggleSpectate(state)
+    spectating = state
+    spectateFrame.Visible = state
+    local cam = Workspace.CurrentCamera
+    if state then
+        spectateIndex = 1
+        updateSpectateCamera()
+        
+        -- Ẩn bảng chính để dễ xem
+        if screenGui:FindFirstChild("MainHubFrame") then
+            screenGui.MainHubFrame.Visible = false
+            if screenGui:FindFirstChild("OpenHubButton") then screenGui.OpenHubButton.Visible = true end
+        end
+
+        if not spectateConnection then
+            spectateConnection = RunService.RenderStepped:Connect(function()
+                if spectating then
+                    local targets = getSpectateTargets()
+                    local currentTarget = targets[spectateIndex]
+                    if currentTarget and currentTarget.Character then
+                        local hum = currentTarget.Character:FindFirstChildOfClass("Humanoid")
+                        if hum and cam.CameraSubject ~= hum then
+                            cam.CameraSubject = hum
+                        end
+                    end
+                end
+            end)
+        end
+    else
+        if spectateConnection then
+            spectateConnection:Disconnect()
+            spectateConnection = nil
+        end
+        -- Trả góc nhìn lại cho bản thân
+        if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+            cam.CameraSubject = player.Character:FindFirstChildOfClass("Humanoid")
+        end
+    end
+end
+
+specPrevBtn.MouseButton1Click:Connect(function()
+    spectateIndex = spectateIndex - 1
+    updateSpectateCamera()
+end)
+
+specNextBtn.MouseButton1Click:Connect(function()
+    spectateIndex = spectateIndex + 1
+    updateSpectateCamera()
+end)
+
+specCloseBtn.MouseButton1Click:Connect(function()
+    toggleSpectate(false)
+end)
+
+-- ==========================================
+
 local openUIButton = Instance.new("TextButton")
+openUIButton.Name = "OpenHubButton"
 openUIButton.Size = UDim2.new(0, 50, 0, 50)
 openUIButton.Position = UDim2.new(0.05, 0, 0.4, 0)
 openUIButton.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
@@ -671,6 +859,7 @@ local function toggleFPSDisplay(state)
 end
 
 local frame = Instance.new("Frame")
+frame.Name = "MainHubFrame"
 frame.Size = UDim2.new(0, 390, 0, 320)
 frame.Position = UDim2.new(0.5, -195, 0.5, -160)
 frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
@@ -784,8 +973,9 @@ container.Position = UDim2.new(0, 115, 0, 35)
 container.BackgroundTransparency = 1
 container.Parent = frame
 
+-- [MỚI] Thêm tab Players vào danh sách tab
 local tabs = {}
-local tabNames = {"Main", "ESP", "FixLag", "Misc"}
+local tabNames = {"Main", "Players", "ESP", "FixLag", "Misc"} 
 
 for _, name in ipairs(tabNames) do
     local tabScroll = Instance.new("ScrollingFrame")
@@ -1037,6 +1227,9 @@ table.insert(refreshFuncs, r7)
 local _, r8 = createToggleRow(mainTab, "flyBtn", flyEnabled, function(st) toggleFly(st) end)
 table.insert(refreshFuncs, r8)
 
+local _, rSwim = createToggleRow(mainTab, "swimBtn", swimEnabled, function(st) toggleSwim(st) end)
+table.insert(refreshFuncs, rSwim)
+
 local _, r9 = createInputRow(mainTab, "gravSpd", customGravity, function(val) customGravity = val if gravityEnabled then Workspace.Gravity = customGravity end end)
 table.insert(refreshFuncs, r9)
 local _, r10 = createToggleRow(mainTab, "gravBtn", gravityEnabled, function(st)
@@ -1095,6 +1288,20 @@ godButton.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"))()
 end)
 
+-- ==========================================
+-- [MỚI] TAB PLAYERS
+-- ==========================================
+local playersTab = tabs["Players"]
+
+local _, rSpec = createButtonRow(playersTab, "spectateBtn", function() 
+    toggleSpectate(true) 
+end)
+table.insert(refreshFuncs, rSpec)
+
+
+-- ==========================================
+-- TAB ESP
+-- ==========================================
 local espTab = tabs["ESP"]
 
 local _, rEsp = createToggleRow(espTab, "espBtn", espEnabled, function(st) espEnabled = st updateESP() end)
@@ -1142,6 +1349,9 @@ for i, col in ipairs(espColors) do
     cBtn.MouseButton1Click:Connect(function() espColor = col updateESP() end)
 end
 
+-- ==========================================
+-- TAB FIX LAG & MISC
+-- ==========================================
 local fixLagTab = tabs["FixLag"]
 
 local _, rLag1 = createToggleRow(fixLagTab, "fixLagBtn", fixLagEnabled, function(st) toggleFixLag(st) end)
@@ -1338,6 +1548,7 @@ local function updateLanguage()
     langLabel.Text = t.langLabel
     rejoinButton.Text = t.rejoinBtn
     serverHopButton.Text = t.serverHopBtn
+    specCloseBtn.Text = t.spectateClose
 
     for _, rf in ipairs(refreshFuncs) do
         rf()
@@ -1356,7 +1567,7 @@ for i, name in ipairs(tabNames) do
     btn.BackgroundColor3 = (i == 1) and Color3.fromRGB(70, 70, 90) or Color3.fromRGB(30, 30, 40)
     btn.TextColor3 = currentTextColor
     btn.Font = GLOBAL_FONT
-    btn.TextSize = 11
+    btn.TextSize = 10
     btn.Parent = sidebar
     table.insert(textElements, btn)
 
@@ -1372,12 +1583,13 @@ for i, name in ipairs(tabNames) do
     end)
 
     tabButtons[name] = btn
-    yOffset = yOffset + 40
+    yOffset = yOffset + 38
 end
 
 local function updateSidebarTabNames()
     local t = translations[currentLang]
     tabButtons["Main"].Text = t.tabMain
+    tabButtons["Players"].Text = t.tabPlayers
     tabButtons["ESP"].Text = t.tabEsp
     tabButtons["FixLag"].Text = t.tabFixLag
     tabButtons["Misc"].Text = t.tabMisc
@@ -1411,7 +1623,7 @@ openUIButton.MouseButton1Click:Connect(function()
 end)
 
 closeButton.MouseButton1Click:Connect(function()
-    toggleNoclip(false) toggleInvisibility(false) toggleFly(false) toggleInfJump(false) toggleFreezeRay(false) toggleFPSDisplay(false) toggleAutoPressButton(false) toggleFixLag(false) toggleHideMapAndOthers(false) toggleMuteAllSounds(false)
+    toggleNoclip(false) toggleInvisibility(false) toggleFly(false) toggleInfJump(false) toggleSwim(false) toggleFreezeRay(false) toggleFPSDisplay(false) toggleAutoPressButton(false) toggleFixLag(false) toggleHideMapAndOthers(false) toggleMuteAllSounds(false) toggleSpectate(false)
     if gravityConnection then gravityConnection:Disconnect() gravityConnection = nil end Workspace.Gravity = 196.2
     espEnabled = false updateESP()
     if walkConnection then walkConnection:Disconnect() walkConnection = nil end
