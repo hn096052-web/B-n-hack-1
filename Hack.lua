@@ -27,7 +27,6 @@ local noclipEnabled = false
 local invisibleEnabled = false
 local flyEnabled = false
 local infJumpEnabled = false
-local swimEnabled = false -- [MỚI] Trạng thái Bơi
 local freezeRayEnabled = false
 local espEnabled = false
 local fpsEnabled = false
@@ -61,7 +60,7 @@ local frozenPlayersTable = {}
 local currentLang = "VI" 
 
 -- Quản lý Kết nối & Task
-local noclipConnection, invisibleConnection, flyConnection, swimConnection -- [MỚI] Thêm swimConnection
+local noclipConnection, invisibleConnection, flyConnection
 local walkConnection, jumpConnection, infJumpConnection
 local freezeRayTask, fpsConnection, gravityConnection
 local autoPressButtonTask, fixLagTask, fixLagChildConnection
@@ -98,7 +97,6 @@ local translations = {
         walkBtn = "Custom Speed",
         jumpBtn = "Custom Jump",
         flyBtn = "Fly Mode",
-        swimBtn = "Swim Mode", -- [MỚI]
         gravBtn = "Custom Gravity",
         noclipBtn = "Noclip Pass-Wall",
         invisBtn = "Invisibility",
@@ -143,7 +141,6 @@ local translations = {
         walkBtn = "Chỉnh Tốc Độ Đi",
         jumpBtn = "Chỉnh Độ Nhảy",
         flyBtn = "Chế Độ Bay",
-        swimBtn = "Chế Độ Bơi", -- [MỚI]
         gravBtn = "Trọng Lực Tùy Chỉnh",
         noclipBtn = "Đi Xuyên Tường (Noclip)",
         invisBtn = "Tàng Hình Nhìn Thấy",
@@ -175,6 +172,7 @@ local translations = {
 -- LOGIC TÍNH NĂNG GAME
 -- ==========================================
 
+-- [ĐÃ CẬP NHẬT] Thêm tất cả các đồ dùng mới bạn đã cung cấp vào danh sách tổng
 local allEquipItems = {
     "PieThrow", "SmallPotion", "GiantPotion", "GhostPotion", "Healing", "GravityPotion", 
     "Bloxiade", "ClownBomb", "Slate", "WindPotion", "IcePotion", "Caltrops", "SlowDownGun", 
@@ -184,60 +182,26 @@ local allEquipItems = {
     "MoneyBag", "IceCreamCone", "Teddy", "Witch", "Watermelon", "Taco", "Bloxy", "Pizza", "Coco"
 }
 
+-- Hàm Trang bị 1 lần duy nhất (Auto tháo & mặc lại tất cả)
 local function equipItemsOnce()
     task.spawn(function()
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local equipEvent = ReplicatedStorage:WaitForChild("Equip", 5)
         if not equipEvent then return end
         
+        -- Tháo toàn bộ danh sách để reset (hoặc cất vào balo)
         for _, item in ipairs(allEquipItems) do
             pcall(function() equipEvent:FireServer("UNEQUIP", item) end)
             task.wait(0.03)
         end
         task.wait(0.2)
         
+        -- Mặc lại toàn bộ
         for _, item in ipairs(allEquipItems) do
             pcall(function() equipEvent:FireServer("EQUIP", item) end)
             task.wait(0.03)
         end
     end)
-end
-
--- [MỚI] Hàm xử lý chế độ Bơi
-local function toggleSwim(state)
-    swimEnabled = state
-    local character = player.Character
-    if not character then return end
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if swimEnabled then
-        if humanoid then
-            pcall(function()
-                humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, true)
-                humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
-            end)
-        end
-        if not swimConnection then
-            swimConnection = RunService.RenderStepped:Connect(function()
-                local char = player.Character
-                local hum = char and char:FindFirstChildOfClass("Humanoid")
-                if hum and swimEnabled then
-                    pcall(function()
-                        hum:ChangeState(Enum.HumanoidStateType.Swimming)
-                    end)
-                end
-            end)
-        end
-    else
-        if swimConnection then
-            swimConnection:Disconnect()
-            swimConnection = nil
-        end
-        if humanoid then
-            pcall(function()
-                humanoid:ChangeState(Enum.HumanoidStateType.Running)
-            end)
-        end
-    end
 end
 
 local function applyMuteToSound(sound)
@@ -1073,10 +1037,6 @@ table.insert(refreshFuncs, r7)
 local _, r8 = createToggleRow(mainTab, "flyBtn", flyEnabled, function(st) toggleFly(st) end)
 table.insert(refreshFuncs, r8)
 
--- [MỚI] Thêm nút Bơi vào Tab Chính
-local _, rSwim = createToggleRow(mainTab, "swimBtn", swimEnabled, function(st) toggleSwim(st) end)
-table.insert(refreshFuncs, rSwim)
-
 local _, r9 = createInputRow(mainTab, "gravSpd", customGravity, function(val) customGravity = val if gravityEnabled then Workspace.Gravity = customGravity end end)
 table.insert(refreshFuncs, r9)
 local _, r10 = createToggleRow(mainTab, "gravBtn", gravityEnabled, function(st)
@@ -1451,7 +1411,7 @@ openUIButton.MouseButton1Click:Connect(function()
 end)
 
 closeButton.MouseButton1Click:Connect(function()
-    toggleNoclip(false) toggleInvisibility(false) toggleFly(false) toggleInfJump(false) toggleSwim(false) toggleFreezeRay(false) toggleFPSDisplay(false) toggleAutoPressButton(false) toggleFixLag(false) toggleHideMapAndOthers(false) toggleMuteAllSounds(false)
+    toggleNoclip(false) toggleInvisibility(false) toggleFly(false) toggleInfJump(false) toggleFreezeRay(false) toggleFPSDisplay(false) toggleAutoPressButton(false) toggleFixLag(false) toggleHideMapAndOthers(false) toggleMuteAllSounds(false)
     if gravityConnection then gravityConnection:Disconnect() gravityConnection = nil end Workspace.Gravity = 196.2
     espEnabled = false updateESP()
     if walkConnection then walkConnection:Disconnect() walkConnection = nil end
