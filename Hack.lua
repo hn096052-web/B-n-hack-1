@@ -1,5 +1,5 @@
 -- ==========================================
--- H HUB AUTOFARM (FIXED ERRORS & MOBILE SAFE)
+-- H HUB AUTOFARM (FIXED & ULTRA SAFE)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -63,6 +63,7 @@ local freezeRayTask, fpsConnection, gravityConnection
 local autoPressButtonTask, fixLagTask, fixLagChildConnection
 local hideMapConnection, muteSoundsConnection
 local spectateConnection
+local godModeConnection
 local originalHipHeight
 local savedTransparencies = {}
 local hiddenObjects = {} 
@@ -99,8 +100,8 @@ local translations = {
         invisBtn = "Invisibility",
         infJumpBtn = "Infinite Jump",
         freezeBtn = "Auto Freeze Ray",
-        autoEquipBtn = "Equip Items (Run Once)", 
-        godBtn = "⚡ Open God Mode Panel",
+        autoEquipBtn = "Safe Equip Tools", 
+        godBtn = "⚡ Toggle God Mode",
         espBtn = "ESP Wallhack",
         fpsBtn = "Display FPS",
         autoPressRadiusLabel = "Click Button Range:",
@@ -147,8 +148,8 @@ local translations = {
         invisBtn = "Tàng Hình Nhìn Thấy",
         infJumpBtn = "Nhảy Vô Hạn",
         freezeBtn = "Tự Động Freeze Ray",
-        autoEquipBtn = "Trang Bị Đồ (Nhấn 1 Lần)", 
-        godBtn = "⚡ Bảng God Mode (Bất Tử)",
+        autoEquipBtn = "Trang Bị Đồ (An Toàn)", 
+        godBtn = "⚡ Bật/Tắt God Mode (Bất Tử)",
         espBtn = "ESP Nhìn Xuyên Tường",
         fpsBtn = "Hiển Thị FPS",
         autoPressRadiusLabel = "Bán kính Click Nút:",
@@ -171,33 +172,51 @@ local translations = {
     }
 }
 
-local allEquipItems = {
-    "PieThrow", "SmallPotion", "GiantPotion", "GhostPotion", "Healing", "GravityPotion", 
-    "Bloxiade", "ClownBomb", "Slate", "WindPotion", "IcePotion", "Caltrops", "SlowDownGun", 
-    "GravityGun", "GravityDisruptor", "FreezeRay", "Bomb", "Jetpack", "DecoyDeploy", 
-    "AprilShowers", "Balloon", "MarchingDrum", "Trumpet", "Trowel", "TeapotLauncher", 
-    "BunchOfBalloons", "BangGun", "EpicJuice", "EpicSauce", "Ball", "Torch", "Cake", 
-    "MoneyBag", "IceCreamCone", "Teddy", "Witch", "Watermelon", "Taco", "Bloxy", "Pizza", "Coco"
-}
-
--- Sửa tốc độ Equip để tránh làm sập script vật phẩm
+-- Hàm trang bị đồ an toàn không làm hỏng script của vật phẩm
 local function equipItemsOnce()
     task.spawn(function()
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local equipEvent = ReplicatedStorage:WaitForChild("Equip", 5)
-        if not equipEvent then return end
+        local character = player.Character
+        local backpack = player:FindFirstChild("Backpack")
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
         
-        for _, item in ipairs(allEquipItems) do
-            pcall(function() equipEvent:FireServer("UNEQUIP", item) end)
-            task.wait(0.06)
-        end
-        task.wait(0.2)
+        if not character or not backpack or not humanoid then return end
         
-        for _, item in ipairs(allEquipItems) do
-            pcall(function() equipEvent:FireServer("EQUIP", item) end)
-            task.wait(0.06)
+        for _, tool in ipairs(backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                pcall(function()
+                    humanoid:EquipTool(tool)
+                end)
+                task.wait(0.1)
+            end
         end
     end)
+end
+
+-- Hàm God Mode nội bộ an toàn 100% không lo die link
+local isGodMode = false
+local function toggleGodMode()
+    isGodMode = not isGodMode
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    
+    if isGodMode and humanoid then
+        pcall(function()
+            humanoid.MaxHealth = math.huge
+            humanoid.Health = math.huge
+        end)
+        if godModeConnection then godModeConnection:Disconnect() end
+        godModeConnection = humanoid.HealthChanged:Connect(function()
+            if isGodMode and humanoid then
+                humanoid.Health = math.huge
+            end
+        end)
+    else
+        if godModeConnection then godModeConnection:Disconnect() godModeConnection = nil end
+        if humanoid then
+            humanoid.MaxHealth = 100
+            humanoid.Health = 100
+        end
+    end
 end
 
 local function toggleSwim(state)
@@ -217,9 +236,7 @@ local function toggleSwim(state)
                 local char = player.Character
                 local hum = char and char:FindFirstChildOfClass("Humanoid")
                 if hum and swimEnabled then
-                    pcall(function()
-                        hum:ChangeState(Enum.HumanoidStateType.Swimming)
-                    end)
+                    pcall(function() hum:ChangeState(Enum.HumanoidStateType.Swimming) end)
                 end
             end)
         end
@@ -1251,24 +1268,20 @@ godButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
 godButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 godButton.Font = GLOBAL_FONT
 godButton.TextSize = 12
-godButton.Text = "⚡ Bảng God Mode (Bất Tử)"
+godButton.Text = "⚡ Bật/Tắt God Mode (Bất Tử)"
 godButton.Parent = godRowFrame
 
 local godCorner = Instance.new("UICorner")
 godCorner.CornerRadius = UDim.new(0, 6)
 godCorner.Parent = godButton
 
--- Sửa God Mode với pcall an toàn chống lỗi "attempt to call a nil value"
 godButton.MouseButton1Click:Connect(function()
-    pcall(function()
-        local raw = game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal")
-        local compiled, err = loadstring(raw)
-        if compiled then
-            compiled()
-        else
-            warn("[H HUB] Lỗi tải God Mode:", err)
-        end
-    end)
+    toggleGodMode()
+    if isGodMode then
+        godButton.BackgroundColor3 = Color3.fromRGB(45, 160, 85)
+    else
+        godButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+    end
 end)
 
 local playersTab = tabs["Players"]
@@ -1566,18 +1579,6 @@ local function updateSidebarTabNames()
     tabButtons["Misc"].Text = t.tabMisc
 end
 
--- Hiệu ứng bấm nút an toàn cho Mobile (tránh lỗi mouse event)
-for _, btn in ipairs(screenGui:GetDescendants()) do
-    if btn:IsA("TextButton") then
-        pcall(function()
-            local scale = Instance.new("UIScale")
-            scale.Parent = btn
-            btn.MouseButton1Down:Connect(function() TweenService:Create(scale, TweenInfo.new(0.08), {Scale = 0.95}):Play() end)
-            btn.MouseButton1Up:Connect(function() TweenService:Create(scale, TweenInfo.new(0.08), {Scale = 1.0}):Play() end)
-        end)
-    end
-end
-
 minimizeButton.MouseButton1Click:Connect(function()
     TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0,0,0,0)}):Play()
     task.wait(0.25)
@@ -1596,6 +1597,7 @@ end)
 
 closeButton.MouseButton1Click:Connect(function()
     toggleNoclip(false) toggleInvisibility(false) toggleFly(false) toggleInfJump(false) toggleSwim(false) toggleFreezeRay(false) toggleFPSDisplay(false) toggleAutoPressButton(false) toggleFixLag(false) toggleHideMapAndOthers(false) toggleMuteAllSounds(false) toggleSpectate(false)
+    if isGodMode then toggleGodMode() end
     if gravityConnection then gravityConnection:Disconnect() gravityConnection = nil end Workspace.Gravity = 196.2
     espEnabled = false updateESP()
     if walkConnection then walkConnection:Disconnect() walkConnection = nil end
