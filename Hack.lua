@@ -1,10 +1,12 @@
 -- ==========================================
--- H HUB AUTOFARM + SPECTATE & PLAYER TAB (FIXED VERSION)
+-- H HUB AUTOFARM + SPECTATE & TELEPORT (MERGED)
 -- ==========================================
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+if not player then return end
+local playerGui = player:WaitForChild("PlayerGui", 10)
+if not playerGui then return end
 
 -- Dọn dẹp GUI cũ nếu có
 if playerGui:FindFirstChild("AutoFarmHubGui") then
@@ -20,7 +22,7 @@ local HttpService = game:GetService("HttpService")
 local Lighting = game:GetService("Lighting")
 local StarterGui = game:GetService("StarterGui")
 
--- Trạng thái tính năng
+-- Trạng thái tính năng AutoFarm & Game
 local tpEnabled = false
 local walkEnabled = false
 local jumpEnabled = false
@@ -36,7 +38,11 @@ local autoPressButtonEnabled = false
 local fixLagEnabled = false
 local hideMapOthersEnabled = false
 local muteAllSoundsEnabled = false
+
+-- Trạng thái Spectate
 local spectating = false
+local spectateIndex = 1
+local spectateConnection = nil
 
 -- Cấu hình mặc định
 local tpSpeed = 0.15
@@ -51,7 +57,6 @@ local autoPressDelay = 0.1
 local FREEZE_COOLDOWN = 6 
 local SHOT_DELAY = 1 
 local selectedTargetPlayer = nil 
-local spectateIndex = 1
 
 -- Cấu hình ESP & Màu
 local selectedEspTarget = "Tất cả"
@@ -67,7 +72,7 @@ local noclipConnection, invisibleConnection, flyConnection
 local walkConnection, jumpConnection, infJumpConnection
 local freezeRayTask, fpsConnection, gravityConnection
 local autoPressButtonTask, fixLagTask, fixLagChildConnection
-local hideMapConnection, muteSoundsConnection, spectateConnection
+local hideMapConnection, muteSoundsConnection
 local originalHipHeight
 local savedTransparencies = {}
 local hiddenObjects = {} 
@@ -84,8 +89,7 @@ local translations = {
     EN = {
         title = "H HUB - AutoFarm",
         tabMain = "Main",
-        tabPlayers = "Players",
-        tabEsp = "ESP",
+        tabEsp = "Players/ESP",
         tabMisc = "Settings",
         tabFixLag = "Fix Lag",
         tpSpd = "TP Speed (s):",
@@ -109,6 +113,8 @@ local translations = {
         autoEquipBtn = "Equip Items (Run Once)", 
         godBtn = "⚡ Open God Mode Panel",
         espBtn = "ESP Wallhack",
+        spectateBtn = "Spectate Player Mode",
+        tpToSpecBtn = "Teleport To Spectated Target",
         fpsBtn = "Display FPS",
         autoPressRadiusLabel = "Click Button Range:",
         autoPressDelayLabel = "Click Button Delay (s):",
@@ -123,20 +129,13 @@ local translations = {
         langLabel = "Language:",
         rejoinBtn = "Rejoin Server",
         serverHopBtn = "Server Hop",
-        selectPlayerLabel = "Selected Player:",
-        prevPlayerBtn = "< Previous",
-        nextPlayerBtn = "Next >",
-        tpToPlayerBtn = "🚀 Teleport To Player",
-        spectateBtn = "👁️ Spectate Mode",
-        noPlayer = "No players available",
         on = "ON",
         off = "OFF"
     },
     VI = {
         title = "H HUB - AutoFarm",
         tabMain = "Chính",
-        tabPlayers = "Người chơi",
-        tabEsp = "ESP",
+        tabEsp = "Người chơi/ESP",
         tabMisc = "Cài đặt",
         tabFixLag = "Fix Lag",
         tpSpd = "Tốc độ TP (giây):",
@@ -160,6 +159,8 @@ local translations = {
         autoEquipBtn = "Trang Bị Đồ (Nhấn 1 Lần)", 
         godBtn = "⚡ Bảng God Mode (Bất Tử)",
         espBtn = "ESP Nhìn Xuyên Tường",
+        spectateBtn = "Xem Người Chơi (Spectate)",
+        tpToSpecBtn = "Dịch Chuyển Tới Người Đang Xem",
         fpsBtn = "Hiển Thị FPS",
         autoPressRadiusLabel = "Bán kính Click Nút:",
         autoPressDelayLabel = "Tốc độ Click Nút (s):",
@@ -174,70 +175,22 @@ local translations = {
         langLabel = "Ngôn ngữ / Language:",
         rejoinBtn = "Vào Lại Server",
         serverHopBtn = "Đổi Server Khác",
-        selectPlayerLabel = "Người chơi đang chọn:",
-        prevPlayerBtn = "< Người trước",
-        nextPlayerBtn = "Người tiếp >",
-        tpToPlayerBtn = "🚀 Dịch Chuyển Tới Người Này",
-        spectateBtn = "👁️ Chế Độ Spectate (Xem)",
-        noPlayer = "Không có người chơi khác",
         on = "BẬT",
         off = "TẮT"
     }
 }
 
--- ==========================================
--- LOGIC SPECTATE & TELEPORT NGƯỜI CHƠI
--- ==========================================
-
-local function getSpectateTargets()
-    local targets = {}
-    pcall(function()
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p and p ~= player and p.Parent then
-                table.insert(targets, p)
-            end
-        end
-    end)
-    return targets
-end
-
-local function setBackpackVisible(visible)
-    pcall(function()
-        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, visible)
-    end)
-end
-
-local function teleportToTarget(targetP)
-    pcall(function()
-        if not targetP or not targetP.Parent then return end
-        local targetChar = targetP.Character
-        local myChar = player and player.Character
-        
-        if targetChar and myChar then
-            local targetRoot = targetChar:FindFirstChild("HumanoidRootPart") or targetChar:FindFirstChild("Torso")
-            local myRoot = myChar:FindFirstChild("HumanoidRootPart") or myChar:FindFirstChild("Torso")
-            
-            if targetRoot and myRoot then
-                myRoot.CFrame = targetRoot.CFrame * CFrame.new(0, 0, 3)
-            end
-        end
-    end)
-end
-
--- ==========================================
--- LOGIC TÍNH NĂNG GAME
--- ==========================================
-
+-- Danh sách trang bị
 local allEquipItems = {
     "PieThrow", "SmallPotion", "GiantPotion", "GhostPotion", "Healing", "GravityPotion", 
-    "Bloxiade", "ClownBomb", "Slate", "WindPotion", "IcePotion", "Caltrops", "SlowDownGun", 
+    "Bloxiade", "ClownBomb", "Slate", "WindPotion", "IcePotion", "SlowDownGun", 
     "GravityGun", "GravityDisruptor", "FreezeRay", "Bomb", "Jetpack", "DecoyDeploy", 
     "AprilShowers", "Balloon", "MarchingDrum", "Trumpet", "Trowel", "TeapotLauncher", 
     "BunchOfBalloons", "BangGun", "EpicJuice", "EpicSauce", "Ball", "Torch", "Cake", 
     "MoneyBag", "IceCreamCone", "Teddy", "Witch", "Watermelon", "Taco", "Bloxy", "Pizza", "Coco"
 }
 
--- FIX: Tăng khoảng trễ khi Equip đồ để không làm hỏng LocalScript của item
+-- Hàm trang bị đồ đã được tối ưu độ hoãn để tránh lỗi script của vật phẩm
 local function equipItemsOnce()
     task.spawn(function()
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -257,6 +210,132 @@ local function equipItemsOnce()
     end)
 end
 
+-- ==========================================
+-- LOGIC SPECTATE & TELEPORT
+-- ==========================================
+
+local function getSpectateTargets()
+    local targets = {}
+    pcall(function()
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p and p ~= player and p.Parent then
+                table.insert(targets, p)
+            end
+        end
+    end)
+    return targets
+end
+
+local spectateFrame, specNameLabel
+
+local function updateSpectateCamera()
+    pcall(function()
+        local targets = getSpectateTargets()
+        if #targets == 0 then
+            if specNameLabel then specNameLabel.Text = "Không có người chơi khác!" end
+            return
+        end
+        if spectateIndex > #targets then spectateIndex = 1 end
+        if spectateIndex < 1 then spectateIndex = #targets end
+
+        local target = targets[spectateIndex]
+        if target and target.Parent then
+            local nameStr = (target.DisplayName or target.Name) .. " (@" .. target.Name .. ")"
+            if specNameLabel then specNameLabel.Text = nameStr end
+            
+            local cam = Workspace.CurrentCamera
+            if cam and target.Character then
+                local hum = target.Character:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    cam.CameraSubject = hum
+                else
+                    local root = target.Character:FindFirstChild("HumanoidRootPart") or target.Character:FindFirstChild("Torso")
+                    if root then cam.CameraSubject = root end
+                end
+            end
+        end
+    end)
+end
+
+local function teleportToTarget()
+    pcall(function()
+        local targets = getSpectateTargets()
+        if #targets == 0 then return end
+        
+        local targetP = targets[spectateIndex]
+        if not targetP or not targetP.Parent then return end
+        
+        local targetChar = targetP.Character
+        local myChar = player and player.Character
+        
+        if targetChar and myChar then
+            local targetRoot = targetChar:FindFirstChild("HumanoidRootPart") or targetChar:FindFirstChild("Torso")
+            local myRoot = myChar:FindFirstChild("HumanoidRootPart") or myChar:FindFirstChild("Torso")
+            
+            if targetRoot and myRoot then
+                myRoot.CFrame = targetRoot.CFrame * CFrame.new(0, 0, 3)
+            end
+        end
+    end)
+end
+
+local function setBackpackVisible(visible)
+    pcall(function()
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, visible)
+    end)
+end
+
+local updateSpectateToggleBtnText
+
+local function toggleSpectate(state)
+    spectating = state
+    if spectateFrame then spectateFrame.Visible = state end
+    setBackpackVisible(not state)
+    
+    if updateSpectateToggleBtnText then updateSpectateToggleBtnText() end
+    
+    pcall(function()
+        local cam = Workspace.CurrentCamera
+        if not cam then return end
+        
+        if state then
+            spectateIndex = 1
+            updateSpectateCamera()
+
+            if not spectateConnection then
+                spectateConnection = RunService.RenderStepped:Connect(function()
+                    pcall(function()
+                        if spectating then
+                            local targets = getSpectateTargets()
+                            if #targets > 0 then
+                                local currentTarget = targets[spectateIndex]
+                                if currentTarget and currentTarget.Character then
+                                    local hum = currentTarget.Character:FindFirstChildOfClass("Humanoid")
+                                    if hum and cam.CameraSubject ~= hum then
+                                        cam.CameraSubject = hum
+                                    end
+                                end
+                            end
+                        end
+                    end)
+                end)
+            end
+        else
+            if spectateConnection then
+                spectateConnection:Disconnect()
+                spectateConnection = nil
+            end
+            if player and player.Character then
+                local myHum = player.Character:FindFirstChildOfClass("Humanoid")
+                if myHum then
+                    cam.CameraSubject = myHum
+                end
+            end
+        end
+    end)
+end
+
+-- Các chức năng hỗ trợ Game
 local function applyMuteToSound(sound)
     if not muteAllSoundsEnabled then return end
     pcall(function()
@@ -329,27 +408,17 @@ local function toggleHideMapAndOthers(state)
     end
 end
 
--- FIX: Không dùng :Destroy() để tránh lỗi vỡ kết cấu Map của game
 local function optimizePartExtreme(v)
     if not fixLagEnabled then return end
     pcall(function()
-        if v:IsA("BasePart") then 
-            v.Material = Enum.Material.SmoothPlastic 
-            v.Reflectance = 0 
-            v.CastShadow = false
-        elseif v:IsA("MeshPart") then 
-            v.Material = Enum.Material.SmoothPlastic 
-            v.Reflectance = 0 
-            v.CastShadow = false 
-        elseif v:IsA("Decal") or v:IsA("Texture") then 
-            v.Transparency = 1
-        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") or v:IsA("Beam") then 
-            v.Enabled = false
-        elseif v:IsA("PostEffect") or v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") then 
-            v.Enabled = false
-        elseif v:IsA("Explosion") then 
-            v.Visible = false 
-        end
+        if v:IsA("BasePart") then v.Material = Enum.Material.SmoothPlastic v.Reflectance = 0 v.CastShadow = false
+        elseif v:IsA("MeshPart") then v.Material = Enum.Material.SmoothPlastic v.Reflectance = 0 v.CastShadow = false v.TextureID = ""
+        elseif v:IsA("SpecialMesh") then v.TextureId = ""
+        elseif v:IsA("Decal") or v:IsA("Texture") then v.Transparency = 1 v:Destroy()
+        elseif v:IsA("SurfaceAppearance") then v:Destroy()
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") or v:IsA("Beam") then v.Enabled = false
+        elseif v:IsA("PostEffect") or v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") then v.Enabled = false
+        elseif v:IsA("Explosion") then v.Visible = false end
     end)
 end
 
@@ -357,10 +426,7 @@ local function toggleFixLag(state)
     fixLagEnabled = state
     if fixLagEnabled then
         pcall(function()
-            Lighting.GlobalShadows = false
-            Lighting.FogEnd = 9e9
-            Lighting.FogStart = 9e9
-            Lighting.Brightness = 1
+            Lighting.GlobalShadows = false; Lighting.FogEnd = 9e9; Lighting.FogStart = 9e9; Lighting.Brightness = 1; Lighting.Technology = Enum.Technology.Compatibility
             local terrain = Workspace:FindFirstChildOfClass("Terrain")
             if terrain then terrain.WaterWaveSize = 0 terrain.WaterWaveSpeed = 0 terrain.WaterReflectance = 0 terrain.WaterTransparency = 0 terrain.Decoration = false end
         end)
@@ -370,7 +436,7 @@ local function toggleFixLag(state)
             fixLagTask = task.spawn(function()
                 while fixLagEnabled do
                     for _, v in ipairs(Workspace:GetDescendants()) do if not fixLagEnabled then break end optimizePartExtreme(v) end
-                    task.wait(3)
+                    task.wait(2)
                 end
             end)
         end
@@ -415,7 +481,6 @@ local function serverHop()
     end)
 end
 
--- FIX: Kiểm tra hàm executor trước khi gọi
 local function toggleAutoPressButton(state)
     autoPressButtonEnabled = state
     if autoPressButtonEnabled then
@@ -434,16 +499,13 @@ local function toggleAutoPressButton(state)
                                 elseif v.Parent and v.Parent:IsA("BasePart") then isNear = (root.Position - v.Parent.Position).Magnitude <= autoPressRadius end
 
                                 if isNear then
-                                    if v:IsA("ClickDetector") and fireclickdetector then 
-                                        fireclickdetector(v)
-                                    elseif v:IsA("ProximityPrompt") and fireproximityprompt then 
-                                        fireproximityprompt(v) 
-                                    end
+                                    if v:IsA("ClickDetector") then fireclickdetector(v)
+                                    elseif v:IsA("ProximityPrompt") then fireproximityprompt(v) end
                                 end
                             end
                         end
                     end)
-                    task.wait(autoPressDelay > 0 and autoPressDelay or 0.1)
+                    task.wait(autoPressDelay > 0 and autoPressDelay or 0.05)
                 end
             end)
         end
@@ -674,6 +736,98 @@ screenGui.Name = "AutoFarmHubGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
+-- SPECTATE HUD FRAME (Hiển thị khi bật Spectate)
+spectateFrame = Instance.new("Frame")
+spectateFrame.Size = UDim2.new(0, 320, 0, 115)
+spectateFrame.Position = UDim2.new(0.5, -160, 0.85, -55)
+spectateFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+spectateFrame.BackgroundTransparency = 0.2
+spectateFrame.BorderSizePixel = 0
+spectateFrame.Visible = false
+spectateFrame.Parent = screenGui
+
+local specCorner = Instance.new("UICorner")
+specCorner.CornerRadius = UDim.new(0, 8)
+specCorner.Parent = spectateFrame
+
+local specStroke = Instance.new("UIStroke")
+specStroke.Color = Color3.fromRGB(80, 80, 255)
+specStroke.Thickness = 2
+specStroke.Parent = spectateFrame
+
+specNameLabel = Instance.new("TextLabel")
+specNameLabel.Size = UDim2.new(1, -90, 0, 34)
+specNameLabel.Position = UDim2.new(0, 45, 0, 6)
+specNameLabel.BackgroundTransparency = 1
+specNameLabel.Text = "Player Name"
+specNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+specNameLabel.Font = GLOBAL_FONT
+specNameLabel.TextSize = 13
+specNameLabel.Parent = spectateFrame
+
+local specPrevBtn = Instance.new("TextButton")
+specPrevBtn.Size = UDim2.new(0, 35, 0, 34)
+specPrevBtn.Position = UDim2.new(0, 8, 0, 6)
+specPrevBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+specPrevBtn.Text = "<"
+specPrevBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+specPrevBtn.Font = GLOBAL_FONT
+specPrevBtn.TextSize = 16
+specPrevBtn.Parent = spectateFrame
+Instance.new("UICorner", specPrevBtn).CornerRadius = UDim.new(0, 6)
+
+local specNextBtn = Instance.new("TextButton")
+specNextBtn.Size = UDim2.new(0, 35, 0, 34)
+specNextBtn.Position = UDim2.new(1, -43, 0, 6)
+specNextBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+specNextBtn.Text = ">"
+specNextBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+specNextBtn.Font = GLOBAL_FONT
+specNextBtn.TextSize = 16
+specNextBtn.Parent = spectateFrame
+Instance.new("UICorner", specNextBtn).CornerRadius = UDim.new(0, 6)
+
+local teleportBtnHUD = Instance.new("TextButton")
+teleportBtnHUD.Size = UDim2.new(0, 160, 0, 28)
+teleportBtnHUD.Position = UDim2.new(0.5, -80, 0, 44)
+teleportBtnHUD.BackgroundColor3 = Color3.fromRGB(45, 120, 210)
+teleportBtnHUD.Text = "🚀 Dịch Chuyển Tới"
+teleportBtnHUD.TextColor3 = Color3.fromRGB(255, 255, 255)
+teleportBtnHUD.Font = GLOBAL_FONT
+teleportBtnHUD.TextSize = 11
+teleportBtnHUD.Parent = spectateFrame
+Instance.new("UICorner", teleportBtnHUD).CornerRadius = UDim.new(0, 5)
+
+local specCloseBtn = Instance.new("TextButton")
+specCloseBtn.Size = UDim2.new(0, 120, 0, 24)
+specCloseBtn.Position = UDim2.new(0.5, -60, 0, 78)
+specCloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+specCloseBtn.Text = "Đóng Spectate"
+specCloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+specCloseBtn.Font = GLOBAL_FONT
+specCloseBtn.TextSize = 11
+specCloseBtn.Parent = spectateFrame
+Instance.new("UICorner", specCloseBtn).CornerRadius = UDim.new(0, 5)
+
+specPrevBtn.MouseButton1Click:Connect(function()
+    spectateIndex = spectateIndex - 1
+    updateSpectateCamera()
+end)
+
+specNextBtn.MouseButton1Click:Connect(function()
+    spectateIndex = spectateIndex + 1
+    updateSpectateCamera()
+end)
+
+teleportBtnHUD.MouseButton1Click:Connect(function()
+    teleportToTarget()
+end)
+
+specCloseBtn.MouseButton1Click:Connect(function()
+    toggleSpectate(false)
+end)
+
+-- Nút mở lại HUB
 local openUIButton = Instance.new("TextButton")
 openUIButton.Size = UDim2.new(0, 50, 0, 50)
 openUIButton.Position = UDim2.new(0.05, 0, 0.4, 0)
@@ -696,6 +850,7 @@ openUIStroke.Thickness = 2
 openUIStroke.Color = Color3.fromRGB(80, 80, 255)
 openUIStroke.Parent = openUIButton
 
+-- FPS Display Button
 local fpsButton = Instance.new("TextButton")
 fpsButton.Name = "FPSDisplayButton"
 fpsButton.Size = UDim2.new(0, 85, 0, 32)
@@ -740,6 +895,7 @@ local function toggleFPSDisplay(state)
     end
 end
 
+-- BẢNG ĐIỀU KHIỂN HUB
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 390, 0, 320)
 frame.Position = UDim2.new(0.5, -195, 0.5, -160)
@@ -855,7 +1011,7 @@ container.BackgroundTransparency = 1
 container.Parent = frame
 
 local tabs = {}
-local tabNames = {"Main", "Players", "ESP", "FixLag", "Misc"}
+local tabNames = {"Main", "ESP", "FixLag", "Misc"}
 
 for _, name in ipairs(tabNames) do
     local tabScroll = Instance.new("ScrollingFrame")
@@ -1042,15 +1198,10 @@ local function createInputRow(parentTab, labelKey, defaultVal, callback)
     return frameRow, refreshLabel
 end
 
--- ==========================================
--- POPULATE TABS
--- ==========================================
-
-local refreshFuncs = {}
-
--- MAIN TAB
+-- TAB CHÍNH (MAIN TAB)
 local mainTab = tabs["Main"]
 mainTab.Visible = true
+local refreshFuncs = {}
 
 local _, r1 = createInputRow(mainTab, "tpSpd", tpSpeed, function(val) tpSpeed = val end)
 table.insert(refreshFuncs, r1)
@@ -1165,263 +1316,24 @@ godButton.Parent = godRowFrame
 
 local godCorner = Instance.new("UICorner")
 godCorner.CornerRadius = UDim.new(0, 6)
-godCorner.Parent = godRowFrame
+godCorner.Parent = godButton
 
 godButton.MouseButton1Click:Connect(function()
-    pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"))()
-    end)
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"))()
 end)
 
--- PLAYERS TAB
-local playersTab = tabs["Players"]
-
-local spectateHUD = Instance.new("Frame")
-spectateHUD.Size = UDim2.new(0, 320, 0, 115)
-spectateHUD.Position = UDim2.new(0.5, -160, 0.85, -55)
-spectateHUD.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-spectateHUD.BackgroundTransparency = 0.2
-spectateHUD.BorderSizePixel = 0
-spectateHUD.Visible = false
-spectateHUD.Parent = screenGui
-
-local specCorner = Instance.new("UICorner")
-specCorner.CornerRadius = UDim.new(0, 8)
-specCorner.Parent = spectateHUD
-
-local specStroke = Instance.new("UIStroke")
-specStroke.Color = Color3.fromRGB(80, 80, 255)
-specStroke.Thickness = 2
-specStroke.Parent = spectateHUD
-
-local specNameLabel = Instance.new("TextLabel")
-specNameLabel.Size = UDim2.new(1, -90, 0, 34)
-specNameLabel.Position = UDim2.new(0, 45, 0, 6)
-specNameLabel.BackgroundTransparency = 1
-specNameLabel.Text = "Player Name"
-specNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-specNameLabel.Font = GLOBAL_FONT
-specNameLabel.TextSize = 13
-specNameLabel.Parent = spectateHUD
-
-local specPrevBtn = Instance.new("TextButton")
-specPrevBtn.Size = UDim2.new(0, 35, 0, 34)
-specPrevBtn.Position = UDim2.new(0, 8, 0, 6)
-specPrevBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-specPrevBtn.Text = "<"
-specPrevBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-specPrevBtn.Font = GLOBAL_FONT
-specPrevBtn.TextSize = 16
-specPrevBtn.Parent = spectateHUD
-Instance.new("UICorner", specPrevBtn).CornerRadius = UDim.new(0, 6)
-
-local specNextBtn = Instance.new("TextButton")
-specNextBtn.Size = UDim2.new(0, 35, 0, 34)
-specNextBtn.Position = UDim2.new(1, -43, 0, 6)
-specNextBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-specNextBtn.Text = ">"
-specNextBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-specNextBtn.Font = GLOBAL_FONT
-specNextBtn.TextSize = 16
-specNextBtn.Parent = spectateHUD
-Instance.new("UICorner", specNextBtn).CornerRadius = UDim.new(0, 6)
-
-local hudTeleportBtn = Instance.new("TextButton")
-hudTeleportBtn.Size = UDim2.new(0, 160, 0, 28)
-hudTeleportBtn.Position = UDim2.new(0.5, -80, 0, 44)
-hudTeleportBtn.BackgroundColor3 = Color3.fromRGB(45, 120, 210)
-hudTeleportBtn.Text = "🚀 Dịch Chuyển Tới"
-hudTeleportBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-hudTeleportBtn.Font = GLOBAL_FONT
-hudTeleportBtn.TextSize = 11
-hudTeleportBtn.Parent = spectateHUD
-Instance.new("UICorner", hudTeleportBtn).CornerRadius = UDim.new(0, 5)
-
-local hudCloseBtn = Instance.new("TextButton")
-hudCloseBtn.Size = UDim2.new(0, 120, 0, 24)
-hudCloseBtn.Position = UDim2.new(0.5, -60, 0, 78)
-hudCloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-hudCloseBtn.Text = "Đóng Spectate"
-hudCloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-hudCloseBtn.Font = GLOBAL_FONT
-hudCloseBtn.TextSize = 11
-hudCloseBtn.Parent = spectateHUD
-Instance.new("UICorner", hudCloseBtn).CornerRadius = UDim.new(0, 5)
-
-local selectPlayerHeader = Instance.new("TextLabel")
-selectPlayerHeader.Size = UDim2.new(1, 0, 0, 20)
-selectPlayerHeader.BackgroundTransparency = 1
-selectPlayerHeader.TextColor3 = currentTextColor
-selectPlayerHeader.Font = GLOBAL_FONT
-selectPlayerHeader.TextSize = 11
-selectPlayerHeader.TextXAlignment = Enum.TextXAlignment.Left
-selectPlayerHeader.Parent = playersTab
-table.insert(textElements, selectPlayerHeader)
-
-local playerDisplayFrame = Instance.new("Frame")
-playerDisplayFrame.Size = UDim2.new(1, 0, 0, 32)
-playerDisplayFrame.BackgroundColor3 = currentThemeColor
-playerDisplayFrame.Parent = playersTab
-table.insert(themeButtons, playerDisplayFrame)
-Instance.new("UICorner", playerDisplayFrame).CornerRadius = UDim.new(0, 6)
-
-local targetNameText = Instance.new("TextLabel")
-targetNameText.Size = UDim2.new(1, -10, 1, 0)
-targetNameText.Position = UDim2.new(0, 5, 0, 0)
-targetNameText.BackgroundTransparency = 1
-targetNameText.TextColor3 = Color3.fromRGB(255, 220, 100)
-targetNameText.Font = GLOBAL_FONT
-targetNameText.TextSize = 12
-targetNameText.TextScaled = true
-targetNameText.Parent = playerDisplayFrame
-
-local navFrame = Instance.new("Frame")
-navFrame.Size = UDim2.new(1, 0, 0, 32)
-navFrame.BackgroundTransparency = 1
-navFrame.Parent = playersTab
-
-local prevPlayerBtn = Instance.new("TextButton")
-prevPlayerBtn.Size = UDim2.new(0.48, 0, 1, 0)
-prevPlayerBtn.Position = UDim2.new(0, 0, 0, 0)
-prevPlayerBtn.BackgroundColor3 = currentThemeColor
-prevPlayerBtn.TextColor3 = currentTextColor
-prevPlayerBtn.Font = GLOBAL_FONT
-prevPlayerBtn.TextSize = 11
-prevPlayerBtn.Parent = navFrame
-table.insert(themeButtons, prevPlayerBtn)
-table.insert(textElements, prevPlayerBtn)
-Instance.new("UICorner", prevPlayerBtn).CornerRadius = UDim.new(0, 6)
-
-local nextPlayerBtn = Instance.new("TextButton")
-nextPlayerBtn.Size = UDim2.new(0.48, 0, 1, 0)
-nextPlayerBtn.Position = UDim2.new(0.52, 0, 0, 0)
-nextPlayerBtn.BackgroundColor3 = currentThemeColor
-nextPlayerBtn.TextColor3 = currentTextColor
-nextPlayerBtn.Font = GLOBAL_FONT
-nextPlayerBtn.TextSize = 11
-nextPlayerBtn.Parent = navFrame
-table.insert(themeButtons, nextPlayerBtn)
-table.insert(textElements, nextPlayerBtn)
-Instance.new("UICorner", nextPlayerBtn).CornerRadius = UDim.new(0, 6)
-
-local function updateSelectedPlayerUI()
-    local targets = getSpectateTargets()
-    local t = translations[currentLang]
-    if #targets == 0 then
-        selectedTargetPlayer = nil
-        targetNameText.Text = t.noPlayer
-        specNameLabel.Text = t.noPlayer
-        return
-    end
-    if spectateIndex > #targets then spectateIndex = 1 end
-    if spectateIndex < 1 then spectateIndex = #targets end
-
-    selectedTargetPlayer = targets[spectateIndex]
-    if selectedTargetPlayer and selectedTargetPlayer.Parent then
-        local str = selectedTargetPlayer.DisplayName .. " (@" .. selectedTargetPlayer.Name .. ")"
-        targetNameText.Text = str
-        specNameLabel.Text = str
-    end
-end
-
-local function updateSpectateCamera()
-    pcall(function()
-        updateSelectedPlayerUI()
-        if not spectating then return end
-        local cam = Workspace.CurrentCamera
-        if cam and selectedTargetPlayer and selectedTargetPlayer.Character then
-            local hum = selectedTargetPlayer.Character:FindFirstChildOfClass("Humanoid")
-            if hum then
-                cam.CameraSubject = hum
-            else
-                local root = selectedTargetPlayer.Character:FindFirstChild("HumanoidRootPart") or selectedTargetPlayer.Character:FindFirstChild("Torso")
-                if root then cam.CameraSubject = root end
-            end
-        end
-    end)
-end
-
-local function toggleSpectate(state)
-    spectating = state
-    spectateHUD.Visible = state
-    setBackpackVisible(not state)
-    
-    pcall(function()
-        local cam = Workspace.CurrentCamera
-        if not cam then return end
-        
-        if state then
-            updateSpectateCamera()
-            if not spectateConnection then
-                spectateConnection = RunService.RenderStepped:Connect(function()
-                    pcall(function()
-                        if spectating and selectedTargetPlayer and selectedTargetPlayer.Character then
-                            local hum = selectedTargetPlayer.Character:FindFirstChildOfClass("Humanoid")
-                            if hum and cam.CameraSubject ~= hum then
-                                cam.CameraSubject = hum
-                            end
-                        end
-                    end)
-                end)
-            end
-        else
-            if spectateConnection then
-                spectateConnection:Disconnect()
-                spectateConnection = nil
-            end
-            if player and player.Character then
-                local myHum = player.Character:FindFirstChildOfClass("Humanoid")
-                if myHum then cam.CameraSubject = myHum end
-            end
-        end
-    end)
-end
-
-prevPlayerBtn.MouseButton1Click:Connect(function()
-    spectateIndex = spectateIndex - 1
-    updateSpectateCamera()
-end)
-
-nextPlayerBtn.MouseButton1Click:Connect(function()
-    spectateIndex = spectateIndex + 1
-    updateSpectateCamera()
-end)
-
-specPrevBtn.MouseButton1Click:Connect(function()
-    spectateIndex = spectateIndex - 1
-    updateSpectateCamera()
-end)
-
-specNextBtn.MouseButton1Click:Connect(function()
-    spectateIndex = spectateIndex + 1
-    updateSpectateCamera()
-end)
-
-local _, rTpPlayer = createButtonRow(playersTab, "tpToPlayerBtn", function()
-    if selectedTargetPlayer then teleportToTarget(selectedTargetPlayer) end
-end)
-table.insert(refreshFuncs, rTpPlayer)
-
-hudTeleportBtn.MouseButton1Click:Connect(function()
-    if selectedTargetPlayer then teleportToTarget(selectedTargetPlayer) end
-end)
-
-local _, rSpecToggle = createToggleRow(playersTab, "spectateBtn", spectating, function(st)
-    toggleSpectate(st)
-end)
-table.insert(refreshFuncs, rSpecToggle)
-
-hudCloseBtn.MouseButton1Click:Connect(function()
-    toggleSpectate(false)
-end)
-
-updateSelectedPlayerUI()
-
--- ESP TAB
+-- TAB NGƯỜI CHƠI / ESP (PLAYERS / ESP TAB)
 local espTab = tabs["ESP"]
 
 local _, rEsp = createToggleRow(espTab, "espBtn", espEnabled, function(st) espEnabled = st updateESP() end)
 table.insert(refreshFuncs, rEsp)
+
+local _, rSpecBtn = createToggleRow(espTab, "spectateBtn", spectating, function(st) toggleSpectate(st) end)
+updateSpectateToggleBtnText = rSpecBtn
+table.insert(refreshFuncs, rSpecBtn)
+
+local _, rTpSpecBtn = createButtonRow(espTab, "tpToSpecBtn", function() teleportToTarget() end)
+table.insert(refreshFuncs, rTpSpecBtn)
 
 local _, rFps = createToggleRow(espTab, "fpsBtn", fpsEnabled, function(st) toggleFPSDisplay(st) end)
 table.insert(refreshFuncs, rFps)
@@ -1465,7 +1377,7 @@ for i, col in ipairs(espColors) do
     cBtn.MouseButton1Click:Connect(function() espColor = col updateESP() end)
 end
 
--- FIXLAG TAB
+-- TAB FIX LAG
 local fixLagTab = tabs["FixLag"]
 
 local _, rLag1 = createToggleRow(fixLagTab, "fixLagBtn", fixLagEnabled, function(st) toggleFixLag(st) end)
@@ -1477,7 +1389,7 @@ table.insert(refreshFuncs, rLag2)
 local _, rLag3 = createToggleRow(fixLagTab, "muteSoundsBtn", muteAllSoundsEnabled, function(st) toggleMuteAllSounds(st) end)
 table.insert(refreshFuncs, rLag3)
 
--- MISC TAB
+-- TAB MISC / SETTINGS
 local miscTab = tabs["Misc"]
 
 local boardColorLabelObj = Instance.new("TextLabel")
@@ -1623,50 +1535,31 @@ local engCorner = Instance.new("UICorner")
 engCorner.CornerRadius = UDim.new(0, 6)
 engCorner.Parent = btnEnglish
 
-local btnVietnamese = Instance.new("TextButton")
-btnVietnamese.Size = UDim2.new(0.48, 0, 1, 0)
+local btnVietnamese = btnEnglish:Clone()
 btnVietnamese.Position = UDim2.new(0.52, 0, 0, 0)
-btnVietnamese.BackgroundColor3 = currentThemeColor
-btnVietnamese.TextColor3 = currentTextColor
-btnVietnamese.Font = GLOBAL_FONT
-btnVietnamese.TextSize = 11
 btnVietnamese.Text = "Tiếng Việt"
 btnVietnamese.Parent = langFrame
 table.insert(themeButtons, btnVietnamese)
 table.insert(textElements, btnVietnamese)
-
-local viCorner = Instance.new("UICorner")
-viCorner.CornerRadius = UDim.new(0, 6)
-viCorner.Parent = btnVietnamese
 
 local serverFrame = Instance.new("Frame")
 serverFrame.Size = UDim2.new(1, 0, 0, 32)
 serverFrame.BackgroundTransparency = 1
 serverFrame.Parent = miscTab
 
-local rejoinButton = Instance.new("TextButton")
+local rejoinButton = btnEnglish:Clone()
 rejoinButton.Size = UDim2.new(0.48, 0, 1, 0)
 rejoinButton.Position = UDim2.new(0, 0, 0, 0)
-rejoinButton.BackgroundColor3 = currentThemeColor
-rejoinButton.TextColor3 = currentTextColor
-rejoinButton.Font = GLOBAL_FONT
-rejoinButton.TextSize = 11
 rejoinButton.Parent = serverFrame
 table.insert(themeButtons, rejoinButton)
 table.insert(textElements, rejoinButton)
-Instance.new("UICorner", rejoinButton).CornerRadius = UDim.new(0, 6)
 
-local serverHopButton = Instance.new("TextButton")
+local serverHopButton = btnVietnamese:Clone()
 serverHopButton.Size = UDim2.new(0.48, 0, 1, 0)
 serverHopButton.Position = UDim2.new(0.52, 0, 0, 0)
-serverHopButton.BackgroundColor3 = currentThemeColor
-serverHopButton.TextColor3 = currentTextColor
-serverHopButton.Font = GLOBAL_FONT
-serverHopButton.TextSize = 11
 serverHopButton.Parent = serverFrame
 table.insert(themeButtons, serverHopButton)
 table.insert(textElements, serverHopButton)
-Instance.new("UICorner", serverHopButton).CornerRadius = UDim.new(0, 6)
 
 rejoinButton.MouseButton1Click:Connect(rejoinServer)
 serverHopButton.MouseButton1Click:Connect(serverHop)
@@ -1682,25 +1575,20 @@ local function updateLanguage()
     langLabel.Text = t.langLabel
     rejoinButton.Text = t.rejoinBtn
     serverHopButton.Text = t.serverHopBtn
-    selectPlayerHeader.Text = t.selectPlayerLabel
-    prevPlayerBtn.Text = t.prevPlayerBtn
-    nextPlayerBtn.Text = t.nextPlayerBtn
 
     for _, rf in ipairs(refreshFuncs) do
         rf()
     end
-    updateSelectedPlayerUI()
 end
 
 btnEnglish.MouseButton1Click:Connect(function() currentLang = "EN" updateLanguage() end)
 btnVietnamese.MouseButton1Click:Connect(function() currentLang = "VI" updateLanguage() end)
 
--- SIDEBAR BUTTONS
 local tabButtons = {}
 local yOffset = 10
 for i, name in ipairs(tabNames) do
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -16, 0, 30)
+    btn.Size = UDim2.new(1, -16, 0, 32)
     btn.Position = UDim2.new(0, 8, 0, yOffset)
     btn.BackgroundColor3 = (i == 1) and Color3.fromRGB(70, 70, 90) or Color3.fromRGB(30, 30, 40)
     btn.TextColor3 = currentTextColor
@@ -1721,13 +1609,12 @@ for i, name in ipairs(tabNames) do
     end)
 
     tabButtons[name] = btn
-    yOffset = yOffset + 36
+    yOffset = yOffset + 40
 end
 
 local function updateSidebarTabNames()
     local t = translations[currentLang]
     tabButtons["Main"].Text = t.tabMain
-    tabButtons["Players"].Text = t.tabPlayers
     tabButtons["ESP"].Text = t.tabEsp
     tabButtons["FixLag"].Text = t.tabFixLag
     tabButtons["Misc"].Text = t.tabMisc
