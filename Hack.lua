@@ -1,5 +1,5 @@
 -- ==========================================
--- H HUB AUTOFARM + SPECTATE & PLAYER TAB (FULL MERGED)
+-- H HUB AUTOFARM + SPECTATE & PLAYER TAB (FIXED VERSION)
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -237,6 +237,7 @@ local allEquipItems = {
     "MoneyBag", "IceCreamCone", "Teddy", "Witch", "Watermelon", "Taco", "Bloxy", "Pizza", "Coco"
 }
 
+-- FIX: Tăng khoảng trễ khi Equip đồ để không làm hỏng LocalScript của item
 local function equipItemsOnce()
     task.spawn(function()
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -245,13 +246,13 @@ local function equipItemsOnce()
         
         for _, item in ipairs(allEquipItems) do
             pcall(function() equipEvent:FireServer("UNEQUIP", item) end)
-            task.wait(0.03)
+            task.wait(0.08)
         end
-        task.wait(0.2)
+        task.wait(0.3)
         
         for _, item in ipairs(allEquipItems) do
             pcall(function() equipEvent:FireServer("EQUIP", item) end)
-            task.wait(0.03)
+            task.wait(0.08)
         end
     end)
 end
@@ -328,17 +329,27 @@ local function toggleHideMapAndOthers(state)
     end
 end
 
+-- FIX: Không dùng :Destroy() để tránh lỗi vỡ kết cấu Map của game
 local function optimizePartExtreme(v)
     if not fixLagEnabled then return end
     pcall(function()
-        if v:IsA("BasePart") then v.Material = Enum.Material.SmoothPlastic v.Reflectance = 0 v.CastShadow = false
-        elseif v:IsA("MeshPart") then v.Material = Enum.Material.SmoothPlastic v.Reflectance = 0 v.CastShadow = false v.TextureID = ""
-        elseif v:IsA("SpecialMesh") then v.TextureId = ""
-        elseif v:IsA("Decal") or v:IsA("Texture") then v.Transparency = 1 v:Destroy()
-        elseif v:IsA("SurfaceAppearance") then v:Destroy()
-        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") or v:IsA("Beam") then v.Enabled = false
-        elseif v:IsA("PostEffect") or v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") then v.Enabled = false
-        elseif v:IsA("Explosion") then v.Visible = false end
+        if v:IsA("BasePart") then 
+            v.Material = Enum.Material.SmoothPlastic 
+            v.Reflectance = 0 
+            v.CastShadow = false
+        elseif v:IsA("MeshPart") then 
+            v.Material = Enum.Material.SmoothPlastic 
+            v.Reflectance = 0 
+            v.CastShadow = false 
+        elseif v:IsA("Decal") or v:IsA("Texture") then 
+            v.Transparency = 1
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") or v:IsA("Beam") then 
+            v.Enabled = false
+        elseif v:IsA("PostEffect") or v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") then 
+            v.Enabled = false
+        elseif v:IsA("Explosion") then 
+            v.Visible = false 
+        end
     end)
 end
 
@@ -346,7 +357,10 @@ local function toggleFixLag(state)
     fixLagEnabled = state
     if fixLagEnabled then
         pcall(function()
-            Lighting.GlobalShadows = false; Lighting.FogEnd = 9e9; Lighting.FogStart = 9e9; Lighting.Brightness = 1; Lighting.Technology = Enum.Technology.Compatibility
+            Lighting.GlobalShadows = false
+            Lighting.FogEnd = 9e9
+            Lighting.FogStart = 9e9
+            Lighting.Brightness = 1
             local terrain = Workspace:FindFirstChildOfClass("Terrain")
             if terrain then terrain.WaterWaveSize = 0 terrain.WaterWaveSpeed = 0 terrain.WaterReflectance = 0 terrain.WaterTransparency = 0 terrain.Decoration = false end
         end)
@@ -356,7 +370,7 @@ local function toggleFixLag(state)
             fixLagTask = task.spawn(function()
                 while fixLagEnabled do
                     for _, v in ipairs(Workspace:GetDescendants()) do if not fixLagEnabled then break end optimizePartExtreme(v) end
-                    task.wait(2)
+                    task.wait(3)
                 end
             end)
         end
@@ -401,6 +415,7 @@ local function serverHop()
     end)
 end
 
+-- FIX: Kiểm tra hàm executor trước khi gọi
 local function toggleAutoPressButton(state)
     autoPressButtonEnabled = state
     if autoPressButtonEnabled then
@@ -419,13 +434,16 @@ local function toggleAutoPressButton(state)
                                 elseif v.Parent and v.Parent:IsA("BasePart") then isNear = (root.Position - v.Parent.Position).Magnitude <= autoPressRadius end
 
                                 if isNear then
-                                    if v:IsA("ClickDetector") then fireclickdetector(v)
-                                    elseif v:IsA("ProximityPrompt") then fireproximityprompt(v) end
+                                    if v:IsA("ClickDetector") and fireclickdetector then 
+                                        fireclickdetector(v)
+                                    elseif v:IsA("ProximityPrompt") and fireproximityprompt then 
+                                        fireproximityprompt(v) 
+                                    end
                                 end
                             end
                         end
                     end)
-                    task.wait(autoPressDelay > 0 and autoPressDelay or 0.05)
+                    task.wait(autoPressDelay > 0 and autoPressDelay or 0.1)
                 end
             end)
         end
@@ -836,7 +854,6 @@ container.Position = UDim2.new(0, 115, 0, 35)
 container.BackgroundTransparency = 1
 container.Parent = frame
 
--- DANH SÁCH TAB ĐÃ ĐƯỢC THÊM TAB "Players"
 local tabs = {}
 local tabNames = {"Main", "Players", "ESP", "FixLag", "Misc"}
 
@@ -1151,16 +1168,14 @@ godCorner.CornerRadius = UDim.new(0, 6)
 godCorner.Parent = godRowFrame
 
 godButton.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"))()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"))()
+    end)
 end)
 
--- ==========================================
--- PLAYERS TAB (ĐÃ TÍCH HỢP SPECTATE & TELEPORT)
--- ==========================================
-
+-- PLAYERS TAB
 local playersTab = tabs["Players"]
 
--- SPECTATE MINI HUD (Thanh công cụ phụ phía dưới màn hình)
 local spectateHUD = Instance.new("Frame")
 spectateHUD.Size = UDim2.new(0, 320, 0, 115)
 spectateHUD.Position = UDim2.new(0.5, -160, 0.85, -55)
@@ -1233,7 +1248,6 @@ hudCloseBtn.TextSize = 11
 hudCloseBtn.Parent = spectateHUD
 Instance.new("UICorner", hudCloseBtn).CornerRadius = UDim.new(0, 5)
 
--- NỘI DUNG BẢNG TAB NGƯỜI CHƠI
 local selectPlayerHeader = Instance.new("TextLabel")
 selectPlayerHeader.Size = UDim2.new(1, 0, 0, 20)
 selectPlayerHeader.BackgroundTransparency = 1
@@ -1609,31 +1623,50 @@ local engCorner = Instance.new("UICorner")
 engCorner.CornerRadius = UDim.new(0, 6)
 engCorner.Parent = btnEnglish
 
-local btnVietnamese = btnEnglish:Clone()
+local btnVietnamese = Instance.new("TextButton")
+btnVietnamese.Size = UDim2.new(0.48, 0, 1, 0)
 btnVietnamese.Position = UDim2.new(0.52, 0, 0, 0)
+btnVietnamese.BackgroundColor3 = currentThemeColor
+btnVietnamese.TextColor3 = currentTextColor
+btnVietnamese.Font = GLOBAL_FONT
+btnVietnamese.TextSize = 11
 btnVietnamese.Text = "Tiếng Việt"
 btnVietnamese.Parent = langFrame
 table.insert(themeButtons, btnVietnamese)
 table.insert(textElements, btnVietnamese)
+
+local viCorner = Instance.new("UICorner")
+viCorner.CornerRadius = UDim.new(0, 6)
+viCorner.Parent = btnVietnamese
 
 local serverFrame = Instance.new("Frame")
 serverFrame.Size = UDim2.new(1, 0, 0, 32)
 serverFrame.BackgroundTransparency = 1
 serverFrame.Parent = miscTab
 
-local rejoinButton = btnEnglish:Clone()
+local rejoinButton = Instance.new("TextButton")
 rejoinButton.Size = UDim2.new(0.48, 0, 1, 0)
 rejoinButton.Position = UDim2.new(0, 0, 0, 0)
+rejoinButton.BackgroundColor3 = currentThemeColor
+rejoinButton.TextColor3 = currentTextColor
+rejoinButton.Font = GLOBAL_FONT
+rejoinButton.TextSize = 11
 rejoinButton.Parent = serverFrame
 table.insert(themeButtons, rejoinButton)
 table.insert(textElements, rejoinButton)
+Instance.new("UICorner", rejoinButton).CornerRadius = UDim.new(0, 6)
 
-local serverHopButton = btnVietnamese:Clone()
+local serverHopButton = Instance.new("TextButton")
 serverHopButton.Size = UDim2.new(0.48, 0, 1, 0)
 serverHopButton.Position = UDim2.new(0.52, 0, 0, 0)
+serverHopButton.BackgroundColor3 = currentThemeColor
+serverHopButton.TextColor3 = currentTextColor
+serverHopButton.Font = GLOBAL_FONT
+serverHopButton.TextSize = 11
 serverHopButton.Parent = serverFrame
 table.insert(themeButtons, serverHopButton)
 table.insert(textElements, serverHopButton)
+Instance.new("UICorner", serverHopButton).CornerRadius = UDim.new(0, 6)
 
 rejoinButton.MouseButton1Click:Connect(rejoinServer)
 serverHopButton.MouseButton1Click:Connect(serverHop)
