@@ -1,5898 +1,5472 @@
---========================================================--
---                    H HUB AUTOFARM                       --
---       AUTOFARM + ESP + SPECTATE + FIX LAG + SETTINGS   --
---                    FIXED / CLEANED                      --
---========================================================--
+local CONFIG = {
+	AutoPlay      = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	Team          = "Floppa",      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoPumpkin   = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	PumpkinMinLevel = 1100,
+	PumpkinMaxLevel = 1200,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	SummonPresses = 2,             -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	PumpkinSkullKills = 5,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	DebugSpawn    = false,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AntiLag       = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	Highlight     = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	ShowUI        = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoRedeem    = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RedeemURL     = "https://pastebin.com/raw/2W4kMG3c", -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RedeemOwnCode = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoRaceV2    = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaceV2MinLevel = 500,
+	AutoBossWatch = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	MemeBeastMinLevel = 1500,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	GiantPumpkinWatchMinLevel = 1100, -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoEvilNoob  = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	EvilNoobMinLevel = 2000,
+	EvilNoobMaxCycles = 3,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	NoobRaidGems = 50000,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoBuyDropX2 = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	DropX2GamepassId = 876020870,  -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoBuyGemX2  = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	GemX2Gems     = 30000,
+	GemX2GamepassId = 86944271,    -- GamepassId Gem x2
+	NoobCheckSeconds = 8,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	EvilNoobSummonRounds = 30,     -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	MoaiKills = 5,                 -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoRerollRace = true,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaceRerollMax = 30,            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoFlameKatana = true,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	FlameKatanaMinLevel = 250,
+	FlameKatanaMaxCycles = 8,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoBallerStyle = true,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	BallerMoney   = 10000000,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	UseBallerWhenOwned = true,     -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	BallerSkills  = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	BallerKeys    = { "Z", "X", "C", "V" },
+	BallerSkillRange = 120,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	BallerSkillGap   = 2.5,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	BallerKills   = 10,            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoHaki      = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AuraMoney     = 10000000,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AuraBossName  = "Meme Beast",  -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoHakiKeepOn = true,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoHakiReroll = true,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	HakiRerollWaitAll = true,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	HakiRerollNPC = "Halved Sorcerer", -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	HakiRerollMinGems = 1,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	HakiRerollDelay = 0.6,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	HakiRerollRepeat = false,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoFarm      = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	BringMob      = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	BringFruit    = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoStore     = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	FruitFullRetrySeconds = 600,   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoStats     = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	ResetIfStyleLost = true,       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoRaid      = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidMinLevel  = 2000,
+	RaidStopGems  = 20000,
+	AutoStartRaid = false,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidStartDelay = 3,            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidStartRetry = 1,            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidOnlyNewMobs = true,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidNoMobResetSeconds = 5,     -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidFarmDelay = 11,            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidTargetRange = 1000,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidReturn    = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidReturnDistance = 500,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidFolderHeight = 5,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidArenaPos  = nil,           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidSmart     = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidRetreatHp = 0.45,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidResumeHp  = 0.85,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidOrbitRadius = 20,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidOrbitSpeed  = 8,           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoBuy       = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	Weapon        = "FightingStyle", -- "FightingStyle" | "Power" | "Weapon"
+	Method        = "Upper",       -- "Upper" | "Behind" | "Below"
+	Distance      = 8,             -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidCrowdDistance = 0,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	FollowSmooth  = 20,            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidGapHold   = 1.5,           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaidFreezeMob = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	FollowLead    = 0.08,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	BringRange    = 250,           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	MaxBringMobs  = 3,             -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	BringSpread   = 2,             -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	BringOrbitSpeed = 2,           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	UseSwordSkills = true,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	MaxLevel      = 2400,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	SwordOnlyAtMax = true,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	SwordRotateInRaid = true,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	SwordSwapSettle = 0.12,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	SwordCdSample = 0.1,           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	SwordRotateBlock = 1.0,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	SwordRetrySeconds = 1.5,       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	SwordPriority = { "Purple Katana", "Yellow Blade", "Pink Hammer", "Banana", "Flame Katana" },   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	ResetIfHitStuck = true,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	StuckSeconds    = 3,
+	AutoItemQuests = true,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	PinkHammerMinLevel = 1350,     -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	BananaMinLevel = 800,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	BananaMinMoney = 350000,       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	PurpleKatanaMinLevel = 1700,   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	LordSusSummonRounds = 30,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	SusDuckKills = 9,              -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	ItemQuestMaxCycles = 0,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AntiAFK       = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AntiAFKInterval = 120,
+	AutoRecover   = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RecoverMaxRestarts = 200,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoRejoin    = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RejoinScript  = "",            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+}
 
---========================================================--
--- SERVICES
---========================================================--
+repeat task.wait() until game:IsLoaded()
 
-local Players = game:GetService("Players")
+-- ===================== Runtime: Anti-AFK / Auto Recover / Auto Rejoin =====================
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local _spawn, _wait, _cancel = task.spawn, task.wait, task.cancel
+local _LP = game:GetService("Players").LocalPlayer
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+_G.__HHUBGen = (_G.__HHUBGen or 0) + 1
+local MY_GEN = _G.__HHUBGen
+for _, th in ipairs(_G.__HHUBThreads or {}) do if _cancel then pcall(_cancel, th) end end
+for _, cn in ipairs(_G.__HHUBConns or {}) do pcall(function() cn:Disconnect() end) end
+_G.__HHUBThreads, _G.__HHUBConns = {}, {}
+local function KeepConn(cn) table.insert(_G.__HHUBConns, cn) return cn end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function ResilientSpawn(fn, ...)
+	local args = table.pack(...)
+	local th = _spawn(function()
+		local restarts = 0
+		while MY_GEN == _G.__HHUBGen do
+			local t0 = tick()
+			local ok, err = xpcall(function() return fn(table.unpack(args, 1, args.n)) end, debug.traceback)
+			if ok then return end
+			if not CONFIG.AutoRecover then warn("[Recover] Error (đã tắt AutoRecover):", err) return end
+			if tick() - t0 > 30 then restarts = 0 end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			restarts = restarts + 1
+			warn(string.format("[Recover] Luồng gặp lỗi -> khởi động lại (%d/%d)\n%s", restarts, CONFIG.RecoverMaxRestarts, tostring(err)))
+			if restarts >= CONFIG.RecoverMaxRestarts then warn("[Recover] Luồng lỗi quá số lần cho phép, đã dừng") return end
+			_wait(math.min(0.5 + restarts * 0.25, 5))
+		end
+	end)
+	if th then table.insert(_G.__HHUBThreads, th) end
+	return th
+end
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local task = setmetatable({ spawn = ResilientSpawn }, { __index = task })
+
+-- ===== Anti-AFK =====
+if CONFIG.AntiAFK then
+	local VU = game:GetService("VirtualUser")
+	local function Nudge()
+		pcall(function()
+			VU:CaptureController()
+			VU:ClickButton2(Vector2.new(0, 0))
+		end)
+	end
+	KeepConn(_LP.Idled:Connect(Nudge))
+	_spawn(function()
+		while MY_GEN == _G.__HHUBGen do
+			_wait(CONFIG.AntiAFKInterval or 120)
+			Nudge()
+		end
+	end)
+	print("[AntiAFK] đã bật")
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+if CONFIG.AutoRejoin then
+	local TeleportService = game:GetService("TeleportService")
+	local rejoining = false
+	local function Rejoin(reason)
+		if rejoining then return end
+		rejoining = true
+		warn("[Rejoin] " .. tostring(reason) .. " -> vào lại trò chơi")
+		if CONFIG.RejoinScript ~= "" and queue_on_teleport then pcall(queue_on_teleport, CONFIG.RejoinScript) end
+		for _ = 1, 40 do
+			pcall(function() TeleportService:Teleport(game.PlaceId, _LP) end)
+			_wait(10)
+		end
+		rejoining = false
+	end
+	pcall(function()
+		local overlay = game:GetService("CoreGui"):WaitForChild("RobloxPromptGui", 10):WaitForChild("promptOverlay", 10)
+		KeepConn(overlay.ChildAdded:Connect(function(c)
+			if c.Name == "ErrorPrompt" then Rejoin("ErrorPrompt") end
+		end))
+	end)
+	pcall(function()
+		KeepConn(game:GetService("GuiService").ErrorMessageChanged:Connect(function(msg)
+			if msg and msg ~= "" then Rejoin("ErrorMessage: " .. tostring(msg)) end
+		end))
+	end)
+	pcall(function()
+		KeepConn(TeleportService.TeleportInitFailed:Connect(function()
+			rejoining = false
+			_wait(3)
+			Rejoin("TeleportInitFailed")
+		end))
+	end)
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function __HHUBMain()
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+if CONFIG.AutoPlay then
+	local Players0 = game:GetService("Players")
+	local VIM0 = game:GetService("VirtualInputManager")
+	local GuiService0 = game:GetService("GuiService")
+	local pg = Players0.LocalPlayer:WaitForChild("PlayerGui")
+
+	local function GetPlay()
+		local g = pg:FindFirstChild("LoadingGui")
+		local bg = g and g:FindFirstChild("PlayBackground")
+		return bg and bg:FindFirstChild("Play"), g
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local playBtn = GetPlay()
+	if not playBtn then
+		pcall(function()
+			local g = pg:WaitForChild("LoadingGui", 10)
+			local bg = g and g:WaitForChild("PlayBackground", 5)
+			if bg then bg:WaitForChild("Play", 5) end
+		end)
+		playBtn = GetPlay()
+	end
+
+	if playBtn then
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		pcall(function()
+			game:GetService("ReplicatedStorage"):WaitForChild("OtherEvent", 10)
+				:WaitForChild("MainEvents", 10):WaitForChild("TeamChoose", 10)
+				:FireServer(CONFIG.Team)
+		end)
+		task.wait(1)
+
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		local function StillLoading()
+			local btn, g = GetPlay()
+			return btn ~= nil and g.Enabled and btn.Visible and btn.Parent.Visible
+		end
+		for attempt = 1, 10 do
+			if not StillLoading() then break end
+			pcall(function()
+				local btn = GetPlay()
+				local pos, size = btn.AbsolutePosition, btn.AbsoluteSize
+				local x, y
+				if attempt <= 2 then
+					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					x = pos.X + size.X / 1
+					y = pos.Y + size.Y / 2 + 50
+				else
+					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					x = pos.X + size.X / 2
+					y = pos.Y + size.Y / 2 + GuiService0:GetGuiInset().Y
+				end
+				VIM0:SendMouseButtonEvent(x, y, 0, true, game, 1)
+				task.wait(0.05)
+				VIM0:SendMouseButtonEvent(x, y, 0, false, game, 1)
+			end)
+			task.wait(1.5)
+		end
+	end
+end
+
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-local UserInputService = game:GetService("UserInputService")
-local TeleportService = game:GetService("TeleportService")
-local HttpService = game:GetService("HttpService")
-local Lighting = game:GetService("Lighting")
-local StarterGui = game:GetService("StarterGui")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 
---========================================================--
--- PLAYER
---========================================================--
+_G.AutoFarm = CONFIG.AutoFarm
+_G.BringMonster = CONFIG.BringMob
+_G.SelectWeapon = CONFIG.Weapon
+_G.Method = CONFIG.Method
+_G.DistanceMob = CONFIG.Distance
+_G.BringRange = CONFIG.BringRange
+_G.MaxBringMobs = CONFIG.MaxBringMobs
+_G.BringSpread = CONFIG.BringSpread
+_G.BringOrbitSpeed = CONFIG.BringOrbitSpeed
 
-local player = Players.LocalPlayer
+local StartMagnet, PosMon, Mon, Mob, FrameQ, MethodFarm
+local FruitBusy = false
+local ShopBusy = false
+local StoreBusy = false     -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local Delta = LocalPlayer.Name
 
-if not player then
-    warn("[H HUB] LocalPlayer không tồn tại.")
-    return
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+if CONFIG.AntiLag then
+	local Lighting0 = game:GetService("Lighting")
+
+	local function Optimize(v)
+		if v:IsA("Terrain") then return end
+		if v:IsA("BasePart") then
+			v.Material = Enum.Material.SmoothPlastic
+			v.Reflectance = 0
+			v.CastShadow = false
+			if v:IsA("MeshPart") then v.TextureID = "" end
+		elseif v:IsA("Decal") or v:IsA("Texture") or v:IsA("SurfaceAppearance") then
+			v:Destroy()
+		elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Beam")
+			or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
+			v.Enabled = false
+		elseif v:IsA("PostEffect") then           -- Blur / Bloom / SunRays / ColorCorrection / DepthOfField
+			v.Enabled = false
+		elseif v:IsA("Atmosphere") then
+			v.Density = 0; v.Haze = 0; v.Glare = 0
+		end
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	workspace.DescendantAdded:Connect(function(v)
+		task.defer(function() pcall(Optimize, v) end)
+	end)
+	Lighting0.DescendantAdded:Connect(function(v)
+		task.defer(function() pcall(Optimize, v) end)
+	end)
+
+	task.spawn(function()
+		pcall(function()
+			Lighting0.GlobalShadows = false
+			Lighting0.FogEnd = 9e9
+		end)
+		pcall(function()
+			local t = workspace.Terrain
+			t.WaterWaveSize = 0; t.WaterWaveSpeed = 0; t.WaterReflectance = 0
+			if t:FindFirstChildOfClass("Clouds") then t:FindFirstChildOfClass("Clouds").Enabled = false end
+		end)
+		pcall(function() settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 end)
+
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		local list = workspace:GetDescendants()
+		for i, v in ipairs(list) do
+			pcall(Optimize, v)
+			if i % 400 == 0 then task.wait() end
+		end
+		for _, v in ipairs(Lighting0:GetDescendants()) do pcall(Optimize, v) end
+		print("[AntiLag] đã giảm giật lag")
+	end)
 end
 
-local playerGui = player:WaitForChild("PlayerGui", 10)
+if CONFIG.Highlight then
+	local function ApplyHighlight(char)
+		if not char then return end
+		local old = char:FindFirstChild("SeiHighlight")
+		if old then old:Destroy() end
+		local h = Instance.new("Highlight")
+		h.Name = "SeiHighlight"
+		h.FillColor = Color3.fromRGB(45, 170, 255)
+		h.OutlineColor = Color3.fromRGB(130, 215, 255)
+		h.FillTransparency = 0.5
+		h.OutlineTransparency = 0
+		h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+		h.Adornee = char
+		h.Parent = char
+	end
 
-if not playerGui then
-    warn("[H HUB] Không tìm thấy PlayerGui.")
-    return
+	ApplyHighlight(LocalPlayer.Character)
+	LocalPlayer.CharacterAdded:Connect(function(c)
+		task.wait(0.5)
+		ApplyHighlight(c)
+	end)
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	task.spawn(function()
+		while task.wait(2) do
+			local c = LocalPlayer.Character
+			if c and not c:FindFirstChild("SeiHighlight") then
+				pcall(ApplyHighlight, c)
+			end
+		end
+	end)
 end
 
-print("[H HUB] Player OK:", player.Name)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local HUB_NAME = "HHUB"
+local LOGO_ASSET = "rbxassetid://99118312841228"
+local Checklist = {}
+local StatusOverride, CurrentShopItem
 
---========================================================--
--- XÓA GUI CŨ
---========================================================--
+function SetDone(key) Checklist[key] = true end
+function SetLive(key, v) Checklist[key] = v and true or nil end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
 
+local function Fmt(n)
+	local str = tostring(math.floor(tonumber(n) or 0))
+	local out = str:reverse():gsub("(%d%d%d)", "%1,"):reverse()
+	return (out:gsub("^,", ""))
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function ParseAmount(text)
+	if not text then return nil end
+	local t = string.upper((string.gsub(text, "[,%s$]", "")))
+	local num, suf = string.match(t, "^(%d+%.?%d*)([KMBT]?)")
+	if not num then num, suf = string.match(t, "(%d+%.?%d*)([KMBT]?)") end
+	num = tonumber(num)
+	if not num then return nil end
+	local mult = ({ K = 1e3, M = 1e6, B = 1e9, T = 1e12 })[suf] or 1
+	return num * mult
+end
+
+function ReadMoney()
+	local ok, v = pcall(function()
+		return ParseAmount(LocalPlayer.PlayerGui.MainGui.CurrencyFrame_Mobile.Money.Text)
+	end)
+	return ok and v or nil
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local UI_ROWS = {}
+if CONFIG.AutoBallerStyle then
+	table.insert(UI_ROWS, { "Fighting Style: Baller", "Baller Style" })
+end
+if CONFIG.AutoHaki then
+	table.insert(UI_ROWS, { "Ability: Aura Master", "Haki" })   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+end
+if CONFIG.AutoBuy then
+	table.insert(UI_ROWS, { "Upgrade Quest: Popcat", "Popcat Quest" })
+	table.insert(UI_ROWS, { "Ability: Giga Chad", "Giga Chad" })
+end
+if CONFIG.AutoFlameKatana then
+	table.insert(UI_ROWS, { "Weapon: Flame Katana", "Flame Katana" })
+end
+if CONFIG.AutoBuy then
+	table.insert(UI_ROWS, { "Weapon: Hanger", "Hanger" })
+	table.insert(UI_ROWS, { "Weapon: Doge", "Doge" })
+end
+if CONFIG.AutoEvilNoob then
+	table.insert(UI_ROWS, { "Weapon: Yellow Blade", "Yellow Blade" })
+end
+if CONFIG.AutoItemQuests then   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	table.insert(UI_ROWS, { "Weapon: Pink Hammer", "Pink Hammer" })
+	table.insert(UI_ROWS, { "Weapon: Banana", "Banana" })
+	table.insert(UI_ROWS, { "Weapon: Purple Katana", "Purple Katana" })
+end
+
+local function CurrentStatus()
+	if StatusOverride then return StatusOverride end
+	if ShopBusy then return "Buying: " .. tostring(CurrentShopItem or "") end
+	if FruitBusy then return "Đang nhặt trái cây" end
+	if StoreBusy then return "Đang cất trái cây" end
+	if _G.Boss then return _G.BossStatus or "Boss" end
+	if _G.Baller then return _G.BallerStatus or "Baller Style" end
+	if _G.Aura then return _G.AuraStatus or "Auto Haki" end
+	if _G.HakiReroll then return "Rerolling Haki Color" end
+	if _G.FlameKatana then return _G.FlameStatus or "Flame Katana" end
+	if _G.RaceV2 then return _G.RaceV2Status or "Race V2" end
+	if _G.EvilNoob then return _G.EvilNoobStatus or "Evil Noob" end
+	if _G.ItemQuest then return _G.ItemQuestStatus or "Item Quest" end
+	if _G.Pumpkin and not _G.Raid then return _G.PumpkinStatus or "Pumpkin Event" end
+	if _G.Raid then
+		local ok, vis = pcall(function() return LocalPlayer.PlayerGui.RaidGui.RaidFrame.Visible end)
+		return (ok and vis) and "Đang tham gia Raid" or "Đang chờ Raid"
+	end
+	if _G.AutoFarm then return "Đang cày cấp" end
+	return "Đang chờ"
+end
+
+local function CreateStatusUI()
+	local UIS = game:GetService("UserInputService")
+	local C = {
+		bg1    = Color3.fromRGB(16, 21, 38),
+		bg2    = Color3.fromRGB(9, 12, 22),
+		card   = Color3.fromRGB(20, 27, 48),
+		row    = Color3.fromRGB(24, 32, 56),
+		line   = Color3.fromRGB(36, 46, 76),
+		gray   = Color3.fromRGB(120, 132, 168),
+		text   = Color3.fromRGB(205, 213, 235),
+		white  = Color3.fromRGB(240, 244, 255),
+		blue   = Color3.fromRGB(70, 190, 255),
+		violet = Color3.fromRGB(125, 120, 255),
+		green  = Color3.fromRGB(70, 235, 130),
+		off    = Color3.fromRGB(58, 66, 94),
+	}
+
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "HHUBStatusUI"
+	gui.ResetOnSpawn = false
+	gui.IgnoreGuiInset = true
+	gui.DisplayOrder = 999
+	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	pcall(function() if syn and syn.protect_gui then syn.protect_gui(gui) end end)
+	local parented = false
+	pcall(function()
+		gui.Parent = (gethui and gethui()) or game:GetService("CoreGui")
+		parented = true
+	end)
+	if not parented then gui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+
+	-- ---------- helpers ----------
+	local function corner(obj, r)
+		local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, r); c.Parent = obj
+		return c
+	end
+	local function stroke(obj, color, th, tr)
+		local s = Instance.new("UIStroke")
+		s.Color = color; s.Thickness = th or 1; s.Transparency = tr or 0
+		s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		s.Parent = obj
+		return s
+	end
+	local function frame(parent, x, y, w, h, color)
+		local f = Instance.new("Frame")
+		f.Position = UDim2.fromOffset(x, y); f.Size = UDim2.fromOffset(w, h)
+		f.BackgroundColor3 = color; f.BorderSizePixel = 0
+		f.Parent = parent
+		return f
+	end
+	local function label(parent, text, size, color, x, y, w, h, font, align)
+		local t = Instance.new("TextLabel")
+		t.BackgroundTransparency = 1
+		t.Text = text; t.TextSize = size; t.TextColor3 = color
+		t.Font = font or Enum.Font.Gotham
+		t.TextXAlignment = align or Enum.TextXAlignment.Left
+		t.Position = UDim2.fromOffset(x, y); t.Size = UDim2.fromOffset(w, h)
+		t.Parent = parent
+		return t
+	end
+	local function fitText(t, maxSize)
+		t.TextScaled = true
+		local c = Instance.new("UITextSizeConstraint"); c.MaxTextSize = maxSize; c.MinTextSize = 8; c.Parent = t
+	end
+	local function card(parent, x, y, w, h)
+		local f = frame(parent, x, y, w, h, C.card)
+		corner(f, 10); stroke(f, C.line, 1, 0.35)
+		return f
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local W, H = 500, 340
+	local main = frame(gui, 0, 0, W, H, C.bg1)
+	main.AnchorPoint = Vector2.new(0.5, 0.5)
+	main.Position = UDim2.fromScale(0.5, 0.5)
+	main.Active = true
+	corner(main, 16)
+	local g = Instance.new("UIGradient")
+	g.Color = ColorSequence.new(C.bg1, C.bg2); g.Rotation = 90; g.Parent = main
+	local mStroke = stroke(main, C.violet, 1.5, 0.55)
+	local sg = Instance.new("UIGradient")
+	sg.Color = ColorSequence.new(C.blue, C.violet); sg.Rotation = 30; sg.Parent = mStroke
+
+	local scale = Instance.new("UIScale"); scale.Parent = main
+	local function fit()
+		local cam = workspace.CurrentCamera
+		if not cam then return end
+		local v = cam.ViewportSize
+		scale.Scale = math.min(1, (v.X * 0.92) / W, (v.Y * 0.88) / H)
+	end
+	fit()
+	if workspace.CurrentCamera then
+		workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fit)
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local logo = Instance.new("ImageLabel")
+	logo.BackgroundTransparency = 1; logo.Image = LOGO_ASSET
+	logo.Position = UDim2.fromOffset(18, 10); logo.Size = UDim2.fromOffset(30, 30)
+	logo.ScaleType = Enum.ScaleType.Fit; logo.Parent = main
+	local title = label(main, "", 16, C.white, 56, 12, 420, 26, Enum.Font.GothamBold)
+	title.RichText = true
+	title.Text = '<font color="rgb(150,160,255)">' .. HUB_NAME .. '</font>  <font color="rgb(120,132,168)">ACCOUNT STATS</font>'
+
+	local div = frame(main, 18, 48, W - 36, 2, C.blue)
+	local dg = Instance.new("UIGradient")
+	dg.Color = ColorSequence.new(C.blue, C.violet)
+	dg.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.2), NumberSequenceKeypoint.new(0.7, 0.75), NumberSequenceKeypoint.new(1, 1),
+	})
+	dg.Parent = div
+	corner(div, 1)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local lvCard = card(main, 18, 60, 224, 84)
+	label(lvCard, "CẤP ĐỘ", 11, C.gray, 14, 8, 100, 14, Enum.Font.GothamMedium)
+	local levelV = label(lvCard, "-", 40, C.blue, 14, 24, 196, 52, Enum.Font.GothamBold)
+	fitText(levelV, 42)
+	local lg = Instance.new("UIGradient")
+	lg.Color = ColorSequence.new(C.blue, C.violet); lg.Parent = levelV
+
+	local gemCard = card(main, 18, 152, 108, 56)
+	label(gemCard, "NGỌC", 11, C.gray, 12, 7, 90, 14, Enum.Font.GothamMedium)
+	local gemV = label(gemCard, "-", 18, C.white, 12, 24, 90, 24, Enum.Font.GothamBold)
+	fitText(gemV, 18)
+
+	local moneyCard = card(main, 134, 152, 108, 56)
+	label(moneyCard, "TIỀN", 11, C.gray, 12, 7, 90, 14, Enum.Font.GothamMedium)
+	local moneyV = label(moneyCard, "-", 18, C.green, 12, 24, 90, 24, Enum.Font.GothamBold)
+	fitText(moneyV, 18)
+
+	local raceCard = card(main, 18, 216, 224, 54)
+	label(raceCard, "TỘC", 11, C.gray, 14, 7, 80, 14, Enum.Font.GothamMedium)
+	local raceV = label(raceCard, "-", 18, C.white, 14, 24, 196, 24, Enum.Font.GothamBold)
+	fitText(raceV, 18)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	label(main, "VẬT PHẨM", 11, C.gray, 258, 60, 100, 14, Enum.Font.GothamMedium)
+	local itemsCard = card(main, 250, 78, 232, 192)
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local scroller = Instance.new("ScrollingFrame")
+	scroller.Name = "ItemsScroll"
+	scroller.BackgroundTransparency = 1; scroller.BorderSizePixel = 0
+	scroller.Position = UDim2.fromOffset(0, 4); scroller.Size = UDim2.new(1, 0, 1, -8)
+	scroller.CanvasSize = UDim2.fromOffset(0, 8 + #UI_ROWS * 36)
+	scroller.ScrollingDirection = Enum.ScrollingDirection.Y
+	scroller.ScrollBarThickness = 4
+	scroller.ScrollBarImageColor3 = C.violet
+	scroller.ScrollBarImageTransparency = 0.2
+	scroller.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
+	scroller.Active = true        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	scroller.Parent = itemsCard
+	local rows = {}
+	for i, r in ipairs(UI_ROWS) do
+		local y = 4 + (i - 1) * 36
+		local row = frame(scroller, 8, y, 210, 32, C.row); corner(row, 8)
+
+		local halo = frame(row, 0, 0, 30, 30, C.green)       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		halo.AnchorPoint = Vector2.new(0.5, 0.5); halo.Position = UDim2.fromOffset(22, 16)
+		halo.BackgroundTransparency = 1; corner(halo, 15)
+
+		local dot = frame(row, 0, 0, 10, 10, C.off)
+		dot.AnchorPoint = Vector2.new(0.5, 0.5); dot.Position = UDim2.fromOffset(22, 16)
+		corner(dot, 5)
+		local ring = stroke(dot, C.green, 2, 1)               -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+
+		label(row, r[2], 14, C.text, 42, 0, 160, 32, Enum.Font.GothamMedium)
+		rows[r[1]] = { dot = dot, halo = halo, ring = ring, done = false }
+	end
+	if #UI_ROWS == 0 then
+		label(itemsCard, "TỰ ĐỘNG MUA: TẮT", 13, C.gray, 14, 8, 200, 24)
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local bar = card(main, 18, 282, W - 36, 40)
+	label(bar, "TRẠNG THÁI", 11, C.gray, 14, 0, 60, 40, Enum.Font.GothamMedium)
+	frame(bar, 72, 12, 1, 16, C.line)
+	local sHalo = frame(bar, 0, 0, 22, 22, C.green)
+	sHalo.AnchorPoint = Vector2.new(0.5, 0.5); sHalo.Position = UDim2.fromOffset(94, 20)
+	sHalo.BackgroundTransparency = 0.8; corner(sHalo, 11)
+	local sDot = frame(bar, 0, 0, 8, 8, C.green)
+	sDot.AnchorPoint = Vector2.new(0.5, 0.5); sDot.Position = UDim2.fromOffset(94, 20); corner(sDot, 4)
+	local statusV = label(bar, "...", 14, C.white, 114, 0, W - 36 - 126, 40, Enum.Font.GothamMedium)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local toggle = Instance.new("TextButton")
+	toggle.Name = "ToggleUI"
+	toggle.Text = ""; toggle.AutoButtonColor = false
+	toggle.BackgroundColor3 = C.bg1; toggle.BorderSizePixel = 0
+	toggle.Size = UDim2.fromOffset(54, 54)
+	local vp = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 400)
+	toggle.Position = UDim2.fromOffset(math.floor(vp.X * 0.108), math.floor(vp.Y * 0.23))
+	toggle.Parent = gui
+	corner(toggle, 14)
+	local tStroke = stroke(toggle, C.violet, 1.5, 0.35)
+	local tsg = Instance.new("UIGradient"); tsg.Color = ColorSequence.new(C.blue, C.violet); tsg.Rotation = 45; tsg.Parent = tStroke
+	local tg = Instance.new("UIGradient"); tg.Color = ColorSequence.new(C.bg1, C.bg2); tg.Rotation = 90; tg.Parent = toggle
+	local tLogo = Instance.new("ImageLabel")
+	tLogo.BackgroundTransparency = 1; tLogo.Image = LOGO_ASSET
+	tLogo.AnchorPoint = Vector2.new(0.5, 0.5)
+	tLogo.Position = UDim2.fromScale(0.5, 0.5); tLogo.Size = UDim2.fromScale(0.7, 0.7)
+	tLogo.ScaleType = Enum.ScaleType.Fit; tLogo.Parent = toggle
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function makeDraggable(obj, uiScale, onTap, clamp)
+		local dragging, moved, dragStart, startPos = false, false, nil, nil
+		obj.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1
+				or input.UserInputType == Enum.UserInputType.Touch then
+				dragging, moved = true, false
+				dragStart = input.Position
+				startPos = obj.Position
+				input.Changed:Connect(function()
+					if input.UserInputState == Enum.UserInputState.End then
+						dragging = false
+						if onTap and not moved then onTap() end
+					end
+				end)
+			end
+		end)
+		UIS.InputChanged:Connect(function(input)
+			if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+				or input.UserInputType == Enum.UserInputType.Touch) then
+				local d = input.Position - dragStart
+				if d.Magnitude > 8 then moved = true end
+				local k = uiScale and uiScale.Scale or 1       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				local x = startPos.X.Offset + d.X / k
+				local y = startPos.Y.Offset + d.Y / k
+				if clamp then
+					local cam = workspace.CurrentCamera
+					local v = cam and cam.ViewportSize or Vector2.new(800, 400)
+					x = math.clamp(x, 0, v.X - obj.AbsoluteSize.X)
+					y = math.clamp(y, 0, v.Y - obj.AbsoluteSize.Y)
+				end
+				obj.Position = UDim2.new(startPos.X.Scale, x, startPos.Y.Scale, y)
+			end
+		end)
+	end
+
+	makeDraggable(toggle, nil, function() main.Visible = not main.Visible end, true)
+	makeDraggable(main, scale, nil, false)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function refresh(instant)
+		pcall(function()
+			local d = LocalPlayer.PlayerData
+			levelV.Text = Fmt(d.Level.Value)
+			gemV.Text = Fmt(d.Gem.Value)
+		end)
+		local money = ReadMoney()
+		if money then moneyV.Text = "$ " .. Fmt(money) end
+		pcall(function()
+			local _, rv, txt = ReadRace()
+			if txt and txt ~= "" then raceV.Text = txt end
+			raceV.TextColor3 = (rv == 2) and C.green or C.white   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		end)
+		for key, r in pairs(rows) do
+			if not Checklist[key] and r.done then      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				r.done = false
+				r.dot.BackgroundColor3 = C.off
+				r.dot.Size = UDim2.fromOffset(10, 10)
+				r.ring.Transparency = 1
+			elseif Checklist[key] and not r.done then
+				r.done = true
+				if instant then
+					r.dot.BackgroundColor3 = C.green
+					r.dot.Size = UDim2.fromOffset(12, 12)
+					r.ring.Transparency = 0.45
+				else
+					local ti = TweenInfo.new(0.5, Enum.EasingStyle.Quad)
+					TweenService:Create(r.dot, ti, { BackgroundColor3 = C.green, Size = UDim2.fromOffset(12, 12) }):Play()
+					TweenService:Create(r.ring, ti, { Transparency = 0.45 }):Play()
+				end
+			end
+		end
+		statusV.Text = CurrentStatus()
+	end
+
+	refresh(true)
+	task.spawn(function()
+		while task.wait(0.5) do
+			if not gui.Parent then break end
+			refresh()
+		end
+	end)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	task.spawn(function()
+		while task.wait(0.05) do
+			if not gui.Parent then break end
+			local pulse = (math.sin(os.clock() * 3) + 1) / 2          -- 0..1
+			for _, r in pairs(rows) do
+				if r.done then
+					r.halo.BackgroundTransparency = 0.68 + 0.2 * pulse
+				end
+			end
+			sHalo.BackgroundTransparency = 0.7 + 0.2 * pulse
+		end
+	end)
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
 pcall(function()
-    local oldGui = playerGui:FindFirstChild("AutoFarmHubGui")
-
-    if oldGui then
-        oldGui:Destroy()
-        task.wait()
-    end
+	local file = "HHUB_Purchased_" .. LocalPlayer.UserId .. ".json"
+	if isfile and readfile and isfile(file) then
+		local saved = game:GetService("HttpService"):JSONDecode(readfile(file))
+		for name in pairs(saved) do SetDone(name) end
+	end
 end)
 
---========================================================--
--- CONFIG
---========================================================--
+if CONFIG.ShowUI then
+	task.spawn(function() pcall(CreateStatusUI) end)
+end
 
-local tpSpeed = 0.15
-local walkSpeed = 35
-local jumpPower = 75
-local flySpeed = 100
-local customGravity = 196.2
-
-local coinName = "Coin"
-
-local freezeRadius = 150
-local autoPressRadius = 15
-local autoPressDelay = 0.1
-
-local FREEZE_COOLDOWN = 6
-local SHOT_DELAY = 1
-
---========================================================--
--- STATES
---========================================================--
-
-local tpEnabled = false
-local walkEnabled = false
-local jumpEnabled = false
-local noclipEnabled = false
-local invisibleEnabled = false
-local flyEnabled = false
-local infJumpEnabled = false
-local freezeRayEnabled = false
-local espEnabled = false
-local fpsEnabled = false
-local gravityEnabled = false
-local autoPressButtonEnabled = false
-local fixLagEnabled = false
-local hideMapOthersEnabled = false
-local muteAllSoundsEnabled = false
-
-local spectating = false
-
-local selectedTargetPlayer = nil
-local selectedEspTarget = "Tất cả"
-
-local currentLang = "VI"
-
---========================================================--
--- COLORS
---========================================================--
-
-local espColor = Color3.fromRGB(255, 0, 0)
-local currentThemeColor = Color3.fromRGB(35, 35, 45)
-local currentTextColor = Color3.fromRGB(255, 255, 255)
-
---========================================================--
--- CONNECTIONS / TASKS
---========================================================--
-
-local noclipConnection = nil
-local invisibleConnection = nil
-local flyConnection = nil
-local walkConnection = nil
-local jumpConnection = nil
-local infJumpConnection = nil
-local spectateConnection = nil
-local fpsConnection = nil
-local gravityConnection = nil
-local freezeRayTask = nil
-local autoPressButtonTask = nil
-local fixLagTask = nil
-local fixLagChildConnection = nil
-local hideMapConnection = nil
-local muteSoundsConnection = nil
-
-local gradientRunning = true
-
-local originalHipHeight = nil
-local frozenPlayersTable = {}
-
-local savedTransparencies = {}
-local hiddenObjects = {}
-local mutedSounds = {}
-
-local themeButtons = {}
-local textElements = {}
-local refreshFuncs = {}
-
-local GLOBAL_FONT = Enum.Font.GothamBold
-
---========================================================--
--- TRANSLATIONS
---========================================================--
-
-local translations = {
-
-    EN = {
-
-        title = "H HUB - AutoFarm",
-
-        tabMain = "Main",
-        tabEsp = "Players/ESP",
-        tabFixLag = "Fix Lag",
-        tabMisc = "Settings",
-
-        tpSpd = "TP Speed (s):",
-        walkSpd = "Walk Speed:",
-        flySpd = "Fly Speed:",
-        jumpSpd = "Jump Power:",
-        gravSpd = "Gravity:",
-        freezeRng = "Freeze Range:",
-
-        autoPressRadiusLabel = "Click Button Range:",
-        autoPressDelayLabel = "Click Button Delay (s):",
-
-        tpBtn = "Auto TP Coins",
-        walkBtn = "Custom Speed",
-        jumpBtn = "Custom Jump",
-        flyBtn = "Fly Mode",
-        gravBtn = "Custom Gravity",
-
-        noclipBtn = "Noclip Pass-Wall",
-        invisBtn = "Invisibility",
-        infJumpBtn = "Infinite Jump",
-
-        freezeBtn = "Auto Freeze Ray",
-        autoEquipBtn = "Equip Items (Run Once)",
-
-        godBtn = "⚡ Open God Mode Panel",
-
-        espBtn = "ESP Wallhack",
-        spectateBtn = "Spectate Player",
-        tpToSpecBtn = "Teleport To Spectated Target",
-        fpsBtn = "Display FPS",
-
-        autoPressBtn = "Auto Click Buttons",
-
-        fixLagBtn = "Ultra Fix Lag",
-        hideMapBtn = "Hide Map & Players",
-        muteSoundsBtn = "Mute Game Sounds",
-
-        espColorLabel = "ESP Highlight Color:",
-        boardColorLabel = "Board Background Color:",
-        themeLabel = "UI Button Color:",
-        textLabel = "UI Text Color:",
-        langLabel = "Language:",
-
-        rejoinBtn = "Rejoin Server",
-        serverHopBtn = "Server Hop",
-
-        on = "ON",
-        off = "OFF"
-    },
-
-    VI = {
-
-        title = "H HUB - AutoFarm",
-
-        tabMain = "Chính",
-        tabEsp = "Người chơi/ESP",
-        tabFixLag = "Fix Lag",
-        tabMisc = "Cài đặt",
-
-        tpSpd = "Tốc độ TP (giây):",
-        walkSpd = "Tốc độ Đi bộ:",
-        flySpd = "Tốc độ Bay:",
-        jumpSpd = "Độ Cao Nhảy:",
-        gravSpd = "Trọng Lực Game:",
-        freezeRng = "Khoảng cách Freeze:",
-
-        autoPressRadiusLabel = "Bán kính Click Nút:",
-        autoPressDelayLabel = "Tốc độ Click Nút (s):",
-
-        tpBtn = "Auto TP Nhặt Xu",
-        walkBtn = "Chỉnh Tốc Độ Đi",
-        jumpBtn = "Chỉnh Độ Nhảy",
-        flyBtn = "Chế Độ Bay",
-        gravBtn = "Trọng Lực Tùy Chỉnh",
-
-        noclipBtn = "Đi Xuyên Tường",
-        invisBtn = "Tàng Hình",
-        infJumpBtn = "Nhảy Vô Hạn",
-
-        freezeBtn = "Tự Động Freeze Ray",
-        autoEquipBtn = "Trang Bị Đồ",
-
-        godBtn = "⚡ Bảng God Mode",
-
-        espBtn = "ESP Nhìn Xuyên Tường",
-        spectateBtn = "Xem Người Chơi",
-        tpToSpecBtn = "Dịch Chuyển Tới Người Đang Xem",
-        fpsBtn = "Hiển Thị FPS",
-
-        autoPressBtn = "Auto Click Nút",
-
-        fixLagBtn = "Siêu Giảm Lag",
-        hideMapBtn = "Ẩn Bản Đồ & Người Khác",
-        muteSoundsBtn = "Tắt Âm Thanh Game",
-
-        espColorLabel = "Màu ESP:",
-        boardColorLabel = "Màu Bảng Điều Khiển:",
-        themeLabel = "Màu Nút Giao Diện:",
-        textLabel = "Màu Chữ Giao Diện:",
-        langLabel = "Ngôn ngữ:",
-
-        rejoinBtn = "Vào Lại Server",
-        serverHopBtn = "Đổi Server Khác",
-
-        on = "BẬT",
-        off = "TẮT"
-    }
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local REDEEM_FALLBACK = {   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	"100KFavorites", "100KLikes", "100MVisits", "100KActive",
+	"70KActive", "Update4", "10KLikes", "10KMembers",
 }
 
---========================================================--
--- GUI
---========================================================--
-
-print("[H HUB] Đang tạo GUI...")
-
-local screenGui = Instance.new("ScreenGui")
-
-screenGui.Name = "AutoFarmHubGui"
-screenGui.ResetOnSpawn = false
-screenGui.IgnoreGuiInset = true
-screenGui.DisplayOrder = 999
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
-screenGui.Parent = playerGui
-
-print("[H HUB] ScreenGui OK")
-
---========================================================--
--- UTILITY
---========================================================--
-
-local function safeCall(fn)
-    local ok, err = pcall(fn)
-
-    if not ok then
-        warn("[H HUB ERROR]", err)
-    end
-
-    return ok
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function FetchRedeemCodes()
+	local url = CONFIG.RedeemURL
+	if type(url) ~= "string" or url == "" then return nil end
+	for attempt = 1, 3 do
+		local body
+		pcall(function() body = game:HttpGet(url) end)
+		if type(body) ~= "string" or body == "" then
+			pcall(function()
+				local req = request or http_request or (syn and syn.request)
+				if req then
+					local r = req({ Url = url, Method = "GET" })
+					body = r and r.Body
+				end
+			end)
+		end
+		if type(body) == "string" and body ~= "" then
+			local list, seen = {}, {}
+			for line in body:gmatch("[^\r\n]+") do
+				line = line:gsub("%-%-.*$", ""):gsub("#.*$", "")
+				for tok in line:gmatch("[^%s,;]+") do
+					if not seen[tok:lower()] then
+						seen[tok:lower()] = true
+						table.insert(list, tok)
+					end
+				end
+			end
+			if #list > 0 then return list end
+		end
+		task.wait(1)
+	end
+	return nil
 end
 
-local function disconnectConnection(connection)
-    if connection then
-        pcall(function()
-            connection:Disconnect()
-        end)
-    end
-
-    return nil
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function RedeemedSet()
+	local set = {}
+	pcall(function()
+		local folder = game:GetService("Players").LocalPlayer:FindFirstChild("Code")
+		if not folder then return end
+		for _, ch in ipairs(folder:GetChildren()) do
+			set[ch.Name:lower()] = true
+			if ch:IsA("ValueBase") and type(ch.Value) == "string" then set[ch.Value:lower()] = true end
+			local av = ch:GetAttribute("Value")
+			if type(av) == "string" then set[av:lower()] = true end
+		end
+		if folder:IsA("ValueBase") and type(folder.Value) == "string" then set[folder.Value:lower()] = true end
+	end)
+	return set
 end
 
-local function cancelTask(taskObject)
-    if taskObject then
-        pcall(function()
-            task.cancel(taskObject)
-        end)
-    end
-
-    return nil
+if CONFIG.AutoRedeem then
+	local ok, codeRemote = pcall(function()
+		return game:GetService("ReplicatedStorage"):WaitForChild("OtherEvent", 15)
+			:WaitForChild("MainEvents", 15):WaitForChild("Code", 15)
+	end)
+	if ok and codeRemote then
+		pcall(function() game:GetService("Players").LocalPlayer:WaitForChild("Code", 10) end)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		StatusOverride = "Đang tải mã"
+		local codes = FetchRedeemCodes()
+		if codes then
+			print("[Redeem] Đã tải mã từ raw:", #codes, "โค้ด")
+		else
+			codes = REDEEM_FALLBACK
+			warn("[Redeem] Không tải được mã từ RedeemURL -> dùng danh sách dự phòng")
+		end
+		for i, code in ipairs(codes) do
+			StatusOverride = string.format("Redeeming Codes (%d/%d)", i, #codes)
+			if RedeemedSet()[code:lower()] then
+				print("[Redeem]", code, "đã nhập (có trong LocalPlayer.Code), bỏ qua")
+			else
+				local success, result = pcall(function()
+					return codeRemote:InvokeServer(code)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				end)
+				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				local confirmed = false
+				local t0 = tick()
+				while tick() - t0 < 3 do
+					if RedeemedSet()[code:lower()] then confirmed = true break end
+					task.wait(0.2)
+				end
+				print("[Redeem]", code, success and "SENT" or "FAIL", confirmed and "CONFIRMED" or "không thấy trong LocalPlayer.Code (mã không hợp lệ/hết hạn/sai tên)", success and tostring(result) or "")
+				task.wait(0.5)
+			end
+		end
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		if CONFIG.RedeemOwnCode then
+			local own
+			pcall(function()
+				local c = game:GetService("Players").LocalPlayer:FindFirstChild("Code")
+				if c and c:IsA("ValueBase") then own = c.Value
+				elseif c and not c:IsA("Folder") then own = c:GetAttribute("Value") end
+			end)
+			if type(own) == "string" and own ~= "" and not RedeemedSet()[own:lower()] then
+				StatusOverride = "Đang nhập mã riêng"
+				local success, result = pcall(function() return codeRemote:InvokeServer(own) end)
+				print("[Redeem] own code", own, success and "OK" or "FAIL", success and tostring(result) or "")
+			end
+		end
+	else
+		warn("[Redeem] Không tìm thấy Remote Code, bỏ qua bước này")
+	end
+	StatusOverride = nil
 end
 
---========================================================--
--- SPECTATE
---========================================================--
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local RaceProbe = { busy = false, last = 0, ver = nil }
 
-local spectateFrame = nil
-local specNameLabel = nil
-local spectateIndex = 1
-
-local function getSpectateTargets()
-
-    local targets = {}
-
-    for _, p in ipairs(Players:GetPlayers()) do
-
-        if p ~= player and p.Parent then
-            table.insert(targets, p)
-        end
-
-    end
-
-    return targets
+local function RaceCooldownObj()
+	local ok, obj = pcall(function()
+		return game:GetService("Players").LocalPlayer.PlayerGui.CooldownGui.Container.RaceAbility_Template.Cooldown
+	end)
+	return ok and obj or nil
 end
 
-local function updateSpectateCamera()
-
-    safeCall(function()
-
-        local targets = getSpectateTargets()
-
-        if #targets == 0 then
-
-            if specNameLabel then
-                specNameLabel.Text = "Không có người chơi khác"
-            end
-
-            return
-        end
-
-        if spectateIndex > #targets then
-            spectateIndex = 1
-        end
-
-        if spectateIndex < 1 then
-            spectateIndex = #targets
-        end
-
-        local target = targets[spectateIndex]
-
-        if not target then
-            return
-        end
-
-        if specNameLabel then
-            specNameLabel.Text =
-                target.DisplayName ..
-                " (@" ..
-                target.Name ..
-                ")"
-        end
-
-        local camera = Workspace.CurrentCamera
-
-        if not camera then
-            return
-        end
-
-        local character = target.Character
-
-        if not character then
-            return
-        end
-
-        local humanoid =
-            character:FindFirstChildOfClass("Humanoid")
-
-        if humanoid then
-            camera.CameraSubject = humanoid
-        end
-
-    end)
-
+local function FireRaceSkill()
+	pcall(function()
+		game:GetService("ReplicatedStorage"):WaitForChild("OtherEvent", 3)
+			:WaitForChild("SkillEvents", 3):WaitForChild("Movement", 3):FireServer("RaceSkill")
+	end)
 end
 
-local function teleportToSpectatedTarget()
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local RACE_SOUND_ID = "1295448103"
 
-    safeCall(function()
-
-        local targets = getSpectateTargets()
-
-        if #targets == 0 then
-            return
-        end
-
-        if spectateIndex > #targets then
-            spectateIndex = 1
-        end
-
-        local target = targets[spectateIndex]
-
-        if not target then
-            return
-        end
-
-        local targetCharacter = target.Character
-        local myCharacter = player.Character
-
-        if not targetCharacter or not myCharacter then
-            return
-        end
-
-        local targetRoot =
-            targetCharacter:FindFirstChild("HumanoidRootPart")
-            or targetCharacter:FindFirstChild("Torso")
-
-        local myRoot =
-            myCharacter:FindFirstChild("HumanoidRootPart")
-            or myCharacter:FindFirstChild("Torso")
-
-        if targetRoot and myRoot then
-            myRoot.CFrame =
-                targetRoot.CFrame *
-                CFrame.new(0, 0, 3)
-        end
-
-    end)
-
+local function IsRaceSound(snd)
+	if not snd:IsA("Sound") then return false end
+	if string.find(tostring(snd.SoundId), RACE_SOUND_ID, 1, true) then return true end
+	return snd.Name == "Race" and snd.Parent ~= nil and snd.Parent.Name == "Sound_Effect"
 end
 
-local function setBackpackVisible(state)
-
-    safeCall(function()
-        StarterGui:SetCoreGuiEnabled(
-            Enum.CoreGuiType.Backpack,
-            state
-        )
-    end)
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function NewRaceSoundWatcher()
+	local hit, conns = false, {}
+	local function hook(snd, fresh)
+		if fresh and snd.IsPlaying then hit = true end
+		table.insert(conns, snd.Played:Connect(function() hit = true end))
+		table.insert(conns, snd:GetPropertyChangedSignal("Playing"):Connect(function()
+			if snd.Playing then hit = true end
+		end))
+	end
+	local roots = { workspace, game:GetService("SoundService"), game:GetService("ReplicatedStorage"), game:GetService("Players").LocalPlayer }
+	for _, root in ipairs(roots) do
+		pcall(function()
+			for _, d in ipairs(root:GetDescendants()) do
+				if IsRaceSound(d) then pcall(hook, d, false) end
+			end
+			table.insert(conns, root.DescendantAdded:Connect(function(d)
+				if IsRaceSound(d) then pcall(hook, d, true) end
+			end))
+		end)
+	end
+	return {
+		hit = function() return hit end,
+		stop = function() for _, c in ipairs(conns) do pcall(function() c:Disconnect() end) end end,
+	}
 end
 
-local updateSpectateToggleBtnText = nil
-
-local function toggleSpectate(state)
-
-    spectating = state
-
-    if spectateFrame then
-        spectateFrame.Visible = state
-    end
-
-    setBackpackVisible(not state)
-
-    if updateSpectateToggleBtnText then
-        updateSpectateToggleBtnText()
-    end
-
-    local camera = Workspace.CurrentCamera
-
-    if not camera then
-        return
-    end
-
-    if state then
-
-        spectateIndex = 1
-
-        updateSpectateCamera()
-
-        if not spectateConnection then
-
-            spectateConnection =
-                RunService.RenderStepped:Connect(function()
-
-                    if not spectating then
-                        return
-                    end
-
-                    local targets =
-                        getSpectateTargets()
-
-                    if #targets == 0 then
-                        return
-                    end
-
-                    if spectateIndex > #targets then
-                        spectateIndex = 1
-                    end
-
-                    local target =
-                        targets[spectateIndex]
-
-                    if target and target.Character then
-
-                        local hum =
-                            target.Character:FindFirstChildOfClass(
-                                "Humanoid"
-                            )
-
-                        if hum and camera.CameraSubject ~= hum then
-                            camera.CameraSubject = hum
-                        end
-
-                    end
-
-                end)
-
-        end
-
-    else
-
-        spectateConnection =
-            disconnectConnection(spectateConnection)
-
-        local character = player.Character
-
-        if character then
-
-            local humanoid =
-                character:FindFirstChildOfClass("Humanoid")
-
-            if humanoid then
-                camera.CameraSubject = humanoid
-            end
-
-        end
-
-    end
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function WatchRaceV2(sec, sw)
+	local first
+	local t0 = tick()
+	while tick() - t0 < sec do
+		if sw.hit() then return true, "Sound" end
+		local o = RaceCooldownObj()
+		if o then
+			if first == nil then first = o.Size
+			elseif o.Size ~= first then return true, "Cooldown" end
+		end
+		task.wait(0.1)
+	end
+	return sw.hit(), sw.hit() and "Sound" or nil
 end
 
---========================================================--
--- SOUND MUTE
---========================================================--
-
-local function applyMuteToSound(sound)
-
-    if not muteAllSoundsEnabled then
-        return
-    end
-
-    if not sound:IsA("Sound") then
-        return
-    end
-
-    safeCall(function()
-
-        if mutedSounds[sound] == nil then
-            mutedSounds[sound] = sound.Volume
-        end
-
-        sound.Volume = 0
-
-    end)
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function ProbeRaceV2(force)
+	if RaceProbe.ver == 2 then return 2 end            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if RaceProbe.busy then return RaceProbe.ver end
+	if not force and RaceProbe.ver ~= nil and tick() - RaceProbe.last < 600 then return RaceProbe.ver end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	RaceProbe.busy = true
+	local result, how = 1, nil
+	local sw = NewRaceSoundWatcher()
+	for attempt = 1, 2 do                               -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		FireRaceSkill()
+		task.wait(0.3)
+		local moved, src = WatchRaceV2(2, sw)
+		if moved then result, how = 2, src break end
+	end
+	sw.stop()
+	RaceProbe.ver, RaceProbe.last, RaceProbe.busy = result, tick(), false
+	print("[RaceProbe] Kiểm tra tộc ->", result == 2 and ("V2 (สัญญาณ: " .. tostring(how) .. ")") or "V1 (ไม่เจอ Cooldown ขยับ/เสียง Race)")
+	return result
 end
 
-local function toggleMuteAllSounds(state)
-
-    muteAllSoundsEnabled = state
-
-    if state then
-
-        for _, obj in ipairs(game:GetDescendants()) do
-            applyMuteToSound(obj)
-        end
-
-        muteSoundsConnection =
-            disconnectConnection(muteSoundsConnection)
-
-        muteSoundsConnection =
-            game.DescendantAdded:Connect(function(obj)
-
-                if muteAllSoundsEnabled then
-                    applyMuteToSound(obj)
-                end
-
-            end)
-
-    else
-
-        muteSoundsConnection =
-            disconnectConnection(muteSoundsConnection)
-
-        for sound, originalVolume in pairs(mutedSounds) do
-
-            if sound and sound.Parent then
-
-                safeCall(function()
-                    sound.Volume = originalVolume
-                end)
-
-            end
-
-        end
-
-        mutedSounds = {}
-
-    end
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function ReadRace()
+	local name
+	pcall(function()
+		name = game:GetService("Players").LocalPlayer.PlayerData.Race.Value
+	end)
+	local ver
+	pcall(function()
+		local txt = game:GetService("Players").LocalPlayer.PlayerGui.GameGui.Menu.Main.Container.Profile.Frame.Container.RaceFrame.Value.Text
+		ver = tonumber(string.match(txt, "%(%s*[Vv](%d+)%s*%)"))
+	end)
+	if RaceProbe.ver == 2 then ver = 2 end                       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if ver == nil and name ~= nil then ver = ProbeRaceV2() end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if name == nil and ver == nil then return nil end
+	name = tostring(name or "?")
+	return name, ver, ver and string.format("%s (V%d)", name, ver) or name
 end
 
---========================================================--
--- HIDE MAP
---========================================================--
-
-local function isMySelfOrItem(obj)
-
-    local character = player.Character
-
-    if character then
-
-        if obj == character
-            or obj:IsDescendantOf(character) then
-
-            return true
-        end
-
-    end
-
-    local backpack = player:FindFirstChild("Backpack")
-
-    if backpack then
-
-        if obj == backpack
-            or obj:IsDescendantOf(backpack) then
-
-            return true
-        end
-
-    end
-
-    if obj:IsA("Sky")
-        or obj:IsA("Atmosphere")
-        or obj:IsA("SunRaysEffect")
-        or obj:IsA("BloomEffect") then
-
-        return true
-    end
-
-    return false
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function FarmAllowed()
+	return not (_G.Raid or _G.RaceV2 or _G.FlameKatana or _G.EvilNoob or _G.ItemQuest or _G.Boss or _G.Baller or _G.Aura or _G.HakiReroll)
 end
 
-local function applyHideToObject(obj)
-
-    if not hideMapOthersEnabled then
-        return
-    end
-
-    if isMySelfOrItem(obj) then
-        return
-    end
-
-    safeCall(function()
-
-        if obj:IsA("BasePart") then
-
-            if hiddenObjects[obj] == nil then
-                hiddenObjects[obj] =
-                    obj.LocalTransparencyModifier
-            end
-
-            obj.LocalTransparencyModifier = 1
-
-        elseif obj:IsA("Decal")
-            or obj:IsA("Texture") then
-
-            if hiddenObjects[obj] == nil then
-                hiddenObjects[obj] = obj.Transparency
-            end
-
-            obj.Transparency = 1
-
-        elseif obj:IsA("ParticleEmitter")
-            or obj:IsA("Trail")
-            or obj:IsA("Smoke")
-            or obj:IsA("Fire")
-            or obj:IsA("Sparkles") then
-
-            if hiddenObjects[obj] == nil then
-                hiddenObjects[obj] = obj.Enabled
-            end
-
-            obj.Enabled = false
-
-        elseif obj:IsA("BillboardGui")
-            or obj:IsA("SurfaceGui") then
-
-            if hiddenObjects[obj] == nil then
-                hiddenObjects[obj] = obj.Enabled
-            end
-
-            obj.Enabled = false
-
-        end
-
-    end)
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function FindTool(name)
+	if not name then return nil end
+	local function NormName(x)
+		x = tostring(x or ""):gsub("^%s+", "")
+		x = x:gsub("%s+$", "")
+		return string.lower(x)
+	end
+	local want = NormName(name)
+	local function scan(parent)
+		if not parent then return nil end
+		for _, ch in ipairs(parent:GetChildren()) do
+			if ch:IsA("Tool") and NormName(ch.Name) == want then return ch end
+		end
+		return nil
+	end
+	return scan(LocalPlayer.Character) or scan(LocalPlayer:FindFirstChildOfClass("Backpack"))
 end
 
-local function toggleHideMapAndOthers(state)
+function OwnsTool(name) return FindTool(name) ~= nil end
 
-    hideMapOthersEnabled = state
-
-    if state then
-
-        for _, obj in ipairs(Workspace:GetDescendants()) do
-            applyHideToObject(obj)
-        end
-
-        hideMapConnection =
-            disconnectConnection(hideMapConnection)
-
-        hideMapConnection =
-            Workspace.DescendantAdded:Connect(function(obj)
-
-                if hideMapOthersEnabled then
-                    applyHideToObject(obj)
-                end
-
-            end)
-
-    else
-
-        hideMapConnection =
-            disconnectConnection(hideMapConnection)
-
-        for obj, originalValue in pairs(hiddenObjects) do
-
-            if obj and obj.Parent then
-
-                safeCall(function()
-
-                    if obj:IsA("BasePart") then
-
-                        obj.LocalTransparencyModifier =
-                            originalValue
-
-                    elseif obj:IsA("Decal")
-                        or obj:IsA("Texture") then
-
-                        obj.Transparency =
-                            originalValue
-
-                    elseif obj:IsA("ParticleEmitter")
-                        or obj:IsA("Trail")
-                        or obj:IsA("Smoke")
-                        or obj:IsA("Fire")
-                        or obj:IsA("Sparkles") then
-
-                        obj.Enabled =
-                            originalValue
-
-                    elseif obj:IsA("BillboardGui")
-                        or obj:IsA("SurfaceGui") then
-
-                        obj.Enabled =
-                            originalValue
-
-                    end
-
-                end)
-
-            end
-
-        end
-
-        hiddenObjects = {}
-
-    end
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function WaitToolsLoaded(maxSec)
+	local t0 = tick()
+	while tick() - t0 < (maxSec or 15) do
+		local c = LocalPlayer.Character
+		if c and c:FindFirstChildOfClass("Humanoid") and c:FindFirstChild("HumanoidRootPart")
+			and LocalPlayer:FindFirstChildOfClass("Backpack") then
+			task.wait(1.5)
+			return true
+		end
+		task.wait(0.25)
+	end
+	return false
 end
 
---========================================================--
--- FIX LAG
---========================================================--
-
-local function optimizePartExtreme(obj)
-
-    if not fixLagEnabled then
-        return
-    end
-
-    if not obj or not obj.Parent then
-        return
-    end
-
-    safeCall(function()
-
-        -- MeshPart phải đứng trước BasePart
-        if obj:IsA("MeshPart") then
-
-            obj.Material =
-                Enum.Material.SmoothPlastic
-
-            obj.Reflectance = 0
-            obj.CastShadow = false
-
-            pcall(function()
-                obj.TextureID = ""
-            end)
-
-        elseif obj:IsA("BasePart") then
-
-            obj.Material =
-                Enum.Material.SmoothPlastic
-
-            obj.Reflectance = 0
-            obj.CastShadow = false
-
-        elseif obj:IsA("SpecialMesh") then
-
-            pcall(function()
-                obj.TextureId = ""
-            end)
-
-        elseif obj:IsA("Decal")
-            or obj:IsA("Texture") then
-
-            obj.Transparency = 1
-
-        elseif obj:IsA("SurfaceAppearance") then
-
-            obj:Destroy()
-
-        elseif obj:IsA("ParticleEmitter")
-            or obj:IsA("Trail")
-            or obj:IsA("Smoke")
-            or obj:IsA("Fire")
-            or obj:IsA("Sparkles")
-            or obj:IsA("Beam") then
-
-            obj.Enabled = false
-
-        elseif obj:IsA("PostEffect") then
-
-            obj.Enabled = false
-
-        elseif obj:IsA("Explosion") then
-
-            obj.Visible = false
-
-        end
-
-    end)
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function SavedFlag(path)
+	local ok, v = pcall(function()
+		if not (isfile and readfile and isfile(path)) then return false end
+		local d = game:GetService("HttpService"):JSONDecode(readfile(path))
+		return type(d) == "table" and d.done == true
+	end)
+	return ok and v == true
 end
 
-local function toggleFixLag(state)
-
-    fixLagEnabled = state
-
-    if state then
-
-        safeCall(function()
-
-            Lighting.GlobalShadows = false
-            Lighting.FogEnd = 9e9
-            Lighting.FogStart = 9e9
-            Lighting.Brightness = 1
-
-            pcall(function()
-                Lighting.Technology =
-                    Enum.Technology.Compatibility
-            end)
-
-            local terrain =
-                Workspace:FindFirstChildOfClass("Terrain")
-
-            if terrain then
-
-                pcall(function()
-                    terrain.WaterWaveSize = 0
-                    terrain.WaterWaveSpeed = 0
-                    terrain.WaterReflectance = 0
-                    terrain.WaterTransparency = 0
-                    terrain.Decoration = false
-                end)
-
-            end
-
-        end)
-
-        for _, obj in ipairs(game:GetDescendants()) do
-            optimizePartExtreme(obj)
-        end
-
-        fixLagChildConnection =
-            disconnectConnection(fixLagChildConnection)
-
-        fixLagChildConnection =
-            game.DescendantAdded:Connect(function(obj)
-
-                if fixLagEnabled then
-                    optimizePartExtreme(obj)
-                end
-
-            end)
-
-        fixLagTask =
-            cancelTask(fixLagTask)
-
-        fixLagTask =
-            task.spawn(function()
-
-                while fixLagEnabled do
-
-                    for _, obj in ipairs(Workspace:GetDescendants()) do
-
-                        if not fixLagEnabled then
-                            break
-                        end
-
-                        optimizePartExtreme(obj)
-
-                    end
-
-                    task.wait(2)
-
-                end
-
-            end)
-
-    else
-
-        fixLagChildConnection =
-            disconnectConnection(fixLagChildConnection)
-
-        fixLagTask =
-            cancelTask(fixLagTask)
-
-    end
-
+function BallerHave()
+	local c = LocalPlayer.Character
+	return (FindTool("Baller")) ~= nil
 end
 
---========================================================--
--- REJOIN / SERVER HOP
---========================================================--
-
-local function rejoinServer()
-
-    safeCall(function()
-
-        TeleportService:Teleport(
-            game.PlaceId,
-            player
-        )
-
-    end)
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function AuraWanted()
+	return CONFIG.AutoHaki and _G.AuraTask ~= nil and not _G.AuraDone and not _G.Boss and not BallerWanted()
 end
 
-local function serverHop()
-
-    task.spawn(function()
-
-        local placeId = game.PlaceId
-
-        local baseUrl =
-            "https://games.roblox.com/v1/games/"
-            .. placeId
-            .. "/servers/Public?sortOrder=Asc&limit=100"
-
-        local cursor = nil
-
-        while true do
-
-            local url = baseUrl
-
-            if cursor then
-                url =
-                    url ..
-                    "&cursor=" ..
-                    HttpService:UrlEncode(cursor)
-            end
-
-            local success, result =
-                pcall(function()
-
-                    return HttpService:JSONDecode(
-                        game:HttpGet(url)
-                    )
-
-                end)
-
-            if not success or not result then
-                warn("[H HUB] Không lấy được danh sách server.")
-                return
-            end
-
-            if result.data then
-
-                for _, server in ipairs(result.data) do
-
-                    if server.id
-                        and server.id ~= game.JobId
-                        and server.playing
-                        and server.maxPlayers
-                        and server.playing < server.maxPlayers
-                        and server.playing > 0 then
-
-                        TeleportService:TeleportToPlaceInstance(
-                            placeId,
-                            server.id,
-                            player
-                        )
-
-                        return
-
-                    end
-
-                end
-
-            end
-
-            cursor = result.nextPageCursor
-
-            if not cursor then
-                break
-            end
-
-            task.wait(0.5)
-
-        end
-
-        TeleportService:Teleport(
-            placeId,
-            player
-        )
-
-    end)
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function HakiAllDone()
+	if not CONFIG.HakiRerollWaitAll then return true end
+	if CONFIG.AutoBallerStyle and not _G.BallerDone then return false end
+	if CONFIG.AutoFlameKatana and not _G.FlameDone and not Checklist["Weapon: Flame Katana"] then return false end
+	if CONFIG.AutoEvilNoob and not _G.EvilNoobDone and not Checklist["Weapon: Yellow Blade"] then return false end
+	if CONFIG.AutoItemQuests then
+		for _, k in ipairs(ITEM_ORDER) do
+			if not _G.ItemDone[k] then return false end
+		end
+	end
+	return true
 end
 
---========================================================--
--- AUTO EQUIP
---========================================================--
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function HakiRerollWanted()
+	if not CONFIG.AutoHakiReroll or _G.HakiRerollDone or _G.Boss then return false end
+	if not _G.AuraDone then return false end
+	if _G.HakiReroll then return true end
+	if not HakiAllDone() then return false end
+	local ok, g = pcall(function() return LocalPlayer.PlayerData.Gem.Value end)
+	return ok and g ~= nil and g >= (_G.HakiRerollNeedGem or CONFIG.HakiRerollMinGems or 1)
+end
 
-local allEquipItems = {
+function BallerWanted()
+	if _G.Boss then return false end
+	if not CONFIG.AutoBallerStyle or _G.BallerDone then return false end
+	if BallerHave() then return false end
+	if _G.Baller then return true end
+	local m = ReadMoney()
+	return m ~= nil and m >= CONFIG.BallerMoney
+end
 
-    "PieThrow",
-    "SmallPotion",
-    "GiantPotion",
-    "GhostPotion",
-    "Healing",
-    "GravityPotion",
-    "Bloxiade",
-    "ClownBomb",
-    "Slate",
-    "WindPotion",
-    "IcePotion",
-    "SlowDownGun",
-    "GravityGun",
-    "GravityDisruptor",
-    "FreezeRay",
-    "Bomb",
-    "Jetpack",
-    "DecoyDeploy",
-    "AprilShowers",
-    "Balloon",
-    "MarchingDrum",
-    "Trumpet",
-    "Trowel",
-    "TeapotLauncher",
-    "BunchOfBalloons",
-    "BangGun",
-    "EpicJuice",
-    "EpicSauce",
-    "Ball",
-    "Torch",
-    "Cake",
-    "MoneyBag",
-    "IceCreamCone",
-    "Teddy",
-    "Witch",
-    "Watermelon",
-    "Taco",
-    "Bloxy",
-    "Pizza",
-    "Coco"
+function FlameWanted()
+	if _G.Boss then return false end
+	if not CONFIG.AutoFlameKatana or _G.FlameDone then return false end
+	if BallerWanted() or AuraWanted() then return false end
+	local ok, lv = pcall(function() return game:GetService("Players").LocalPlayer.PlayerData.Level.Value end)
+	return ok and lv >= CONFIG.FlameKatanaMinLevel
+end
+
+function RaceV2Wanted()
+	if _G.Boss then return false end
+	if not CONFIG.AutoRaceV2 or _G.RaceV2Done then return false end
+	if BallerWanted() or AuraWanted() then return false end
+	if FlameWanted() then return false end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local ok, lv = pcall(function() return game:GetService("Players").LocalPlayer.PlayerData.Level.Value end)
+	if not ok or lv < CONFIG.RaceV2MinLevel then return false end
+	local _, ver = ReadRace()
+	if ver ~= 1 then return false end
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local pv = ProbeRaceV2()
+	if pv == 2 then
+		_G.RaceV2Done = true
+		print("[RaceV2] Đã xác nhận tộc V2 qua hồi chiêu -> bỏ qua chế độ Race V2")
+		return false
+	end
+	if pv == nil then return _G.RaceV2 == true end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	return true
+end
+
+function EvilNoobWanted()
+	if _G.Boss then return false end
+	if not CONFIG.AutoEvilNoob or _G.EvilNoobDone then return false end
+	if DropX2Needed and DropX2Needed() then return false end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if _G.NoobRaidPhase then return false end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if BallerWanted() or AuraWanted() then return false end
+	local ok, lv = pcall(function() return game:GetService("Players").LocalPlayer.PlayerData.Level.Value end)
+	if not ok or lv < CONFIG.EvilNoobMinLevel then return false end
+	return not (FlameWanted() or RaceV2Wanted())   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+end
+
+-- ===== Item Quests (Pink Hammer / Banana / Purple Katana) =====
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+_G.ItemDone = _G.ItemDone or {}
+ITEM_INFO = {
+	PinkHammer   = { name = "Pink Hammer",   ui = "Weapon: Pink Hammer" },
+	Banana       = { name = "Banana",        ui = "Weapon: Banana" },
+	PurpleKatana = { name = "Purple Katana", ui = "Weapon: Purple Katana" },
 }
+ITEM_ORDER = { "PinkHammer", "Banana", "PurpleKatana" }
 
-local function equipItemsOnce()
-
-    task.spawn(function()
-
-        local ReplicatedStorage =
-            game:GetService("ReplicatedStorage")
-
-        local equipEvent =
-            ReplicatedStorage:WaitForChild(
-                "Equip",
-                5
-            )
-
-        if not equipEvent then
-            warn("[H HUB] Không tìm thấy Equip.")
-            return
-        end
-
-        for _, item in ipairs(allEquipItems) do
-
-            pcall(function()
-                equipEvent:FireServer(
-                    "UNEQUIP",
-                    item
-                )
-            end)
-
-            task.wait(0.08)
-
-        end
-
-        task.wait(0.3)
-
-        for _, item in ipairs(allEquipItems) do
-
-            pcall(function()
-                equipEvent:FireServer(
-                    "EQUIP",
-                    item
-                )
-            end)
-
-            task.wait(0.08)
-
-        end
-
-    end)
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function ItemHave(name)
+	local c = LocalPlayer.Character
+	return (FindTool(name)) ~= nil
 end
 
---========================================================--
--- AUTO CLICK
---========================================================--
-
-local function toggleAutoPressButton(state)
-
-    autoPressButtonEnabled = state
-
-    if state then
-
-        autoPressButtonTask =
-            cancelTask(autoPressButtonTask)
-
-        autoPressButtonTask =
-            task.spawn(function()
-
-                while autoPressButtonEnabled do
-
-                    safeCall(function()
-
-                        local character =
-                            player.Character
-
-                        local root =
-                            character
-                            and character:FindFirstChild(
-                                "HumanoidRootPart"
-                            )
-
-                        if not root then
-                            return
-                        end
-
-                        for _, obj in ipairs(
-                            Workspace:GetDescendants()
-                        ) do
-
-                            if not autoPressButtonEnabled then
-                                break
-                            end
-
-                            local near = false
-
-                            if obj:IsA("BasePart") then
-
-                                near =
-                                    (
-                                        root.Position -
-                                        obj.Position
-                                    ).Magnitude
-                                    <= autoPressRadius
-
-                            elseif obj:IsA("PVInstance") then
-
-                                near =
-                                    (
-                                        root.Position -
-                                        obj:GetPivot().Position
-                                    ).Magnitude
-                                    <= autoPressRadius
-
-                            elseif obj.Parent
-                                and obj.Parent:IsA("BasePart") then
-
-                                near =
-                                    (
-                                        root.Position -
-                                        obj.Parent.Position
-                                    ).Magnitude
-                                    <= autoPressRadius
-
-                            end
-
-                            if near then
-
-                                -- Chỉ gọi nếu môi trường có API
-                                if obj:IsA("ClickDetector") then
-
-                                    if typeof(
-                                        fireclickdetector
-                                    ) == "function" then
-
-                                        pcall(function()
-                                            fireclickdetector(obj)
-                                        end)
-
-                                    end
-
-                                elseif obj:IsA("ProximityPrompt") then
-
-                                    if typeof(
-                                        fireproximityprompt
-                                    ) == "function" then
-
-                                        pcall(function()
-                                            fireproximityprompt(obj)
-                                        end)
-
-                                    end
-
-                                end
-
-                            end
-
-                        end
-
-                    end)
-
-                    task.wait(
-                        math.max(
-                            tonumber(autoPressDelay) or 0.1,
-                            0.05
-                        )
-                    )
-
-                end
-
-            end)
-
-    else
-
-        autoPressButtonTask =
-            cancelTask(autoPressButtonTask)
-
-    end
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function ItemUnstore(name, timeout)
+	if ItemHave(name) then return true end
+	task.spawn(function()
+		pcall(function()
+			game:GetService("ReplicatedStorage"):WaitForChild("OtherEvent", 5):WaitForChild("ItemEvents", 5)
+				:WaitForChild("UpdateInventory", 5):InvokeServer("Weapon", { SelectedItem = name })
+		end)
+	end)
+	local t0 = tick()
+	while not ItemHave(name) and tick() - t0 < (timeout or 3) do task.wait(0.2) end
+	return ItemHave(name)
 end
 
---========================================================--
--- NOCLIP
---========================================================--
-
-local function toggleNoclip(state)
-
-    noclipEnabled = state
-
-    local character = player.Character
-
-    if not character then
-        return
-    end
-
-    local humanoid =
-        character:FindFirstChildOfClass("Humanoid")
-
-    if state then
-
-        if humanoid and not originalHipHeight then
-
-            originalHipHeight =
-                humanoid.HipHeight
-
-            humanoid.HipHeight =
-                originalHipHeight + 0.5
-
-        end
-
-        noclipConnection =
-            disconnectConnection(noclipConnection)
-
-        noclipConnection =
-            RunService.Stepped:Connect(function()
-
-                local char = player.Character
-
-                if not char then
-                    return
-                end
-
-                for _, part in ipairs(
-                    char:GetDescendants()
-                ) do
-
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-
-                end
-
-            end)
-
-    else
-
-        noclipConnection =
-            disconnectConnection(noclipConnection)
-
-        if humanoid and originalHipHeight then
-
-            humanoid.HipHeight =
-                originalHipHeight
-
-            originalHipHeight = nil
-
-        end
-
-        for _, part in ipairs(
-            character:GetDescendants()
-        ) do
-
-            if part:IsA("BasePart")
-                and part.Name ~= "HumanoidRootPart" then
-
-                part.CanCollide = true
-
-            end
-
-        end
-
-    end
-
+function ItemWanted(key)
+	if _G.Boss then return false end
+	if not CONFIG.AutoItemQuests or _G.ItemDone[key] then return false end
+	if BallerWanted() or AuraWanted() then return false end
+	local ok, lv = pcall(function() return game:GetService("Players").LocalPlayer.PlayerData.Level.Value end)
+	if not ok or not lv then return false end
+	if key == "PinkHammer" then
+		return lv >= CONFIG.PinkHammerMinLevel
+	elseif key == "Banana" then
+		if lv < CONFIG.BananaMinLevel then return false end
+		if _G.ItemQuest and _G.ItemQuestKey == "Banana" then return true end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		local m = ReadMoney()
+		return m ~= nil and m >= CONFIG.BananaMinMoney
+	elseif key == "PurpleKatana" then
+		return lv >= CONFIG.PurpleKatanaMinLevel
+	end
+	return false
 end
 
---========================================================--
--- INVISIBILITY
---========================================================--
-
-local function toggleInvisibility(state)
-
-    invisibleEnabled = state
-
-    local character = player.Character
-
-    if not character then
-        return
-    end
-
-    if state then
-
-        savedTransparencies = {}
-
-        invisibleConnection =
-            disconnectConnection(invisibleConnection)
-
-        invisibleConnection =
-            RunService.RenderStepped:Connect(function()
-
-                local char = player.Character
-
-                if not char then
-                    return
-                end
-
-                for _, obj in ipairs(
-                    char:GetDescendants()
-                ) do
-
-                    if obj:IsA("BasePart")
-                        and obj.Name ~= "HumanoidRootPart" then
-
-                        if savedTransparencies[obj] == nil then
-                            savedTransparencies[obj] =
-                                obj.Transparency
-                        end
-
-                        obj.Transparency = 1
-
-                    elseif obj:IsA("Decal")
-                        or obj:IsA("Texture") then
-
-                        if savedTransparencies[obj] == nil then
-                            savedTransparencies[obj] =
-                                obj.Transparency
-                        end
-
-                        obj.Transparency = 1
-
-                    elseif obj:IsA("BillboardGui")
-                        or obj:IsA("SurfaceGui") then
-
-                        obj.Enabled = false
-
-                    end
-
-                end
-
-            end)
-
-    else
-
-        invisibleConnection =
-            disconnectConnection(invisibleConnection)
-
-        for obj, transparency in pairs(
-            savedTransparencies
-        ) do
-
-            if obj and obj.Parent then
-
-                pcall(function()
-                    obj.Transparency = transparency
-                end)
-
-            end
-
-        end
-
-        for _, obj in ipairs(
-            character:GetDescendants()
-        ) do
-
-            if obj:IsA("BillboardGui")
-                or obj:IsA("SurfaceGui") then
-
-                obj.Enabled = true
-
-            end
-
-        end
-
-        savedTransparencies = {}
-
-    end
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function ItemQuestWanted()
+	if not CONFIG.AutoItemQuests then return nil end
+	if FlameWanted() or RaceV2Wanted() or EvilNoobWanted() then return nil end
+	if _G.NoobRaidPhase then return nil end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if _G.ItemQuest and _G.ItemQuestKey and ItemWanted(_G.ItemQuestKey) then return _G.ItemQuestKey end
+	for _, k in ipairs(ITEM_ORDER) do
+		if ItemWanted(k) then return k end
+	end
+	return nil
 end
 
---========================================================--
--- FLY
---========================================================--
-
-local function toggleFly(state)
-
-    flyEnabled = state
-
-    local character = player.Character
-
-    if not character then
-        return
-    end
-
-    local root =
-        character:FindFirstChild(
-            "HumanoidRootPart"
-        )
-
-    local humanoid =
-        character:FindFirstChildOfClass("Humanoid")
-
-    if not root or not humanoid then
-        return
-    end
-
-    if state then
-
-        local oldGyro =
-            root:FindFirstChild("H_HUB_FlyGyro")
-
-        local oldVelocity =
-            root:FindFirstChild("H_HUB_FlyVelocity")
-
-        if oldGyro then
-            oldGyro:Destroy()
-        end
-
-        if oldVelocity then
-            oldVelocity:Destroy()
-        end
-
-        humanoid.PlatformStand = true
-
-        local bg = Instance.new("BodyGyro")
-
-        bg.Name = "H_HUB_FlyGyro"
-        bg.P = 90000
-        bg.MaxTorque =
-            Vector3.new(
-                90000,
-                90000,
-                90000
-            )
-
-        bg.CFrame = root.CFrame
-        bg.Parent = root
-
-        local bv = Instance.new("BodyVelocity")
-
-        bv.Name = "H_HUB_FlyVelocity"
-
-        bv.MaxForce =
-            Vector3.new(
-                90000,
-                90000,
-                90000
-            )
-
-        bv.Velocity = Vector3.zero
-        bv.Parent = root
-
-        flyConnection =
-            disconnectConnection(flyConnection)
-
-        flyConnection =
-            RunService.RenderStepped:Connect(function()
-
-                if not flyEnabled
-                    or not character.Parent then
-
-                    if bg then
-                        bg:Destroy()
-                    end
-
-                    if bv then
-                        bv:Destroy()
-                    end
-
-                    return
-
-                end
-
-                local camera =
-                    Workspace.CurrentCamera
-
-                if not camera then
-                    return
-                end
-
-                local move =
-                    humanoid.MoveDirection
-
-                local look =
-                    camera.CFrame.LookVector
-
-                local right =
-                    camera.CFrame.RightVector
-
-                local flatLook =
-                    Vector3.new(
-                        look.X,
-                        0,
-                        look.Z
-                    )
-
-                local flatRight =
-                    Vector3.new(
-                        right.X,
-                        0,
-                        right.Z
-                    )
-
-                if flatLook.Magnitude > 0 then
-                    flatLook =
-                        flatLook.Unit
-                end
-
-                if flatRight.Magnitude > 0 then
-                    flatRight =
-                        flatRight.Unit
-                end
-
-                local flyVector =
-                    Vector3.zero
-
-                if move.Magnitude > 0 then
-
-                    flyVector =
-                        flatRight * move.X
-                        +
-                        flatLook * move.Z
-
-                end
-
-                bv.Velocity =
-                    flyVector * flySpeed
-
-                bg.CFrame =
-                    camera.CFrame
-
-            end)
-
-    else
-
-        flyConnection =
-            disconnectConnection(flyConnection)
-
-        local bg =
-            root:FindFirstChild(
-                "H_HUB_FlyGyro"
-            )
-
-        local bv =
-            root:FindFirstChild(
-                "H_HUB_FlyVelocity"
-            )
-
-        if bg then
-            bg:Destroy()
-        end
-
-        if bv then
-            bv:Destroy()
-        end
-
-        humanoid.PlatformStand = false
-
-    end
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function CheckDropX2Owned()
+	local ok, owned = pcall(function()
+		return game:GetService("MarketplaceService"):UserOwnsGamePassAsync(LocalPlayer.UserId, CONFIG.DropX2GamepassId)
+	end)
+	if ok and owned == true then _G.DropX2Owned = true end
+	return ok and owned == true
 end
 
---========================================================--
--- INFINITE JUMP
---========================================================--
-
-local function toggleInfJump(state)
-
-    infJumpEnabled = state
-
-    if state then
-
-        infJumpConnection =
-            disconnectConnection(
-                infJumpConnection
-            )
-
-        infJumpConnection =
-            UserInputService.JumpRequest:Connect(
-                function()
-
-                    if not infJumpEnabled then
-                        return
-                    end
-
-                    local character =
-                        player.Character
-
-                    local humanoid =
-                        character
-                        and character:FindFirstChildOfClass(
-                            "Humanoid"
-                        )
-
-                    if humanoid then
-
-                        humanoid:ChangeState(
-                            Enum.HumanoidStateType.Jumping
-                        )
-
-                    end
-
-                end
-            )
-
-    else
-
-        infJumpConnection =
-            disconnectConnection(
-                infJumpConnection
-            )
-
-    end
-
+function DropX2Needed()
+	if not CONFIG.AutoBuyDropX2 or not CONFIG.AutoRaid then return false end
+	return not (_G.DropX2Bought or _G.DropX2Owned)
 end
 
---========================================================--
--- ESP
---========================================================--
-
-local function removeHighlight(character)
-
-    if not character then
-        return
-    end
-
-    local highlight =
-        character:FindFirstChild(
-            "H_HUB_ESP"
-        )
-
-    if highlight then
-        highlight:Destroy()
-    end
-
-    local head =
-        character:FindFirstChild("Head")
-
-    if head then
-
-        local billboard =
-            head:FindFirstChild(
-                "H_HUB_NameESP"
-            )
-
-        if billboard then
-            billboard:Destroy()
-        end
-
-    end
-
-end
-
-local function createHighlight(
-    character,
-    targetPlayer
-)
-
-    if not character
-        or not targetPlayer then
-
-        return
-    end
-
-    local head =
-        character:FindFirstChild("Head")
-
-    if head then
-
-        local billboard =
-            head:FindFirstChild(
-                "H_HUB_NameESP"
-            )
-
-        if not billboard then
-
-            billboard =
-                Instance.new("BillboardGui")
-
-            billboard.Name =
-                "H_HUB_NameESP"
-
-            billboard.Adornee = head
-
-            billboard.Size =
-                UDim2.new(
-                    0,
-                    180,
-                    0,
-                    30
-                )
-
-            billboard.StudsOffset =
-                Vector3.new(
-                    0,
-                    2.5,
-                    0
-                )
-
-            billboard.AlwaysOnTop = true
-
-            local label =
-                Instance.new("TextLabel")
-
-            label.Name =
-                "NameLabel"
-
-            label.Size =
-                UDim2.fromScale(
-                    1,
-                    1
-                )
-
-            label.BackgroundTransparency = 1
-
-            label.Text =
-                targetPlayer.DisplayName
-                ..
-                " (@"
-                ..
-                targetPlayer.Name
-                ..
-                ")"
-
-            label.TextColor3 =
-                espColor
-
-            label.TextStrokeTransparency = 0
-
-            label.TextStrokeColor3 =
-                Color3.new(
-                    0,
-                    0,
-                    0
-                )
-
-            label.TextScaled = true
-            label.Font = GLOBAL_FONT
-
-            label.Parent = billboard
-
-            billboard.Parent = head
-
-        else
-
-            local label =
-                billboard:FindFirstChild(
-                    "NameLabel"
-                )
-
-            if label then
-                label.TextColor3 =
-                    espColor
-            end
-
-        end
-
-    end
-
-    local highlight =
-        character:FindFirstChild(
-            "H_HUB_ESP"
-        )
-
-    if not highlight then
-
-        highlight =
-            Instance.new("Highlight")
-
-        highlight.Name =
-            "H_HUB_ESP"
-
-        highlight.Adornee =
-            character
-
-        highlight.FillTransparency =
-            0.5
-
-        highlight.OutlineTransparency =
-            0
-
-        highlight.OutlineColor =
-            Color3.new(
-                1,
-                1,
-                1
-            )
-
-        highlight.DepthMode =
-            Enum.HighlightDepthMode.AlwaysOnTop
-
-        highlight.Parent =
-            character
-
-    end
-
-    highlight.FillColor =
-        espColor
-
-end
-
-local function updateESP()
-
-    for _, p in ipairs(
-        Players:GetPlayers()
-    ) do
-
-        if p.Character then
-            removeHighlight(
-                p.Character
-            )
-        end
-
-    end
-
-    if not espEnabled then
-        return
-    end
-
-    if selectedEspTarget == "Tất cả"
-        or selectedEspTarget == "All" then
-
-        for _, p in ipairs(
-            Players:GetPlayers()
-        ) do
-
-            if p ~= player
-                and p.Character then
-
-                createHighlight(
-                    p.Character,
-                    p
-                )
-
-            end
-
-        end
-
-    else
-
-        for _, p in ipairs(
-            Players:GetPlayers()
-        ) do
-
-            if p ~= player
-                and (
-                    p.Name == selectedEspTarget
-                    or p.DisplayName == selectedEspTarget
-                ) then
-
-                if p.Character then
-
-                    createHighlight(
-                        p.Character,
-                        p
-                    )
-
-                end
-
-                break
-
-            end
-
-        end
-
-    end
-
-end
-
-Players.PlayerAdded:Connect(function(p)
-
-    p.CharacterAdded:Connect(function()
-
-        task.wait(1)
-
-        if espEnabled then
-            updateESP()
-        end
-
-    end)
-
-end)
-
-Players.PlayerRemoving:Connect(function()
-
-    if espEnabled then
-        task.defer(updateESP)
-    end
-
-end)
-
---========================================================--
--- FREEZE RAY
---========================================================--
-
-local function isPlayerInCooldown(target)
-
-    if not target then
-        return true
-    end
-
-    local lastShot =
-        frozenPlayersTable[target]
-        or 0
-
-    return (
-        tick() - lastShot
-    ) < FREEZE_COOLDOWN
-
-end
-
-local function getDirectTarget()
-
-    local character =
-        player.Character
-
-    local root =
-        character
-        and character:FindFirstChild(
-            "HumanoidRootPart"
-        )
-
-    if not root then
-        return nil, nil
-    end
-
-    if selectedTargetPlayer
-        and selectedTargetPlayer.Parent then
-
-        if isPlayerInCooldown(
-            selectedTargetPlayer
-        ) then
-
-            return nil, nil
-
-        end
-
-        local targetCharacter =
-            selectedTargetPlayer.Character
-
-        local targetRoot =
-            targetCharacter
-            and (
-                targetCharacter:FindFirstChild(
-                    "HumanoidRootPart"
-                )
-                or targetCharacter:FindFirstChild(
-                    "Torso"
-                )
-            )
-
-        if targetRoot then
-
-            local distance =
-                (
-                    targetRoot.Position -
-                    root.Position
-                ).Magnitude
-
-            if distance <= freezeRadius then
-                return targetRoot,
-                    selectedTargetPlayer
-            end
-
-        end
-
-        return nil, nil
-
-    end
-
-    local closestRoot = nil
-    local closestPlayer = nil
-    local shortestDistance = freezeRadius
-
-    for _, target in ipairs(
-        Players:GetPlayers()
-    ) do
-
-        if target ~= player
-            and not isPlayerInCooldown(target) then
-
-            local targetCharacter =
-                target.Character
-
-            local targetRoot =
-                targetCharacter
-                and (
-                    targetCharacter:FindFirstChild(
-                        "HumanoidRootPart"
-                    )
-                    or targetCharacter:FindFirstChild(
-                        "Torso"
-                    )
-                )
-
-            if targetRoot then
-
-                local distance =
-                    (
-                        targetRoot.Position -
-                        root.Position
-                    ).Magnitude
-
-                if distance <= shortestDistance then
-
-                    shortestDistance =
-                        distance
-
-                    closestRoot =
-                        targetRoot
-
-                    closestPlayer =
-                        target
-
-                end
-
-            end
-
-        end
-
-    end
-
-    return closestRoot,
-        closestPlayer
-
-end
-
-local function toggleFreezeRay(state)
-
-    freezeRayEnabled = state
-
-    if state then
-
-        freezeRayTask =
-            cancelTask(freezeRayTask)
-
-        freezeRayTask =
-            task.spawn(function()
-
-                while freezeRayEnabled do
-
-                    local targetPart,
-                        targetPlayerObj =
-                        getDirectTarget()
-
-                    if targetPart
-                        and targetPlayerObj then
-
-                        local character =
-                            player.Character
-
-                        local humanoid =
-                            character
-                            and character:FindFirstChildOfClass(
-                                "Humanoid"
-                            )
-
-                        local backpack =
-                            player:FindFirstChild(
-                                "Backpack"
-                            )
-
-                        if character
-                            and humanoid then
-
-                            local tool =
-                                character:FindFirstChild(
-                                    "FreezeRay"
-                                )
-                                or (
-                                    backpack
-                                    and backpack:FindFirstChild(
-                                        "FreezeRay"
-                                    )
-                                )
-
-                            if tool then
-
-                                if backpack
-                                    and tool.Parent == backpack then
-
-                                    pcall(function()
-                                        humanoid:EquipTool(tool)
-                                    end)
-
-                                end
-
-                                local fireEvent =
-                                    tool:FindFirstChild(
-                                        "FireEvent"
-                                    )
-                                    or tool:FindFirstChild(
-                                        "RemoteEvent"
-                                    )
-
-                                if fireEvent
-                                    and fireEvent:IsA(
-                                        "RemoteEvent"
-                                    ) then
-
-                                    pcall(function()
-
-                                        fireEvent:FireServer(
-                                            targetPart.Position,
-                                            targetPart
-                                        )
-
-                                    end)
-
-                                    frozenPlayersTable[
-                                        targetPlayerObj
-                                    ] = tick()
-
-                                end
-
-                            end
-
-                        end
-
-                    end
-
-                    task.wait(
-                        math.max(
-                            SHOT_DELAY,
-                            0.1
-                        )
-                    )
-
-                end
-
-            end)
-
-    else
-
-        freezeRayTask =
-            cancelTask(
-                freezeRayTask
-            )
-
-    end
-
-end
-
---========================================================--
--- COINS / AUTO TP
---========================================================--
-
-local function findAllCoins()
-
-    local coins = {}
-
-    for _, obj in ipairs(
-        Workspace:GetDescendants()
-    ) do
-
-        if obj:IsA("BasePart")
-            and obj.Name == coinName then
-
-            table.insert(
-                coins,
-                obj
-            )
-
-        end
-
-    end
-
-    return coins
-
-end
-
-local function startTeleportLoop()
-
-    task.spawn(function()
-
-        while screenGui
-            and screenGui.Parent do
-
-            if tpEnabled then
-
-                local character =
-                    player.Character
-
-                local humanoid =
-                    character
-                    and character:FindFirstChildOfClass(
-                        "Humanoid"
-                    )
-
-                local root =
-                    character
-                    and character:FindFirstChild(
-                        "HumanoidRootPart"
-                    )
-
-                if character
-                    and humanoid
-                    and root then
-
-                    local coins =
-                        findAllCoins()
-
-                    for _, coin in ipairs(
-                        coins
-                    ) do
-
-                        if not tpEnabled then
-                            break
-                        end
-
-                        if coin
-                            and coin.Parent then
-
-                            root.CFrame =
-                                CFrame.new(
-                                    coin.Position
-                                    + Vector3.new(
-                                        0,
-                                        1,
-                                        0
-                                    )
-                                )
-
-                            humanoid:Move(
-                                Vector3.new(
-                                    1,
-                                    0,
-                                    0
-                                ),
-                                true
-                            )
-
-                            humanoid.Jump = false
-
-                            task.wait(
-                                math.max(
-                                    tpSpeed,
-                                    0.05
-                                )
-                            )
-
-                        end
-
-                    end
-
-                end
-
-            end
-
-            task.wait(
-                math.max(
-                    tpSpeed,
-                    0.05
-                )
-            )
-
-        end
-
-    end)
-
-end
-
---========================================================--
--- GUI HELPERS
---========================================================--
-
-local function updateButtonVisual(
-    button,
-    isOn
-)
-
-    if not button then
-        return
-    end
-
-    if isOn then
-
-        button.BackgroundColor3 =
-            Color3.fromRGB(
-                45,
-                160,
-                85
-            )
-
-    else
-
-        button.BackgroundColor3 =
-            currentThemeColor
-
-    end
-
-end
-
-local function applyThemeColor(color)
-
-    currentThemeColor =
-        color
-
-    for _, button in ipairs(
-        themeButtons
-    ) do
-
-        if button
-            and button.Parent then
-
-            local isOn =
-                button:GetAttribute(
-                    "IsOnState"
-                )
-
-            if not isOn then
-                button.BackgroundColor3 =
-                    currentThemeColor
-            end
-
-        end
-
-    end
-
-end
-
-local function applyTextColor(color)
-
-    currentTextColor =
-        color
-
-    for _, obj in ipairs(
-        textElements
-    ) do
-
-        if obj
-            and obj.Parent then
-
-            obj.TextColor3 =
-                currentTextColor
-
-        end
-
-    end
-
-end
-
---========================================================--
--- MAIN FRAME
---========================================================--
-
-local frame =
-    Instance.new("Frame")
-
-frame.Name =
-    "MainFrame"
-
-frame.Size =
-    UDim2.new(
-        0,
-        390,
-        0,
-        320
-    )
-
-frame.Position =
-    UDim2.new(
-        0.5,
-        -195,
-        0.5,
-        -160
-    )
-
-frame.BackgroundColor3 =
-    Color3.fromRGB(
-        20,
-        20,
-        25
-    )
-
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true
-frame.Visible = true
-
-frame.Parent =
-    screenGui
-
---========================================================--
--- GRADIENT
---========================================================--
-
-local gradientFrame =
-    Instance.new("UIGradient")
-
-gradientFrame.Color =
-    ColorSequence.new({
-
-        ColorSequenceKeypoint.new(
-            0,
-            Color3.fromRGB(
-                15,
-                15,
-                20
-            )
-        ),
-
-        ColorSequenceKeypoint.new(
-            0.5,
-            Color3.fromRGB(
-                30,
-                25,
-                40
-            )
-        ),
-
-        ColorSequenceKeypoint.new(
-            1,
-            Color3.fromRGB(
-                15,
-                15,
-                20
-            )
-        )
-
-    })
-
-gradientFrame.Rotation = 45
-gradientFrame.Parent = frame
+if CONFIG.AutoBuyDropX2 and CONFIG.AutoRaid then CheckDropX2Owned() end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
 
 task.spawn(function()
-
-    local rotation = 0
-
-    while gradientRunning
-        and screenGui
-        and screenGui.Parent do
-
-        rotation += 0.5
-
-        if rotation >= 360 then
-            rotation = 0
-        end
-
-        if gradientFrame
-            and gradientFrame.Parent then
-
-            gradientFrame.Rotation =
-                rotation
-
-        end
-
-        task.wait(0.03)
-
-    end
-
+	while task.wait(1) do
+		if CONFIG.AutoBuyDropX2 and not _G.DropX2Owned then
+			CheckDropX2Owned()
+			task.wait(120)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		else
+			return
+		end
+	end
 end)
 
---========================================================--
--- FRAME STYLE
---========================================================--
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function RaidWhyNot()
+	if _G.Boss then return "Đang có boss: " .. tostring(_G.BossTarget) end
+	if not CONFIG.AutoRaid then return "AutoRaid đang tắt" end
+	if FlameWanted() then return "Ưu tiên Flame Katana trước Raid" end
+	if RaceV2Wanted() then return "Ưu tiên Race V2 trước Raid (tộc vẫn được nhận diện là V1, đi làm nhiệm vụ Sogga)" end
+	if EvilNoobWanted() then return "Ưu tiên Evil Noob trước Raid" end
+	if not _G.Raid and ItemQuestWanted() then return "Item Quest มาก่อนเรด: " .. tostring(ItemQuestWanted()) end
+	local ok, msg = pcall(function()
+		local d = LocalPlayer.PlayerData
+		local stop = (_G.NoobRaidPhase or DropX2Needed()) and CONFIG.NoobRaidGems or CONFIG.RaidStopGems
+		if d.Level.Value < CONFIG.RaidMinLevel then
+			return string.format("Cấp độ %d chưa đạt %d", d.Level.Value, CONFIG.RaidMinLevel)
+		end
+		if d.Gem.Value >= stop then
+			return string.format("Gem %d >= เกณฑ์หยุดเรด %d (ซื้อ X2แล้ว/มีแล้ว=%s)", d.Gem.Value, stop, tostring(not DropX2Needed()))
+		end
+		return "Đủ điều kiện Raid thông thường"
+	end)
+	return ok and msg or "Không đọc được dữ liệu người chơi"
+end
 
-local corner =
-    Instance.new("UICorner")
+function RaidWanted()
+	if _G.Boss then return false end
+	if not CONFIG.AutoRaid then return false end
+	if not _G.Raid and (BallerWanted() or AuraWanted() or HakiRerollWanted()) then return false end
+	if FlameWanted() or RaceV2Wanted() or EvilNoobWanted() then return false end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if not _G.Raid and ItemQuestWanted() then return false end                      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local ok, res = pcall(function()
+		local d = LocalPlayer.PlayerData
+		local stop = (_G.NoobRaidPhase or DropX2Needed()) and CONFIG.NoobRaidGems or CONFIG.RaidStopGems
+		return d.Level.Value >= CONFIG.RaidMinLevel and d.Gem.Value < stop
+	end)
+	return ok and res or false
+end
 
-corner.CornerRadius =
-    UDim.new(
-        0,
-        8
-    )
+pcall(function()   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local d = LocalPlayer:WaitForChild("PlayerData", 10)
+	d:WaitForChild("Level", 5)
+	d:WaitForChild("Gem", 5)
+end)
+function PumpkinWanted()
+	if _G.Boss then return false end
+	if not CONFIG.AutoPumpkin then return false end
+	if BallerWanted() or AuraWanted() or HakiRerollWanted() then return false end
+	if FlameWanted() or RaceV2Wanted() or EvilNoobWanted() then return false end
+	if ItemQuestWanted() then return false end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local ok, res = pcall(function()
+		local lv = LocalPlayer.PlayerData.Level.Value
+		return lv >= CONFIG.PumpkinMinLevel and lv < CONFIG.PumpkinMaxLevel
+	end)
+	return ok and res or false
+end
 
-corner.Parent =
-    frame
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+if CONFIG.AutoItemQuests or CONFIG.AutoEvilNoob then WaitToolsLoaded(15) end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+if CONFIG.AutoItemQuests then
+	for _, key in ipairs(ITEM_ORDER) do
+		local info = ITEM_INFO[key]
+		if ItemUnstore(info.name, 4) then
+			_G.ItemDone[key] = true
+			SetDone(info.ui)
+			print("[ItemQuest] มี " .. info.name .. " แล้ว ข้าม")
+		end
+	end
+end
 
-local frameStroke =
-    Instance.new("UIStroke")
+if CONFIG.AutoEvilNoob and ItemUnstore("Yellow Blade", 4) then
+	_G.EvilNoobDone = true
+	SetDone("Weapon: Yellow Blade")
+	print("[EvilNoob] Đã có Yellow Blade, bỏ qua")
+end
 
-frameStroke.Color =
-    Color3.fromRGB(
-        60,
-        60,
-        100
-    )
+if FlameWanted() then
+	_G.AutoFarm = false
+	_G.FlameKatana = true
+	print("[FlameKatana] Bắt đầu bằng chế độ Flame Katana")
+elseif RaceV2Wanted() then
+	_G.AutoFarm = false
+	_G.RaceV2 = true
+	print("[RaceV2] Bắt đầu bằng chế độ Race V2")
+elseif EvilNoobWanted() then
+	_G.AutoFarm = false
+	_G.EvilNoob = true
+	print("[EvilNoob] Bắt đầu bằng chế độ Evil Noob")
+elseif ItemQuestWanted() then
+	_G.AutoFarm = false
+	_G.ItemQuest = true
+	_G.ItemQuestKey = ItemQuestWanted()
+	print("[ItemQuest] Bắt đầu bằng chế độ nhiệm vụ vật phẩm:", _G.ItemQuestKey)
+elseif RaidWanted() then
+	_G.AutoFarm = false
+	_G.Raid = true
+	_G.GoRaid = true
+	print("[Raid] Bắt đầu bằng chế độ Raid")
+elseif PumpkinWanted() then
+	_G.AutoFarm = false
+	_G.Pumpkin = true
+	print("[Pumpkin] Bắt đầu bằng chế độ Giant Pumpkin")
+end
 
-frameStroke.Thickness = 2
-frameStroke.Transparency = 0.4
-frameStroke.Parent = frame
+-- ===================== Quest table =====================
+function CheckQuest()
+        local MyLevel = game:GetService("Players").LocalPlayer.PlayerData.Level.Value
+        if MyLevel >= 1 and MyLevel <= 49 then
+            Mob = "Floppa"
+            FrameQ = CFrame.new(564.91650390625, -37.043067932128906, -556.4757690429688)
+        elseif MyLevel == 50 or MyLevel <= 99 then
+           Mob = "Golden Floppa"
+           FrameQ = CFrame.new(562.2315673828125, -37.043067932128906, -914.1873779296875)
+       elseif MyLevel == 100 or MyLevel <= 149 then--BossMob
+           Mob = "Big Floppa"
+           FrameQ = CFrame.new(470.8048400878906, -3.5550005435943604, -1403.531982421875)
+       elseif MyLevel == 150 or MyLevel <= 199 then
+           Mob = "Doge"
+           FrameQ = CFrame.new(868.4557495117188, -37.043067932128906, -735.547119140625)
+       elseif MyLevel == 200 or MyLevel <= 249 then
+           Mob = "Cheems"
+           FrameQ = CFrame.new(902.94384765625, -37.04301071166992, -1503.9013671875)
+       elseif MyLevel == 250 or MyLevel <= 299 then--BossMob
+           Mob = "Walter Dog"
+           FrameQ = CFrame.new(10.436995506286621, -37.043067932128906, -1034.9451904296875)
+       elseif MyLevel == 300 or MyLevel <= 349 then
+           Mob = "Staring Fish"
+           FrameQ = CFrame.new(-2942.891845703125, -55.27851104736328, -1876.39599609375)
+       elseif MyLevel == 350 or MyLevel <= 399 then
+           Mob = "Hamster"
+           FrameQ = CFrame.new(-3143.15576171875, -55.27851104736328, -1811.48095703125)
+       elseif MyLevel == 400 or MyLevel <= 449 then--BossMob
+           Mob = "Snow Tree"
+           FrameQ = CFrame.new(-2924.063720703125, -77.63380432128906, -2323.243896484375)
+       elseif MyLevel == 450 or MyLevel <= 499 then
+           Mob = "The Rock"
+           FrameQ = CFrame.new(-2995.177001953125, -55.27851104736328, -1754.591064453125)
+       elseif MyLevel == 500 or MyLevel <= 549 then
+           Mob = "Banana Cat"
+           FrameQ = CFrame.new(-3393.187744140625, -51.4274787902832, -2150.902099609375)
+       elseif MyLevel == 550 or MyLevel <= 599 then
+           Mob = "Sus Face"
+           FrameQ = CFrame.new(-3080.643310546875, -77.63941955566406, -2312.59423828125)
+       elseif MyLevel == 600 or MyLevel <= 649 then
+           Mob = "Egg Dog"
+           FrameQ = CFrame.new(-3063.50830078125, -91.0500259399414, 589.280517578125)
+       elseif MyLevel == 650 or MyLevel <= 699 then
+           Mob = "Popcat"
+           FrameQ = CFrame.new(-3390.79052734375, -91.10002136230469, 445.5372619628906)
+       elseif MyLevel == 700 or MyLevel <= 749 then
+           Mob = "Gorilla King"
+           FrameQ = CFrame.new(-3685.647705078125, -91.49403381347656, 360.2413635253906)
+       elseif MyLevel == 750 or MyLevel <= 799 then
+           Mob = "Smiling Cat"
+           FrameQ = CFrame.new(-749.9562377929688, -92.70011138916016, -2891.1279296875)
+       elseif MyLevel == 800 or MyLevel <= 849 then
+           Mob = "Killerfish"
+           FrameQ = CFrame.new(-294.51788330078125, -92.70011138916016, -2777.8896484375)
+       elseif MyLevel == 850 or MyLevel <= 899 then
+           Mob = "Bingus"
+           FrameQ = CFrame.new(-456.5486755371094, -92.70011138916016, -2856.85888671875)
+       elseif MyLevel == 900 or MyLevel <= 949 then
+           Mob = "Obamid"
+           FrameQ = CFrame.new(-462.0100402832031, -61.09877395629883, -3530.655517578125)
+       elseif MyLevel == 950 or MyLevel <= 999 then
+           Mob = "Floppy"
+           FrameQ = CFrame.new(-1353.90576171875, -89.65943908691406, 937.8524169921875)
+       elseif MyLevel == 1000 or MyLevel <= 1049 then
+           Mob = "Creepy Head"
+           FrameQ = CFrame.new(-869.3150024414062, -90.90943908691406, 1081.836669921875)
+       elseif MyLevel == 1050 or MyLevel <= 1149 then
+           Mob = "Scary Skull"
+           FrameQ = CFrame.new(-1421.9774169921875, -92.91299438476562, 1250.7928466796875)
+       elseif MyLevel == 1150 or MyLevel <= 1199 then
+           Mob = "Pink Absorber"
+           FrameQ = CFrame.new(1831.557861328125, 121.98255920410156, 3444.105224609375)
+       elseif MyLevel == 1200 or MyLevel <= 1249 then
+           Mob = "Troll Face"
+           FrameQ = CFrame.new(-2911.781494140625, -81.08662414550781, 2824.142822265625)
+       elseif MyLevel == 1250 or MyLevel <= 1299 then
+           Mob = "Uncanny Cat"
+           FrameQ = CFrame.new(-2897.91552734375, -81.08662414550781, 3190.833984375)
+       elseif MyLevel == 1300 or MyLevel <= 1349 then
+           Mob = "Quandale Dingle"
+           FrameQ = CFrame.new(-2588.55126953125, -81.08662414550781, 2989.777099609375)
+       elseif MyLevel == 1350 or MyLevel <= 1449 then
+           Mob = "Moai"
+           FrameQ = CFrame.new(-2661.221923828125, -81.08602142333984, 3380.985107421875)
+       elseif MyLevel == 1450 or MyLevel <= 1499 then
+           Mob = "Red Sus"
+           FrameQ = CFrame.new(1070.100341796875, -51.79351043701172, 2818.936279296875)
+       elseif MyLevel == 1500 or MyLevel <= 1699 then
+           Mob = "Sus Duck"
+           FrameQ = CFrame.new(1562.4791259765625, -51.79351043701172, 2328.5)
+       elseif MyLevel == 1700 or MyLevel <= 1749 then
+           Mob = "Sigma Man"
+           FrameQ = CFrame.new(7964.869140625, 30.75599479675293, 4546.0576171875)
+       elseif MyLevel == 1750 or MyLevel <= 1799 then
+           Mob = "Dancing Cat"
+           FrameQ = CFrame.new(8331.3466796875, 30.75599479675293, 4494.4736328125 )
+       elseif MyLevel == 1800 or MyLevel <= 1849 then
+           Mob = "Toothless Dragon"
+           FrameQ = CFrame.new(7906.49462890625, 30.75599479675293, 4783.05908203125)
+       elseif MyLevel == 1850 or MyLevel <= 1899 then
+           Mob = "Manly Nugget"
+           FrameQ = CFrame.new(8273.84375, 30.75599479675293, 4778.83740234375)
+       elseif MyLevel == 1900 or MyLevel <= 1949 then
+           Mob = "Huh Cat"
+           FrameQ = CFrame.new(3924.419189453125, -58.149635314941406, -1238.689453125)
+       elseif MyLevel == 1950 or MyLevel <= 1999 then
+           Mob = "Mystical Tree"
+           FrameQ = CFrame.new(3698.140380859375, -58.149635314941406, 69.95709991455078)
+       elseif MyLevel == 2000 or MyLevel <= 2049 then
+           Mob = "Old Man"
+           FrameQ = CFrame.new(4346.48486328125, -92.56228637695312, 233.11241149902344)
+       elseif MyLevel == 2050 or MyLevel <= 2099 then
+           Mob = "Nyan Cat"
+           FrameQ = CFrame.new(4892.54541015625, -92.56233978271484, 232.9646453857422)
+       elseif MyLevel == 2100 or MyLevel <= 2149 then
+           Mob = "Baller"
+           FrameQ = CFrame.new(1277.290283203125, -54.329017639160156, -4668.7890625)
+       elseif MyLevel == 2150 or MyLevel <= 2199 then
+           Mob = "Slicer"
+           FrameQ = CFrame.new(1339.090087890625, -54.32901382446289, -4913.8251953125)
+       elseif MyLevel == 2200 or MyLevel <= 2249 then
+           Mob = "Rick Roller"
+           FrameQ = CFrame.new(2231.442138671875, -90.56163024902344, -4788.474609375)
+       elseif MyLevel == 2250 or MyLevel <= 2300 then
+           Mob = "Gigachad"
+           FrameQ = CFrame.new(1330.892822265625, -90.5616455078125, -5374.544921875)
+       elseif MyLevel == 2300 or MyLevel <= 2349 then
+           Mob = "MrBeast"
+           FrameQ = CFrame.new(1876.98828125, 24.897499084472656, -5284.12890625)
+       elseif MyLevel >= 2350 then
+           Mob = "Handsome Man"
+           FrameQ = CFrame.new(2278.8076171875, -90.5616455078125, -5399.32666015625)
+        end
+    end
+    
 
---========================================================--
--- TITLE BAR
---========================================================--
+-- ===================== Helpers =====================
+function TP(cf)
+	local hrp = LocalPlayer.Character.HumanoidRootPart
+	hrp.CFrame = cf
+	hrp.AssemblyLinearVelocity = Vector3.zero      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	hrp.AssemblyAngularVelocity = Vector3.zero
+end
 
-local titleBar =
-    Instance.new("Frame")
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local StuckMob, StuckHp, StuckSince, StuckLastCall, LastStuckReset = nil, 0, 0, 0, 0
+function CheckStuck(mob)
+	if not CONFIG.ResetIfHitStuck or InRaidNow() then StuckMob = nil return end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local hum = mob and mob:FindFirstChild("Humanoid")
+	local now = tick()
+	if not hum or hum.Health <= 0 then StuckMob = nil StuckLastCall = now return end
+	if StuckMob ~= mob or now - StuckLastCall > 1.5 or hum.Health < StuckHp then
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		StuckMob, StuckHp, StuckSince = mob, hum.Health, now
+	else
+		if hum.Health > StuckHp then StuckHp = hum.Health end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		if now - StuckSince >= CONFIG.StuckSeconds and now - LastStuckReset > 10 then
+			LastStuckReset = now
+			StuckMob = nil
+			warn(string.format("[HitStuck] đánh %s nhưng máu không giảm trong %d giây -> hồi sinh nhân vật", mob.Name, CONFIG.StuckSeconds))
+			local h = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+			if h then h.Health = 0 end
+		end
+	end
+	StuckLastCall = now
+end
 
-titleBar.Size =
-    UDim2.new(
-        1,
-        0,
-        0,
-        35
-    )
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+task.spawn(function()
+	local last
+	while task.wait(0.2) do
+		local sig = table.concat({
+			tostring(_G.AutoFarm), tostring(_G.Raid), tostring(_G.Pumpkin), tostring(_G.RaceV2),
+			tostring(_G.FlameKatana), tostring(_G.EvilNoob), tostring(_G.ItemQuest),
+			tostring(_G.ItemQuestKey), tostring(_G.Boss),
+		}, "|")
+		if last and sig ~= last then
+			StartMagnet = false
+			Mon = nil
+			PosMon = nil
+		end
+		last = sig
+	end
+end)
 
-titleBar.BackgroundColor3 =
-    Color3.fromRGB(
-        10,
-        10,
-        15
-    )
+function EquipWeapon(name)
+	local bp = LocalPlayer.Backpack:FindFirstChild(name)
+	if bp then
+		task.wait()
+		LocalPlayer.Character.Humanoid:EquipTool(bp)
+	end
+end
 
-titleBar.BackgroundTransparency =
-    0.3
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+RunService.RenderStepped:Connect(function()
+	local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	if (_G.AutoFarm or _G.Raid or _G.Pumpkin or _G.RaceV2 or _G.FlameKatana or _G.EvilNoob or _G.ItemQuest or _G.Boss) and hrp then
+		local p = workspace:FindFirstChild("TaiFoot")
+		if not p then
+			p = Instance.new("Part")
+			p.Name = "TaiFoot"; p.Anchored = true; p.Transparency = 1
+			p.Size = Vector3.new(16, 0.5, 16); p.Parent = workspace
+		end
+		p.CFrame = CFrame.new(hrp.Position.X, hrp.Position.Y - 3.92, hrp.Position.Z)
+	else
+		local p = workspace:FindFirstChild("TaiFoot")
+		if p then p:Destroy() end
+	end
+end)
 
-titleBar.BorderSizePixel = 0
-titleBar.Parent = frame
+RunService.Stepped:Connect(function()
+	if (_G.AutoFarm or _G.Raid or _G.Pumpkin or _G.RaceV2 or _G.FlameKatana or _G.EvilNoob or _G.ItemQuest or _G.Boss) and LocalPlayer.Character then
+		for _, v in ipairs(LocalPlayer.Character:GetDescendants()) do
+			if v:IsA("BasePart") then v.CanCollide = false end
+		end
+	end
+end)
 
-local titleCorner =
-    Instance.new("UICorner")
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+task.spawn(function()
+	local tip = { FightingStyle = "Fighting Style", Power = "Power", Weapon = "Weapon" }
+	while task.wait(0.5) do
+		pcall(function()
+			local want = tip[CONFIG.Weapon]
+			-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			if CONFIG.Weapon == "FightingStyle" and CONFIG.UseBallerWhenOwned ~= false and BallerHave() then
+				_G.SelectWeapon = "Baller"
+				return
+			end
+			for _, v in ipairs(LocalPlayer.Backpack:GetChildren()) do
+				if v:IsA("Tool") and v.ToolTip == want then
+					_G.SelectWeapon = v.Name
+					break
+				end
+			end
+		end)
+	end
+end)
 
-titleCorner.CornerRadius =
-    UDim.new(
-        0,
-        8
-    )
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+task.spawn(function()
+	while task.wait() do
+		local d = _G.DistanceMob
+		if _G.Method == "Behind" then
+			MethodFarm = CFrame.new(0, 0, d)
+		elseif _G.Method == "Below" then
+			MethodFarm = CFrame.new(0, -d, 0) * CFrame.Angles(math.rad(90), 0, 0)
+		else
+			MethodFarm = CFrame.new(0, d, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+		end
+	end
+end)
 
-titleCorner.Parent =
-    titleBar
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local Follow = { root = nil, t = 0 }
+function Follow.CF(root)
+	local d = _G.DistanceMob or CONFIG.Distance
+	local p = root.Position
+	local vel = root.AssemblyLinearVelocity
+	local lead = CONFIG.FollowLead or 0.08
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if lead > 0 and vel.Magnitude < 60 then p = p + vel * lead end
+	local sm = CONFIG.FollowSmooth or 0
+	if _G.Raid and sm > 0 then
+		local now = tick()
+		if Follow.sroot ~= root or not Follow.sp or (Follow.sp - p).Magnitude > 20 then
+			Follow.sp = p                                   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		else
+			Follow.sp = Follow.sp:Lerp(p, 1 - math.exp(-math.max(now - (Follow.st or now), 0) * sm))
+		end
+		Follow.st, Follow.sroot = now, root
+		p = Follow.sp
+	end
+	local m = _G.Method or CONFIG.Method
+	if m == "Behind" then
+		local look = root.CFrame.LookVector
+		local flat = Vector3.new(look.X, 0, look.Z)
+		flat = flat.Magnitude > 0.01 and flat.Unit or Vector3.new(0, 0, -1)
+		local pos = p - flat * d
+		return CFrame.lookAt(pos, Vector3.new(p.X, pos.Y, p.Z))
+	elseif m == "Below" then
+		return CFrame.new(p.X, p.Y - d, p.Z) * CFrame.Angles(math.rad(90), 0, 0)
+	end
+	return CFrame.new(p.X, p.Y + d, p.Z) * CFrame.Angles(math.rad(-90), 0, 0)
+end
+function Follow.Set(root)
+	Follow.root, Follow.t = root, tick()
+	TP(Follow.CF(root))
+end
+local function FollowStep()
+	local root = Follow.root
+	if not root or not root.Parent or tick() - Follow.t > 0.25 then return end
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if _G.Raid and CONFIG.RaidFreezeMob ~= false then
+		pcall(function()
+			root.AssemblyLinearVelocity = Vector3.zero
+			root.AssemblyAngularVelocity = Vector3.zero
+		end)
+	end
+	local ch = LocalPlayer.Character
+	local hrp = ch and ch:FindFirstChild("HumanoidRootPart")
+	local hum = ch and ch:FindFirstChildOfClass("Humanoid")
+	if not hrp or not hum or hum.Health <= 0 then return end
+	hrp.CFrame = Follow.CF(root)
+	hrp.AssemblyLinearVelocity = Vector3.zero
+	hrp.AssemblyAngularVelocity = Vector3.zero
+end
+KeepConn(RunService.Stepped:Connect(FollowStep))
+KeepConn(RunService.Heartbeat:Connect(FollowStep))
 
-local titleText =
-    Instance.new("TextLabel")
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local HOVER_HEIGHT = 60
+local HoverOrigin = nil
+local LastHoverOrigin = nil   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
 
-titleText.Size =
-    UDim2.new(
-        1,
-        -70,
-        1,
-        0
-    )
+local function HoverWait(travelCF)
+	local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+	if not HoverOrigin then
+		if travelCF and (hrp.Position - travelCF.Position).Magnitude > 150 then
+			TP(travelCF)
+			return
+		end
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		if LastHoverOrigin
+			and (hrp.Position - (LastHoverOrigin + Vector3.new(0, HOVER_HEIGHT, 0))).Magnitude < 25 then
+			HoverOrigin = LastHoverOrigin
+		else
+			HoverOrigin = hrp.Position
+		end
+		LastHoverOrigin = HoverOrigin
+	end
+	hrp.CFrame = CFrame.new(HoverOrigin + Vector3.new(0, HOVER_HEIGHT, 0))
+	hrp.AssemblyLinearVelocity = Vector3.zero
+	hrp.AssemblyAngularVelocity = Vector3.zero
+end
 
-titleText.Position =
-    UDim2.new(
-        0,
-        12,
-        0,
-        0
-    )
+local function WaitForMob(mobName, travelCF)
+	local folder = workspace:FindFirstChild("Monster")
+	if folder then
+		for _, m in ipairs(folder:GetChildren()) do
+			local hum = m:FindFirstChild("Humanoid")
+			if m.Name == mobName and hum and hum.Health > 0 then
+				HoverOrigin = nil
+				return
+			end
+		end
+	end
+	HoverWait(travelCF)
+end
 
-titleText.BackgroundTransparency = 1
-titleText.Text = "H HUB - AutoFarm"
-titleText.TextColor3 =
-    currentTextColor
+task.spawn(function()
+	while task.wait(0.2) do
+		if StartMagnet then HoverOrigin = nil end
+	end
+end)
 
-titleText.Font =
-    GLOBAL_FONT
+-- ===================== Bring Mob =====================
+local BringTweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
 
-titleText.TextSize = 15
+local function GetBaseY(mob, root)
+	local y = mob:GetAttribute("BringBaseY")
+	if not y then
+		y = root.Position.Y
+		mob:SetAttribute("BringBaseY", y)
+	end
+	return y
+end
 
-titleText.TextXAlignment =
-    Enum.TextXAlignment.Left
+local function NoCollideMob(mob)
+	if mob:GetAttribute("BringNoCollide") then return end
+	mob:SetAttribute("BringNoCollide", true)
+	for _, part in ipairs(mob:GetDescendants()) do
+		if part:IsA("BasePart") then part.CanCollide = false end
+	end
+end
 
-titleText.Parent =
-    titleBar
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local BringOrbit, BringCenter, BringRingN = {}, nil, 1
 
-table.insert(
-    textElements,
-    titleText
-)
+local function RingOffset(angle)
+	return Vector3.new(math.cos(angle) * _G.BringSpread, 0, math.sin(angle) * _G.BringSpread)
+end
 
---========================================================--
--- MINIMIZE
---========================================================--
+local function TweenMob(root, dest, onDone)
+	root:SetAttribute("Tweening", true)
+	local tw = TweenService:Create(root, BringTweenInfo, { CFrame = CFrame.new(dest) })
+	tw:Play()
+	tw.Completed:Once(function()
+		if root then root:SetAttribute("Tweening", false) end
+		if onDone then onDone() end
+	end)
+end
 
-local minimizeButton =
-    Instance.new("TextButton")
+local function BringEnemy()
+	if _G.Raid then return end                 -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if not _G.BringMonster or not StartMagnet or not PosMon or not Mon then return end
+	local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
 
-minimizeButton.Size =
-    UDim2.new(
-        0,
-        28,
-        0,
-        22
-    )
+	local target = PosMon.Position
+	local startDist = math.max(80, (_G.DistanceMob or 8) + 20)
+	if (hrp.Position - target).Magnitude > startDist then return end
 
-minimizeButton.Position =
-    UDim2.new(
-        1,
-        -62,
-        0,
-        6
-    )
+	local picked = {}
+	for _, mob in ipairs(workspace.Monster:GetChildren()) do
+		if mob.Name == Mon then
+			local hum = mob:FindFirstChild("Humanoid")
+			local root = mob:FindFirstChild("HumanoidRootPart")
+			if hum and root and hum.Health > 0 then
+				local dist = (root.Position - target).Magnitude
+				if dist <= _G.BringRange then
+					table.insert(picked, { m = mob, hum = hum, root = root, d = dist })
+				end
+			end
+		end
+	end
+	if #picked == 0 then return end
+	table.sort(picked, function(a, b) return a.d < b.d end)
 
-minimizeButton.BackgroundColor3 =
-    Color3.fromRGB(
-        45,
-        45,
-        55
-    )
+	local groundY = GetBaseY(picked[1].m, picked[1].root)
+	local spot = Vector3.new(target.X, groundY, target.Z)
 
-minimizeButton.Text = "-"
-minimizeButton.TextColor3 =
-    Color3.new(
-        1,
-        1,
-        1
-    )
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local limit = math.min(#picked, _G.MaxBringMobs)
+	local ringCount = math.max(1, _G.MaxBringMobs - 1)
+	local used = {}
+	for i = 2, limit do
+		local m = picked[i].m
+		local slot = m:GetAttribute("BringSlot")
+		if slot and slot <= ringCount and not used[slot] then
+			used[slot] = true
+		else
+			m:SetAttribute("BringSlot", nil)
+		end
+	end
+	for i = 2, limit do
+		local m = picked[i].m
+		if not m:GetAttribute("BringSlot") then
+			for slot = 1, ringCount do
+				if not used[slot] then
+					used[slot] = true
+					m:SetAttribute("BringSlot", slot)
+					break
+				end
+			end
+		end
+	end
 
-minimizeButton.Font =
-    GLOBAL_FONT
+	BringCenter, BringRingN = spot, ringCount
+	local now = os.clock()
+	local speed = _G.BringOrbitSpeed or 0
 
-minimizeButton.TextSize = 20
+	for i = 1, limit do
+		local p = picked[i]
+		local root, hum = p.root, p.hum
 
-minimizeButton.Parent =
-    titleBar
+		NoCollideMob(p.m)
+		if hum.WalkSpeed ~= 0 then hum.WalkSpeed = 0; hum.JumpPower = 0 end
+		if root.Size.X > 10 then root.Size = Vector3.new(2, 2, 1) end
+		root.AssemblyLinearVelocity = Vector3.zero
+		root.AssemblyAngularVelocity = Vector3.zero
 
-Instance.new(
-    "UICorner",
-    minimizeButton
-).CornerRadius =
-    UDim.new(
-        0,
-        4
-    )
+		if i == 1 then
+			-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			if not root:GetAttribute("Tweening") then
+				if (root.Position - spot).Magnitude > 1.5 then
+					TweenMob(root, spot)
+				elseif math.abs(root.Position.Y - groundY) > 1 then
+					root.CFrame = CFrame.new(root.Position.X, groundY, root.Position.Z) * (root.CFrame - root.CFrame.Position)
+				end
+			end
+		else
+			-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			local slot = p.m:GetAttribute("BringSlot") or 1
+			local base = (slot - 1) * (2 * math.pi / ringCount)
+			BringOrbit[p.m] = { root = root, slot = slot }
 
---========================================================--
--- CLOSE
---========================================================--
+			if p.m:GetAttribute("BringArrived") then
+				local expected = spot + RingOffset(base + now * speed)
+				if (root.Position - expected).Magnitude > 10 then
+					p.m:SetAttribute("BringArrived", false)      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				end
+			elseif not root:GetAttribute("Tweening") then
+				local dest = spot + RingOffset(base + (now + 0.5) * speed)
+				local mob = p.m
+				TweenMob(root, dest, function() mob:SetAttribute("BringArrived", true) end)
+			end
+		end
+	end
+end
 
-local closeButton =
-    Instance.new("TextButton")
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function ReleaseMob(mob, root)
+	pcall(function()
+		mob:SetAttribute("BringArrived", false)
+		local cf
+		local part = workspace.Location.Enemy_Location:FindFirstChild(mob.Name)
+		if part and part:IsA("BasePart") then cf = part.CFrame end
+		if cf then root.CFrame = cf end
+		root.AssemblyLinearVelocity = Vector3.zero
+		root.AssemblyAngularVelocity = Vector3.zero
+	end)
+end
 
-closeButton.Size =
-    UDim2.new(
-        0,
-        28,
-        0,
-        22
-    )
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+RunService.Heartbeat:Connect(function()
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	for mob, st in pairs(BringOrbit) do
+		local root = st.root
+		if not mob.Parent or not root or not root.Parent then
+			BringOrbit[mob] = nil
+		elseif mob.Name ~= Mon then
+			ReleaseMob(mob, root)
+			BringOrbit[mob] = nil
+		end
+	end
+	if not (_G.BringMonster and StartMagnet and BringCenter) or _G.Raid then return end
+	local t = os.clock()
+	local speed = _G.BringOrbitSpeed or 0
+	for mob, st in pairs(BringOrbit) do
+		local root = st.root
+		if not mob.Parent or not root or not root.Parent then
+			BringOrbit[mob] = nil
+		elseif mob:GetAttribute("BringArrived") then
+			local ang = (st.slot - 1) * (2 * math.pi / BringRingN) + t * speed
+			local pos = BringCenter + RingOffset(ang)
+			root.CFrame = CFrame.lookAt(pos, BringCenter)
+			root.AssemblyLinearVelocity = Vector3.zero
+			root.AssemblyAngularVelocity = Vector3.zero
+		end
+	end
+end)
 
-closeButton.Position =
-    UDim2.new(
-        1,
-        -30,
-        0,
-        6
-    )
+task.spawn(function()
+	while task.wait(0.2) do pcall(BringEnemy) end
+end)
 
-closeButton.BackgroundColor3 =
-    Color3.fromRGB(
-        200,
-        50,
-        50
-    )
+task.spawn(function()
+	while task.wait(1.5) do
+		if _G.BringMonster and not _G.Raid and StartMagnet and sethiddenproperty then
+			pcall(sethiddenproperty, LocalPlayer, "SimulationRadius", math.huge)
+		end
+	end
+end)
 
-closeButton.Text = "X"
+-- ===================== Auto Farm Level =====================
+local VirtualUser = game:GetService("VirtualUser")
+local VIM = game:GetService("VirtualInputManager")
+local RS = game:GetService("ReplicatedStorage")
 
-closeButton.TextColor3 =
-    Color3.new(
-        1,
-        1,
-        1
-    )
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local CdTrack = { Z = { size = nil, changed = 0 }, X = { size = nil, changed = 0 } }
+local SkillLastPress = { Z = 0, X = 0, C = 0, V = 0 }
+local SwordEquippedAt, SwordFistUntil = 0, 0
 
-closeButton.Font =
-    GLOBAL_FONT
+local function BestSword()
+	local c = LocalPlayer.Character
+	for _, name in ipairs(CONFIG.SwordPriority) do
+		if FindTool(name) then return name end
+	end
+end
 
-closeButton.TextSize = 13
+local function SkillCooling(key)
+	local ok, size = pcall(function()
+		return LocalPlayer.PlayerGui.Weapon.Skill_Container[key].Cooldown.Size
+	end)
+	if not ok then return true end            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local t = CdTrack[key]
+	if t.size ~= size then t.size = size; t.changed = tick() end
+	return tick() - t.changed < 0.3
+end
 
-closeButton.Parent =
-    titleBar
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function PressSkill(key)
+	if tick() - SkillLastPress[key] < 0.3 then return end
+	SkillLastPress[key] = tick()
+	local t = _G.SkillTarget
+	local cam = workspace.CurrentCamera
+	local prevType
+	if t and t.Parent and cam then
+		pcall(function()
+			prevType = cam.CameraType
+			cam.CameraType = Enum.CameraType.Scriptable
+			cam.CFrame = CFrame.lookAt(cam.CFrame.Position, t.Position)
+			local vp = cam.ViewportSize
+			VIM:SendMouseMoveEvent(vp.X / 2, vp.Y / 2, game)
+		end)
+		task.wait(0.05)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	end
+	VIM:SendKeyEvent(true, key, false, game)
+	task.wait(0.05)
+	VIM:SendKeyEvent(false, key, false, game)
+	if prevType and cam then pcall(function() cam.CameraType = prevType end) end
+end
 
-Instance.new(
-    "UICorner",
-    closeButton
-).CornerRadius =
-    UDim.new(
-        0,
-        4
-    )
+local function AtMaxLevel()
+	local ok, lv = pcall(function() return LocalPlayer.PlayerData.Level.Value end)
+	return ok and lv and lv >= (CONFIG.MaxLevel or 2400)
+end
 
---========================================================--
--- SIDEBAR
---========================================================--
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local SwordBlockedUntil, RotEquippedAt = {}, 0
 
-local sidebar =
-    Instance.new("Frame")
+local function OwnedSwords()
+	local list, c = {}, LocalPlayer.Character
+	for _, name in ipairs(CONFIG.SwordPriority) do
+		if FindTool(name) then
+			table.insert(list, name)
+		end
+	end
+	return list
+end
 
-sidebar.Size =
-    UDim2.new(
-        0,
-        110,
-        1,
-        -35
-    )
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function ReadCooling()
+	local function rd(key)
+		local ok, sz = pcall(function() return LocalPlayer.PlayerGui.Weapon.Skill_Container[key].Cooldown.Size end)
+		return ok and sz or nil
+	end
+	local z1, x1 = rd("Z"), rd("X")
+	task.wait(CONFIG.SwordCdSample or 0.1)
+	local z2, x2 = rd("Z"), rd("X")
+	return (z1 == nil or z1 ~= z2), (x1 == nil or x1 ~= x2)
+end
 
-sidebar.Position =
-    UDim2.new(
-        0,
-        0,
-        0,
-        35
-    )
+local function RotateSwords()
+	local swords = OwnedSwords()
+	if #swords == 0 then return false end
+	local c = LocalPlayer.Character
+	local held
+	for _, n in ipairs(swords) do
+		if c and c:FindFirstChild(n) then held = n break end
+	end
+	local now = tick()
 
-sidebar.BackgroundColor3 =
-    Color3.fromRGB(
-        15,
-        15,
-        20
-    )
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if not held then
+		local pick = swords[1]
+		for _, n in ipairs(swords) do
+			if (SwordBlockedUntil[n] or 0) <= now then pick = n break end
+		end
+		EquipWeapon(pick)
+		RotEquippedAt = tick()
+		return true
+	end
 
-sidebar.BackgroundTransparency =
-    0.5
+	if tick() - RotEquippedAt < (CONFIG.SwordSwapSettle or 0.12) then return true end
 
-sidebar.BorderSizePixel = 0
-sidebar.Parent = frame
+	local zCool, xCool = ReadCooling()
+	if not zCool or not xCool then
+		if not zCool then PressSkill("Z") end
+		if not xCool then PressSkill("X") end
+		return true
+	end
 
-Instance.new(
-    "UICorner",
-    sidebar
-).CornerRadius =
-    UDim.new(
-        0,
-        8
-    )
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	SwordBlockedUntil[held] = tick() + (CONFIG.SwordRotateBlock or 1)
+	if #swords == 1 then return true end
+	local idx = 1
+	for i, n in ipairs(swords) do if n == held then idx = i break end end
+	local nextSword, soonest, soonestT
+	for k = 1, #swords - 1 do
+		local n = swords[((idx - 1 + k) % #swords) + 1]
+		local b = SwordBlockedUntil[n] or 0
+		if b <= tick() then nextSword = n break end
+		if not soonestT or b < soonestT then soonest, soonestT = n, b end
+	end
+	nextSword = nextSword or soonest
+	if nextSword and nextSword ~= held then
+		EquipWeapon(nextSword)
+		RotEquippedAt = tick()
+	end
+	return true
+end
 
---========================================================--
--- CONTAINER
---========================================================--
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+BallerState = { last = {}, cd = {}, busy = false }
 
-local container =
-    Instance.new("Frame")
+function HeldTool()
+	local c = LocalPlayer.Character
+	if not c then return end
+	for _, v in ipairs(c:GetChildren()) do
+		if v:IsA("Tool") then return v end
+	end
+end
 
-container.Size =
-    UDim2.new(
-        1,
-        -115,
-        1,
-        -35
-    )
+function BallerSkillReady(key)
+	local st = BallerState
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local ok, size = pcall(function()
+		return LocalPlayer.PlayerGui.FightingStyle.Skill_Container[key].Cooldown.Size
+	end)
+	if not ok then
+		return tick() - (st.last[key] or 0) >= (CONFIG.BallerSkillGap or 2.5)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	end
+	local t = st.cd[key]
+	if not t then t = { size = nil, changed = 0 } st.cd[key] = t end
+	if t.size ~= size then t.size = size; t.changed = tick() end
+	if tick() - t.changed < 0.3 then return false end                        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	return tick() - (st.last[key] or 0) >= 0.4
+end
 
-container.Position =
-    UDim2.new(
-        0,
-        115,
-        0,
-        35
-    )
+function BallerSkillTick()
+	if not CONFIG.BallerSkills then return end
+	local st = BallerState
+	if st.busy then return end
+	local char = LocalPlayer.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	local tool = HeldTool()
+	local t = _G.SkillTarget
+	if not (hrp and tool and tool.Name == "Baller" and t and t.Parent) then return end
+	if (t.Position - hrp.Position).Magnitude > (CONFIG.BallerSkillRange or 120) then return end
+	for _, key in ipairs(CONFIG.BallerKeys or {}) do
+		if BallerSkillReady(key) then
+			st.busy = true
+			st.last[key] = tick()
+			task.spawn(function()
+				pcall(PressSkill, key)
+				st.busy = false
+			end)
+			return
+		end
+	end
+end
 
-container.BackgroundTransparency = 1
-container.Parent = frame
+function CombatEquip()
+	local fist = _G.SelectWeapon
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local useBaller = CONFIG.UseBallerWhenOwned ~= false and BallerHave()
+	local sword = CONFIG.UseSwordSkills and not useBaller and BestSword()
+	if not sword then
+		EquipWeapon(useBaller and "Baller" or fist)
+		BallerSkillTick()              -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		return
+	end
 
---========================================================--
--- TABS
---========================================================--
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if CONFIG.SwordOnlyAtMax and CONFIG.SwordRotateInRaid and AtMaxLevel() and InRaidNow() then
+		if RotateSwords() then return end
+	end
 
-local tabs = {}
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if CONFIG.SwordOnlyAtMax and AtMaxLevel() then
+		local c = LocalPlayer.Character
+		if not (c and c:FindFirstChild(sword)) then
+			EquipWeapon(sword)
+			SwordEquippedAt = tick()
+			CdTrack.Z.size, CdTrack.X.size = nil, nil
+			return
+		end
+		if tick() - SwordEquippedAt < 0.4 then
+			SkillCooling("Z"); SkillCooling("X")
+			return
+		end
+		if not SkillCooling("Z") then PressSkill("Z") end
+		if not SkillCooling("X") then PressSkill("X") end
+		return
+	end
 
-local tabNames = {
-    "Main",
-    "ESP",
-    "FixLag",
-    "Misc"
+	local char = LocalPlayer.Character
+	if char and char:FindFirstChild(sword) then
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		if tick() - SwordEquippedAt < 0.4 then
+			SkillCooling("Z"); SkillCooling("X")
+			return
+		end
+		local zCool, xCool = SkillCooling("Z"), SkillCooling("X")
+		if not zCool or not xCool then
+			if not zCool then PressSkill("Z") end
+			if not xCool then PressSkill("X") end
+		else
+			SwordFistUntil = tick() + CONFIG.SwordRetrySeconds   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			EquipWeapon(fist)
+		end
+	else
+		if tick() >= SwordFistUntil then
+			EquipWeapon(sword)
+			SwordEquippedAt = tick()
+			CdTrack.Z.size, CdTrack.X.size = nil, nil
+		else
+			EquipWeapon(fist)
+		end
+	end
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function EnsureBestSword()
+	local c = LocalPlayer.Character
+	for _, name in ipairs(CONFIG.SwordPriority) do
+		if FindTool(name) then return name end
+		if ItemUnstore(name, 1.5) then
+			print("[Sword] Đã lấy " .. name .. "  khỏi kho")
+			return name
+		end
+	end
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function EnsureAllSwords()
+	local c = LocalPlayer.Character
+	for _, name in ipairs(CONFIG.SwordPriority) do
+		if not (FindTool(name)) then
+			if ItemUnstore(name, 1.5) then print("[Sword] Đã lấy " .. name .. "  khỏi kho") end
+		end
+	end
+end
+
+if CONFIG.UseSwordSkills then
+	task.spawn(function()
+		while true do
+			if not InRaidNow() then
+				if CONFIG.SwordOnlyAtMax and CONFIG.SwordRotateInRaid and AtMaxLevel() then
+					pcall(EnsureAllSwords)
+				else
+					pcall(EnsureBestSword)
+				end
+			end
+			task.wait(20)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		end
+	end)
+end
+
+local LastAccept, AcceptTries = 0, 0
+local QuestPromptCache = {}
+
+task.spawn(function()
+	while task.wait() do
+		if _G.AutoFarm and not _G.Raid then
+			while FruitBusy or ShopBusy or StoreBusy do task.wait(0.1) end
+			pcall(function()
+				if not _G.AutoFarm or _G.Raid then return end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				CheckQuest()
+				local gui = LocalPlayer.PlayerGui.QuestGui.Holder.QuestSlot1
+				if not string.find(gui.Target.Text, Mob) then
+					RS.OtherEvent.QuestEvents.Quest:FireServer("Abandon_Quest", { QuestSlot = "QuestSlot1" })
+				end
+
+				if gui.Visible == false then
+					local hrp = LocalPlayer.Character.HumanoidRootPart
+					if (FrameQ.Position - hrp.Position).Magnitude > 3 then
+						TP(FrameQ)                                   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						task.wait(0.25)
+					elseif tick() - LastAccept > 0.6 then            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						LastAccept = tick()
+						AcceptTries = AcceptTries + 1
+						VIM:SendKeyEvent(true, "E", false, game)
+						task.wait(0.05)
+						VIM:SendKeyEvent(false, "E", false, game)
+						-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						if AcceptTries >= 4 and fireproximityprompt then
+							local key = tostring(FrameQ.Position)
+							if QuestPromptCache.key ~= key then
+								QuestPromptCache.key = key
+								QuestPromptCache.prompt = nil
+								local best
+								for _, d in ipairs(workspace:GetDescendants()) do
+									if d:IsA("ProximityPrompt") and d.Parent and d.Parent:IsA("BasePart") then
+										local dist = (d.Parent.Position - FrameQ.Position).Magnitude
+										if dist <= 12 and (not best or dist < best) then
+											best = dist
+											QuestPromptCache.prompt = d
+										end
+									end
+								end
+							end
+							if QuestPromptCache.prompt then pcall(fireproximityprompt, QuestPromptCache.prompt) end
+						end
+					else
+						task.wait(0.05)
+					end
+					return
+				else
+					AcceptTries = 0                                  -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					if workspace.Monster:FindFirstChild(Mob) then
+						for _, v in ipairs(workspace.Monster:GetChildren()) do
+							if v.Name == Mob and v:FindFirstChild("Humanoid") and v:FindFirstChild("HumanoidRootPart") and v.Humanoid.Health > 0 then
+								repeat
+									task.wait()
+									while FruitBusy or ShopBusy or StoreBusy do task.wait(0.1) end -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+									if not _G.AutoFarm or _G.Raid then break end
+									_G.SkillTarget = v.HumanoidRootPart
+									CombatEquip()
+									Follow.Set(v.HumanoidRootPart)
+									CheckStuck(v)
+									StartMagnet = true
+									PosMon = v.HumanoidRootPart.CFrame
+									Mon = Mob
+									VirtualUser:CaptureController()
+									VirtualUser:Button1Down(Vector2.new(1280, 672), workspace.Camera.CFrame)
+								until not _G.AutoFarm or _G.Raid or not v.Parent or v.Humanoid.Health <= 0 or gui.Visible == false
+								StartMagnet = false
+							end
+						end
+					end
+					local tpl = RS.EnemyTemplate:FindFirstChild(Mob)
+					if tpl and _G.AutoFarm and not _G.Raid then
+						WaitForMob(Mob, tpl.HumanoidRootPart.CFrame * CFrame.new(5, 10, 2))
+					end
+				end
+			end)
+		end
+	end
+end)
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function InRaidNow()
+	if _G.RaidJoining then return true end
+	local ok, v = pcall(function() return LocalPlayer.PlayerGui.RaidGui.RaidFrame.Visible end)
+	return ok and v == true
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local FullFruits = {}
+local function IsFruitFull(name)
+	local t = FullFruits[name]
+	if not t then return false end
+	if tick() - t > (CONFIG.FruitFullRetrySeconds or 600) then FullFruits[name] = nil return false end
+	return true
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+task.spawn(function()
+	while task.wait(0.3) do
+		if CONFIG.BringFruit and not ShopBusy and not StoreBusy and not InRaidNow() then
+			pcall(function()
+				local drops = workspace:FindFirstChild("Dropped_Items")
+				if not drops then return end
+				for _, v in ipairs(drops:GetChildren()) do
+					local tried = v:GetAttribute("FruitTried") or 0
+					if tried < 2 and string.find(v.Name, "Power") and not IsFruitFull(v.Name) and v:FindFirstChild("Handle") then
+						v:SetAttribute("FruitTried", tried + 1)
+						FruitBusy = true
+						local t0 = tick()
+						while v.Parent and tick() - t0 < 1.5 and not InRaidNow() do
+							TP(v.Handle.CFrame)
+							task.wait()
+						end
+					end
+				end
+			end)
+			FruitBusy = false
+		end
+	end
+end)
+
+-- ===================== Auto Store Fruit =====================
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function FruitTools()
+	local list = {}
+	for _, container in ipairs({ LocalPlayer.Backpack, LocalPlayer.Character }) do
+		if container then
+			for _, v in ipairs(container:GetChildren()) do
+				if v:IsA("Tool") and string.find(v.Name, "Power") and not IsFruitFull(v.Name) then
+					table.insert(list, v)
+				end
+			end
+		end
+	end
+	return list
+end
+
+local function StoreTool(tool)
+	local char = LocalPlayer.Character
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	if not hum then return end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	hum:EquipTool(tool)
+	for _ = 1, 15 do
+		if tool.Parent == char then break end
+		task.wait(0.1)
+	end
+	if tool.Parent ~= char then return end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	for attempt = 1, 2 do
+		if tool.Parent ~= char and tool.Parent ~= LocalPlayer.Backpack then return true end
+		if tool.Parent ~= char then hum:EquipTool(tool) task.wait(0.2) end
+		RS.OtherEvent.MainEvents.Modules:FireServer("Eatable_Power", {
+			Action = "Store",
+			Tool = workspace.Character[Delta][tool.Name],
+		})
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		for _ = 1, 20 do
+			if tool.Parent ~= char and tool.Parent ~= LocalPlayer.Backpack then return true end
+			task.wait(0.1)
+		end
+	end
+	if tool.Parent == char or tool.Parent == LocalPlayer.Backpack then
+		FullFruits[tool.Name] = tick()
+		pcall(function() hum:UnequipTools() end)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		warn(string.format("[Store] Không thể cất %s vào kho -> kho trái cây này đầy, bỏ qua %d giây", tool.Name, CONFIG.FruitFullRetrySeconds or 600))
+		return false
+	end
+	return true
+end
+
+task.spawn(function()
+	while task.wait(0.5) do
+		if CONFIG.AutoStore and not ShopBusy and not InRaidNow() then
+			pcall(function()
+				local fruits = FruitTools()
+				if #fruits == 0 then return end
+				StoreBusy = true
+				task.wait(0.4)                       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				for _, tool in ipairs(fruits) do
+					if InRaidNow() then break end
+					if tool.Parent then StoreTool(tool) end
+				end
+			end)
+			StoreBusy = false
+		end
+	end
+end)
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local HttpService = game:GetService("HttpService")
+local SAVE_FILE = "HHUB_Purchased_" .. LocalPlayer.UserId .. ".json"
+local CAN_SAVE = (writefile and readfile and isfile) and true or false
+if not CAN_SAVE then
+	warn("[Save] executor này không hỗ trợ writefile/readfile -> chỉ ghi nhớ trong phiên này")
+end
+
+function LoadPurchased()
+	local data = {}
+	if CAN_SAVE then
+		pcall(function()
+			if isfile(SAVE_FILE) then
+				data = HttpService:JSONDecode(readfile(SAVE_FILE))
+			end
+		end)
+	end
+	if type(data) ~= "table" then data = {} end
+	for name in pairs(data) do
+		print("[Save] Đã mua trước đó:", name)
+		SetDone(name)
+	end
+	return data
+end
+
+function SavePurchased(done)
+	if not CAN_SAVE then return end
+	pcall(function()
+		writefile(SAVE_FILE, HttpService:JSONEncode(done))
+	end)
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function UseQuestScroll()
+	local OE = RS:WaitForChild("OtherEvent")
+	-- 1) Unstore
+	OE:WaitForChild("ItemEvents"):WaitForChild("UpdateInventory"):InvokeServer("Item", {
+		Action = "Unstore",
+		SelectedItem = "Quest Scroll",
+	})
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local tool
+	for _ = 1, 25 do                          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		tool = LocalPlayer.Character:FindFirstChild("Quest Scroll")
+		if tool then break end
+		if LocalPlayer.Backpack:FindFirstChild("Quest Scroll") then
+			EquipWeapon("Quest Scroll")
+		end
+		task.wait(0.2)
+	end
+	if not tool then
+		warn("[QuestScroll] Không tìm thấy Quest Scroll sau khi lấy khỏi kho")
+		return false
+	end
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	OE:WaitForChild("MainEvents"):WaitForChild("Modules"):FireServer("Quest_Scroll", {
+		Action = "Use",
+		Tool = tool,
+	})
+	print("[QuestScroll] Đã sử dụng")
+	return true
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function ReadQuestCap()
+	local ok, txt = pcall(function() return LocalPlayer.PlayerGui.QuestGui.Holder.QuestText.Text end)
+	if not ok or not txt then return nil end
+	local a, b = string.match(txt, "%[(%d+)%s*/%s*(%d+)%]")
+	if a and b then return tonumber(a), tonumber(b) end
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function AcceptAnyQuest()
+	pcall(CheckQuest)                          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if not FrameQ then return false end
+	local function hasQuest()
+		local ok, vis = pcall(function() return LocalPlayer.PlayerGui.QuestGui.Holder.QuestSlot1.Visible end)
+		return ok and vis
+	end
+	for _ = 1, 8 do
+		if hasQuest() then return true end
+		TP(FrameQ)
+		task.wait(0.3)
+		VIM:SendKeyEvent(true, "E", false, game)
+		task.wait(0.05)
+		VIM:SendKeyEvent(false, "E", false, game)
+		task.wait(0.6)
+	end
+	return hasQuest()
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function VerifyPopcat()
+	local _, cap = ReadQuestCap()
+	if not cap then                            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		AcceptAnyQuest()
+		task.wait(0.5)
+		_, cap = ReadQuestCap()
+	end
+	if not cap then
+		print("[Popcat] Không đọc được ô nhiệm vụ -> chưa thể xác nhận")
+		return false
+	end
+	if cap >= 2 then return true end
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	pcall(UseQuestScroll)
+	task.wait(1)
+	_, cap = ReadQuestCap()
+	return cap ~= nil and cap >= 2             -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local SHOP_LIST = {
+	{ name = "Upgrade Quest: Popcat", money = 1000000, pos = CFrame.new(417.228058, -3.556563, -1155.797607), args = { "Upgrade_Quest", "Popcat" }, afterBuy = UseQuestScroll, verify = VerifyPopcat, strict = true },
+	{ name = "Ability: Giga Chad",    money = 100000,  pos = CFrame.new(-3062.522217, -77.401924, -2064.764648), args = { "Ability_Teacher", "Giga Chad" } },
+	{ name = "Weapon: Hanger",        money = 25000,   pos = CFrame.new(209.121613, 4.287529, -1269.571167),  args = { "Weapon_Seller", "Hanger" }, verify = function() return ItemUnstore("Hanger", 3) end },
+	{ name = "Weapon: Doge",          money = 5000,    pos = CFrame.new(383.401611, -36.914028, -853.046814), args = { "Weapon_Seller", "Doge" },   verify = function() return ItemUnstore("Doge", 3) end },
 }
 
-for _, name in ipairs(tabNames) do
-
-    local scrolling =
-        Instance.new("ScrollingFrame")
-
-    scrolling.Name =
-        name .. "Tab"
-
-    scrolling.Size =
-        UDim2.new(
-            1,
-            -5,
-            1,
-            0
-        )
-
-    scrolling.BackgroundTransparency = 1
-    scrolling.BorderSizePixel = 0
-
-    scrolling.ScrollBarThickness = 4
-
-    scrolling.CanvasSize =
-        UDim2.new(
-            0,
-            0,
-            0,
-            0
-        )
-
-    scrolling.Visible = false
-    scrolling.Parent = container
-
-    local layout =
-        Instance.new("UIListLayout")
-
-    layout.SortOrder =
-        Enum.SortOrder.LayoutOrder
-
-    layout.Padding =
-        UDim.new(
-            0,
-            8
-        )
-
-    layout.Parent =
-        scrolling
-
-    local padding =
-        Instance.new("UIPadding")
-
-    padding.PaddingTop =
-        UDim.new(
-            0,
-            6
-        )
-
-    padding.PaddingBottom =
-        UDim.new(
-            0,
-            10
-        )
-
-    padding.PaddingLeft =
-        UDim.new(
-            0,
-            2
-        )
-
-    padding.PaddingRight =
-        UDim.new(
-            0,
-            6
-        )
-
-    padding.Parent =
-        scrolling
-
-    layout:GetPropertyChangedSignal(
-        "AbsoluteContentSize"
-    ):Connect(function()
-
-        scrolling.CanvasSize =
-            UDim2.new(
-                0,
-                0,
-                0,
-                layout.AbsoluteContentSize.Y + 15
-            )
-
-    end)
-
-    tabs[name] =
-        scrolling
-
+local function GetMoney()
+	return ReadMoney() or 0      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
 end
 
---========================================================--
--- ROW CREATION
---========================================================--
-
-local function createToggleRow(
-    parent,
-    key,
-    initialState,
-    callback
-)
-
-    local row =
-        Instance.new("Frame")
-
-    row.Size =
-        UDim2.new(
-            1,
-            0,
-            0,
-            32
-        )
-
-    row.BackgroundTransparency = 1
-    row.Parent = parent
-
-    local button =
-        Instance.new("TextButton")
-
-    button.Size =
-        UDim2.fromScale(
-            1,
-            1
-        )
-
-    button.BackgroundColor3 =
-        currentThemeColor
-
-    button.TextColor3 =
-        currentTextColor
-
-    button.Font =
-        GLOBAL_FONT
-
-    button.TextSize = 11
-    button.Parent = row
-
-    table.insert(
-        themeButtons,
-        button
-    )
-
-    table.insert(
-        textElements,
-        button
-    )
-
-    Instance.new(
-        "UICorner",
-        button
-    ).CornerRadius =
-        UDim.new(
-            0,
-            6
-        )
-
-    local state =
-        initialState
-
-    local function refresh()
-
-        local t =
-            translations[currentLang]
-
-        local status =
-            state
-            and (" [" .. t.on .. "]")
-            or (" [" .. t.off .. "]")
-
-        button.Text =
-            (
-                t[key]
-                or key
-            )
-            ..
-            status
-
-        button:SetAttribute(
-            "IsOnState",
-            state
-        )
-
-        updateButtonVisual(
-            button,
-            state
-        )
-
-    end
-
-    button.MouseButton1Click:Connect(
-        function()
-
-            state = not state
-
-            refresh()
-
-            callback(state)
-
-        end
-    )
-
-    refresh()
-
-    return button, refresh
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function BuyItem(item)
+	local remote = RS:WaitForChild("OtherEvent"):WaitForChild("MainEvents"):WaitForChild("Modules")
+	local cleanTries = 0
+	for attempt = 1, 2 do
+		local before = ReadMoney()
+		if not before then task.wait(0.5) before = ReadMoney() end
+		if before then
+			TP(item.pos)
+			task.wait(0.6)                      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			remote:FireServer(unpack(item.args))
+			local sawRead = false
+			for _ = 1, 10 do                    -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				task.wait(0.2)
+				local now = ReadMoney()         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if now then
+					sawRead = true
+					if now < before then
+						task.wait(0.6)          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						local again = ReadMoney()
+						if again and again < before then return true end
+					end
+				end
+			end
+			if sawRead and before >= item.money then cleanTries = cleanTries + 1 end
+		end
+	end
+	return false, cleanTries
 end
 
-local function createButtonRow(
-    parent,
-    key,
-    callback
-)
+task.spawn(function()
+	local done = LoadPurchased()              -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local tried = {}                          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	pcall(WaitToolsLoaded, 15)                -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	print("[Shop] Số tiền script đọc được (CurrencyFrame_Mobile.Money):", GetMoney())
 
-    local row =
-        Instance.new("Frame")
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if CONFIG.AutoBuy then
+		for _, item in ipairs(SHOP_LIST) do
+			if item.verify and not done[item.name] then
+				while FruitBusy or StoreBusy do task.wait(0.1) end
+				CurrentShopItem = item.name .. " (check)"
+				ShopBusy = true
+				local ok, owned = pcall(item.verify)
+				ShopBusy = false
+				if ok and owned then
+					done[item.name] = true
+					SetDone(item.name)
+					SavePurchased(done)
+					print("[Shop] ตรวจพบว่าซื้อและĐã sử dụng:", item.name)
+				end
+			end
+		end
+	end
 
-    row.Size =
-        UDim2.new(
-            1,
-            0,
-            0,
-            32
-        )
+	while task.wait(1) do
+		if CONFIG.AutoBuy and not InRaidNow() then
+			for _, item in ipairs(SHOP_LIST) do
+				if not done[item.name] and not tried[item.name] and GetMoney() >= item.money then
+					CurrentShopItem = item.name
+					ShopBusy = true
+					pcall(function()
+						-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						while FruitBusy or StoreBusy do task.wait(0.1) end
+						local bought, cleanTries = BuyItem(item)
+						-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						local owned, inferred = bought, false
+						if not bought then
+							if item.verify then
+								local ok, r = pcall(item.verify)
+								owned = ok and r == true
+							end
+							if not owned and not item.strict and (cleanTries or 0) >= 2 then
+								owned, inferred = true, true   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+							end
+						end
+						if owned then
+							SetDone(item.name)
+							if inferred then
+								-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+								print("[Shop] ยืนยันตรงๆ ไม่ได้ (เงินไม่ลด 2 รอบทั้งที่เงินพอ) -> ถือว่ามีแล้วเฉพาะรอบนี้ ไม่เซฟ:", item.name)
+							else
+								done[item.name] = true
+								SavePurchased(done)           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+								if bought then
+									if item.afterBuy then item.afterBuy() end
+								else
+									print("[Shop] Đã xác nhận đang sở hữu vật phẩm:", item.name)
+								end
+							end
+						else
+							print("[Shop] Chưa mua/chưa thể xác nhận (đã kiểm tra):", item.name)
+						end
+					end)
+					tried[item.name] = true           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					ShopBusy = false
+				end
+			end
+		end
+	end
+end)
 
-    row.BackgroundTransparency = 1
-    row.Parent = parent
+-- ===================== Auto Stats =====================
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local MELEE_CAP = 2400
 
-    local button =
-        Instance.new("TextButton")
-
-    button.Size =
-        UDim2.fromScale(
-            1,
-            1
-        )
-
-    button.BackgroundColor3 =
-        currentThemeColor
-
-    button.TextColor3 =
-        currentTextColor
-
-    button.Font =
-        GLOBAL_FONT
-
-    button.TextSize = 11
-
-    button.Parent =
-        row
-
-    table.insert(
-        themeButtons,
-        button
-    )
-
-    table.insert(
-        textElements,
-        button
-    )
-
-    Instance.new(
-        "UICorner",
-        button
-    ).CornerRadius =
-        UDim.new(
-            0,
-            6
-        )
-
-    local function refresh()
-
-        button.Text =
-            translations[currentLang][key]
-            or key
-
-    end
-
-    refresh()
-
-    button.MouseButton1Click:Connect(
-        callback
-    )
-
-    return button, refresh
-
+local function ReadNumber(textObj)
+	local ok, txt = pcall(function() return textObj.Text end)
+	if not ok or not txt then return nil end
+	local n = string.match((string.gsub(txt, "[,%s]", "")), "%d+")
+	return n and tonumber(n) or nil
 end
 
-local function createInputRow(
-    parent,
-    key,
-    defaultValue,
-    callback
-)
-
-    local row =
-        Instance.new("Frame")
-
-    row.Size =
-        UDim2.new(
-            1,
-            0,
-            0,
-            30
-        )
-
-    row.BackgroundTransparency = 1
-    row.Parent = parent
-
-    local label =
-        Instance.new("TextLabel")
-
-    label.Size =
-        UDim2.new(
-            0.58,
-            0,
-            1,
-            0
-        )
-
-    label.BackgroundTransparency = 1
-
-    label.TextColor3 =
-        currentTextColor
-
-    label.Font =
-        GLOBAL_FONT
-
-    label.TextSize = 11
-
-    label.TextXAlignment =
-        Enum.TextXAlignment.Left
-
-    label.Parent =
-        row
-
-    table.insert(
-        textElements,
-        label
-    )
-
-    local box =
-        Instance.new("TextBox")
-
-    box.Size =
-        UDim2.new(
-            0.38,
-            0,
-            1,
-            0
-        )
-
-    box.Position =
-        UDim2.new(
-            0.62,
-            0,
-            0,
-            0
-        )
-
-    box.BackgroundColor3 =
-        currentThemeColor
-
-    box.TextColor3 =
-        currentTextColor
-
-    box.Font =
-        GLOBAL_FONT
-
-    box.TextSize = 11
-
-    box.Text =
-        tostring(
-            defaultValue
-        )
-
-    box.ClearTextOnFocus = false
-
-    box.Parent =
-        row
-
-    table.insert(
-        themeButtons,
-        box
-    )
-
-    table.insert(
-        textElements,
-        box
-    )
-
-    Instance.new(
-        "UICorner",
-        box
-    ).CornerRadius =
-        UDim.new(
-            0,
-            6
-        )
-
-    box.FocusLost:Connect(
-        function()
-
-            local value =
-                tonumber(
-                    box.Text
-                )
-
-            if value then
-
-                callback(value)
-
-            else
-
-                box.Text =
-                    tostring(
-                        defaultValue
-                    )
-
-            end
-
-        end
-    )
-
-    local function refresh()
-
-        label.Text =
-            translations[currentLang][key]
-            or key
-
-    end
-
-    refresh()
-
-    return row, refresh
-
+local function StatsGui()
+	local frame = LocalPlayer.PlayerGui.GameGui.Menu.Main.Container.Stats.Frame
+	return frame.SkillPoints.Point, frame.List.Melee.StatValue
 end
 
---========================================================--
--- MAIN TAB
---========================================================--
-
-local mainTab =
-    tabs["Main"]
-
-mainTab.Visible = true
-
-local _, r1 =
-    createInputRow(
-        mainTab,
-        "tpSpd",
-        tpSpeed,
-        function(value)
-
-            tpSpeed =
-                math.max(
-                    value,
-                    0.05
-                )
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r1
-)
-
-local _, r2 =
-    createToggleRow(
-        mainTab,
-        "tpBtn",
-        tpEnabled,
-        function(state)
-
-            tpEnabled = state
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r2
-)
-
-local _, r3 =
-    createInputRow(
-        mainTab,
-        "walkSpd",
-        walkSpeed,
-        function(value)
-
-            walkSpeed =
-                math.max(
-                    value,
-                    0
-                )
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r3
-)
-
-local _, r4 =
-    createToggleRow(
-        mainTab,
-        "walkBtn",
-        walkEnabled,
-        function(state)
-
-            walkEnabled = state
-
-            walkConnection =
-                disconnectConnection(
-                    walkConnection
-                )
-
-            if state then
-
-                walkConnection =
-                    RunService.RenderStepped:Connect(
-                        function()
-
-                            local character =
-                                player.Character
-
-                            local humanoid =
-                                character
-                                and character:FindFirstChildOfClass(
-                                    "Humanoid"
-                                )
-
-                            if humanoid then
-                                humanoid.WalkSpeed =
-                                    walkSpeed
-                            end
-
-                        end
-                    )
-
-            else
-
-                local character =
-                    player.Character
-
-                local humanoid =
-                    character
-                    and character:FindFirstChildOfClass(
-                        "Humanoid"
-                    )
-
-                if humanoid then
-                    humanoid.WalkSpeed = 16
-                end
-
-            end
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r4
-)
-
-local _, r5 =
-    createInputRow(
-        mainTab,
-        "jumpSpd",
-        jumpPower,
-        function(value)
-
-            jumpPower =
-                math.max(
-                    value,
-                    0
-                )
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r5
-)
-
-local _, r6 =
-    createToggleRow(
-        mainTab,
-        "jumpBtn",
-        jumpEnabled,
-        function(state)
-
-            jumpEnabled = state
-
-            jumpConnection =
-                disconnectConnection(
-                    jumpConnection
-                )
-
-            if state then
-
-                jumpConnection =
-                    RunService.RenderStepped:Connect(
-                        function()
-
-                            local character =
-                                player.Character
-
-                            local humanoid =
-                                character
-                                and character:FindFirstChildOfClass(
-                                    "Humanoid"
-                                )
-
-                            if humanoid then
-
-                                humanoid.UseJumpPower =
-                                    true
-
-                                humanoid.JumpPower =
-                                    jumpPower
-
-                            end
-
-                        end
-                    )
-
-            else
-
-                local character =
-                    player.Character
-
-                local humanoid =
-                    character
-                    and character:FindFirstChildOfClass(
-                        "Humanoid"
-                    )
-
-                if humanoid then
-                    humanoid.JumpPower = 50
-                end
-
-            end
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r6
-)
-
-local _, r7 =
-    createInputRow(
-        mainTab,
-        "flySpd",
-        flySpeed,
-        function(value)
-
-            flySpeed =
-                math.max(
-                    value,
-                    1
-                )
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r7
-)
-
-local _, r8 =
-    createToggleRow(
-        mainTab,
-        "flyBtn",
-        flyEnabled,
-        function(state)
-
-            toggleFly(state)
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r8
-)
-
-local _, r9 =
-    createInputRow(
-        mainTab,
-        "gravSpd",
-        customGravity,
-        function(value)
-
-            customGravity =
-                math.max(
-                    value,
-                    0
-                )
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r9
-)
-
-local _, r10 =
-    createToggleRow(
-        mainTab,
-        "gravBtn",
-        gravityEnabled,
-        function(state)
-
-            gravityEnabled = state
-
-            gravityConnection =
-                disconnectConnection(
-                    gravityConnection
-                )
-
-            if state then
-
-                gravityConnection =
-                    RunService.RenderStepped:Connect(
-                        function()
-
-                            Workspace.Gravity =
-                                customGravity
-
-                        end
-                    )
-
-            else
-
-                Workspace.Gravity =
-                    196.2
-
-            end
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r10
-)
-
-local _, r11 =
-    createToggleRow(
-        mainTab,
-        "noclipBtn",
-        noclipEnabled,
-        function(state)
-
-            toggleNoclip(state)
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r11
-)
-
-local _, r12 =
-    createToggleRow(
-        mainTab,
-        "invisBtn",
-        invisibleEnabled,
-        function(state)
-
-            toggleInvisibility(state)
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r12
-)
-
-local _, r13 =
-    createToggleRow(
-        mainTab,
-        "infJumpBtn",
-        infJumpEnabled,
-        function(state)
-
-            toggleInfJump(state)
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r13
-)
-
-local _, r14 =
-    createInputRow(
-        mainTab,
-        "freezeRng",
-        freezeRadius,
-        function(value)
-
-            freezeRadius =
-                math.max(
-                    value,
-                    1
-                )
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r14
-)
-
-local _, r15 =
-    createToggleRow(
-        mainTab,
-        "freezeBtn",
-        freezeRayEnabled,
-        function(state)
-
-            toggleFreezeRay(state)
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r15
-)
-
-local _, r16 =
-    createButtonRow(
-        mainTab,
-        "autoEquipBtn",
-        function()
-
-            equipItemsOnce()
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r16
-)
-
-local _, r17 =
-    createInputRow(
-        mainTab,
-        "autoPressRadiusLabel",
-        autoPressRadius,
-        function(value)
-
-            autoPressRadius =
-                math.max(
-                    value,
-                    1
-                )
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r17
-)
-
-local _, r18 =
-    createInputRow(
-        mainTab,
-        "autoPressDelayLabel",
-        autoPressDelay,
-        function(value)
-
-            autoPressDelay =
-                math.max(
-                    value,
-                    0.05
-                )
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r18
-)
-
-local _, r19 =
-    createToggleRow(
-        mainTab,
-        "autoPressBtn",
-        autoPressButtonEnabled,
-        function(state)
-
-            toggleAutoPressButton(state)
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r19
-)
-
---========================================================--
--- GOD BUTTON
---========================================================--
-
-local godRow =
-    Instance.new("Frame")
-
-godRow.Size =
-    UDim2.new(
-        1,
-        0,
-        0,
-        36
-    )
-
-godRow.BackgroundTransparency = 1
-godRow.Parent = mainTab
-
-local godButton =
-    Instance.new("TextButton")
-
-godButton.Size =
-    UDim2.fromScale(
-        1,
-        1
-    )
-
-godButton.BackgroundColor3 =
-    Color3.fromRGB(
-        180,
-        40,
-        40
-    )
-
-godButton.TextColor3 =
-    Color3.new(
-        1,
-        1,
-        1
-    )
-
-godButton.Font =
-    GLOBAL_FONT
-
-godButton.TextSize = 12
-
-godButton.Text =
-    "⚡ Bảng God Mode"
-
-godButton.Parent =
-    godRow
-
-Instance.new(
-    "UICorner",
-    godButton
-).CornerRadius =
-    UDim.new(
-        0,
-        6
-    )
-
-godButton.MouseButton1Click:Connect(
-    function()
-
-        safeCall(function()
-
-            loadstring(
-                game:HttpGet(
-                    "https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"
-                )
-            )()
-
-        end)
-
-    end
-)
-
---========================================================--
--- ESP TAB
---========================================================--
-
-local espTab =
-    tabs["ESP"]
-
-local _, r20 =
-    createToggleRow(
-        espTab,
-        "espBtn",
-        espEnabled,
-        function(state)
-
-            espEnabled =
-                state
-
-            updateESP()
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r20
-)
-
-local _, r21 =
-    createToggleRow(
-        espTab,
-        "spectateBtn",
-        spectating,
-        function(state)
-
-            toggleSpectate(state)
-
-        end
-    )
-
-updateSpectateToggleBtnText =
-    r21
-
-table.insert(
-    refreshFuncs,
-    r21
-)
-
-local _, r22 =
-    createButtonRow(
-        espTab,
-        "tpToSpecBtn",
-        function()
-
-            teleportToSpectatedTarget()
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r22
-)
-
---========================================================--
--- FPS
---========================================================--
-
-local fpsButton =
-    Instance.new("TextButton")
-
-fpsButton.Name =
-    "FPSDisplayButton"
-
-fpsButton.Size =
-    UDim2.new(
-        0,
-        85,
-        0,
-        32
-    )
-
-fpsButton.Position =
-    UDim2.new(
-        1,
-        -95,
-        0.1,
-        0
-    )
-
-fpsButton.BackgroundColor3 =
-    Color3.fromRGB(
-        20,
-        20,
-        20
-    )
-
-fpsButton.Text =
-    "FPS: --"
-
-fpsButton.TextColor3 =
-    Color3.fromRGB(
-        50,
-        255,
-        50
-    )
-
-fpsButton.Font =
-    GLOBAL_FONT
-
-fpsButton.TextSize = 14
-
-fpsButton.Visible = false
-fpsButton.Active = true
-fpsButton.Draggable = true
-fpsButton.Parent =
-    screenGui
-
-Instance.new(
-    "UICorner",
-    fpsButton
-).CornerRadius =
-    UDim.new(
-        0,
-        6
-    )
-
-local frameCount = 0
-local lastUpdate = tick()
-
-local function toggleFPSDisplay(state)
-
-    fpsEnabled =
-        state
-
-    fpsButton.Visible =
-        state
-
-    fpsConnection =
-        disconnectConnection(
-            fpsConnection
-        )
-
-    if not state then
-        return
-    end
-
-    frameCount = 0
-    lastUpdate = tick()
-
-    fpsConnection =
-        RunService.RenderStepped:Connect(
-            function()
-
-                frameCount += 1
-
-                local now =
-                    tick()
-
-                local elapsed =
-                    now - lastUpdate
-
-                if elapsed >= 1 then
-
-                    local fps =
-                        math.floor(
-                            frameCount /
-                            elapsed
-                        )
-
-                    fpsButton.Text =
-                        "FPS: "
-                        ..
-                        tostring(fps)
-
-                    if fps <= 15 then
-
-                        fpsButton.TextColor3 =
-                            Color3.fromRGB(
-                                255,
-                                50,
-                                50
-                            )
-
-                    elseif fps <= 30 then
-
-                        fpsButton.TextColor3 =
-                            Color3.fromRGB(
-                                255,
-                                200,
-                                0
-                            )
-
-                    else
-
-                        fpsButton.TextColor3 =
-                            Color3.fromRGB(
-                                50,
-                                255,
-                                50
-                            )
-
-                    end
-
-                    frameCount = 0
-                    lastUpdate = now
-
-                end
-
-            end
-        )
-
+local function UpgradeStat(target)
+	local remote = RS:WaitForChild("OtherEvent"):WaitForChild("MainEvents"):WaitForChild("StatsFunction")
+	remote:InvokeServer({ Target = target, Action = "UpgradeStats", Amount = 1 })
 end
 
-local _, r23 =
-    createToggleRow(
-        espTab,
-        "fpsBtn",
-        fpsEnabled,
-        function(state)
+task.spawn(function()
+	local nextIsDefense = true
+	while task.wait(0.2) do
+		if CONFIG.AutoStats then
+			pcall(function()
+				local pointObj, meleeObj = StatsGui()
+				local points = ReadNumber(pointObj)
+				if not points or points <= 0 then return end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
 
-            toggleFPSDisplay(state)
+				local melee = ReadNumber(meleeObj)
+				if melee and melee < MELEE_CAP then
+					UpgradeStat("MeleeLevel")
+				elseif melee and melee >= MELEE_CAP then       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					UpgradeStat(nextIsDefense and "DefenseLevel" or "SwordLevel")
+					nextIsDefense = not nextIsDefense
+				end
+			end)
+		end
+	end
+end)
 
-        end
-    )
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local TOOLTIP_OF = { FightingStyle = "Fighting Style", Power = "Power", Weapon = "Weapon" }
+local spawnTime = tick()
+local lastReset = 0
+LocalPlayer.CharacterAdded:Connect(function() spawnTime = tick() end)
 
-table.insert(
-    refreshFuncs,
-    r23
-)
-
---========================================================--
--- ESP COLOR
---========================================================--
-
-local espColorLabel =
-    Instance.new("TextLabel")
-
-espColorLabel.Size =
-    UDim2.new(
-        1,
-        0,
-        0,
-        20
-    )
-
-espColorLabel.BackgroundTransparency = 1
-espColorLabel.TextColor3 =
-    currentTextColor
-
-espColorLabel.Font =
-    GLOBAL_FONT
-
-espColorLabel.TextSize = 11
-
-espColorLabel.TextXAlignment =
-    Enum.TextXAlignment.Left
-
-espColorLabel.Text =
-    translations.VI.espColorLabel
-
-espColorLabel.Parent =
-    espTab
-
-table.insert(
-    textElements,
-    espColorLabel
-)
-
-local espPalette =
-    Instance.new("Frame")
-
-espPalette.Size =
-    UDim2.new(
-        1,
-        0,
-        0,
-        28
-    )
-
-espPalette.BackgroundTransparency = 1
-espPalette.Parent =
-    espTab
-
-local espColors = {
-
-    Color3.fromRGB(
-        255,
-        50,
-        50
-    ),
-
-    Color3.fromRGB(
-        50,
-        255,
-        50
-    ),
-
-    Color3.fromRGB(
-        50,
-        150,
-        255
-    ),
-
-    Color3.fromRGB(
-        255,
-        255,
-        50
-    ),
-
-    Color3.fromRGB(
-        255,
-        50,
-        255
-    ),
-
-    Color3.fromRGB(
-        255,
-        255,
-        255
-    )
-
-}
-
-for i, color in ipairs(
-    espColors
-) do
-
-    local button =
-        Instance.new("TextButton")
-
-    button.Size =
-        UDim2.new(
-            0,
-            28,
-            0,
-            28
-        )
-
-    button.Position =
-        UDim2.new(
-            0,
-            (i - 1) * 34,
-            0,
-            0
-        )
-
-    button.BackgroundColor3 =
-        color
-
-    button.Text = ""
-
-    button.Parent =
-        espPalette
-
-    Instance.new(
-        "UICorner",
-        button
-    ).CornerRadius =
-        UDim.new(
-            0,
-            6
-        )
-
-    button.MouseButton1Click:Connect(
-        function()
-
-            espColor =
-                color
-
-            updateESP()
-
-        end
-    )
-
+local function HasFarmTool()
+	local want = TOOLTIP_OF[CONFIG.Weapon]
+	for _, container in ipairs({ LocalPlayer.Backpack, LocalPlayer.Character }) do
+		if container then
+			for _, t in ipairs(container:GetChildren()) do
+				if t:IsA("Tool") and t.ToolTip == want then return true end
+			end
+		end
+	end
+	return false
 end
 
---========================================================--
--- SPECTATE HUD
---========================================================--
-
-spectateFrame =
-    Instance.new("Frame")
-
-spectateFrame.Name =
-    "SpectateFrame"
-
-spectateFrame.Size =
-    UDim2.new(
-        0,
-        320,
-        0,
-        115
-    )
-
-spectateFrame.Position =
-    UDim2.new(
-        0.5,
-        -160,
-        0.85,
-        -55
-    )
-
-spectateFrame.BackgroundColor3 =
-    Color3.fromRGB(
-        15,
-        15,
-        20
-    )
-
-spectateFrame.BackgroundTransparency =
-    0.2
-
-spectateFrame.BorderSizePixel = 0
-spectateFrame.Visible = false
-
-spectateFrame.Parent =
-    screenGui
-
-Instance.new(
-    "UICorner",
-    spectateFrame
-).CornerRadius =
-    UDim.new(
-        0,
-        8
-    )
-
-local spectateStroke =
-    Instance.new("UIStroke")
-
-spectateStroke.Color =
-    Color3.fromRGB(
-        80,
-        80,
-        255
-    )
-
-spectateStroke.Thickness = 2
-spectateStroke.Parent =
-    spectateFrame
-
-specNameLabel =
-    Instance.new("TextLabel")
-
-specNameLabel.Size =
-    UDim2.new(
-        1,
-        -90,
-        0,
-        34
-    )
-
-specNameLabel.Position =
-    UDim2.new(
-        0,
-        45,
-        0,
-        6
-    )
-
-specNameLabel.BackgroundTransparency = 1
-specNameLabel.Text =
-    "Player Name"
-
-specNameLabel.TextColor3 =
-    Color3.new(
-        1,
-        1,
-        1
-    )
-
-specNameLabel.Font =
-    GLOBAL_FONT
-
-specNameLabel.TextSize = 13
-
-specNameLabel.Parent =
-    spectateFrame
-
-local prevButton =
-    Instance.new("TextButton")
-
-prevButton.Size =
-    UDim2.new(
-        0,
-        35,
-        0,
-        34
-    )
-
-prevButton.Position =
-    UDim2.new(
-        0,
-        8,
-        0,
-        6
-    )
-
-prevButton.BackgroundColor3 =
-    Color3.fromRGB(
-        40,
-        40,
-        50
-    )
-
-prevButton.Text = "<"
-
-prevButton.TextColor3 =
-    Color3.new(
-        1,
-        1,
-        1
-    )
-
-prevButton.Font =
-    GLOBAL_FONT
-
-prevButton.TextSize = 16
-
-prevButton.Parent =
-    spectateFrame
-
-Instance.new(
-    "UICorner",
-    prevButton
-).CornerRadius =
-    UDim.new(
-        0,
-        6
-    )
-
-local nextButton =
-    Instance.new("TextButton")
-
-nextButton.Size =
-    UDim2.new(
-        0,
-        35,
-        0,
-        34
-    )
-
-nextButton.Position =
-    UDim2.new(
-        1,
-        -43,
-        0,
-        6
-    )
-
-nextButton.BackgroundColor3 =
-    Color3.fromRGB(
-        40,
-        40,
-        50
-    )
-
-nextButton.Text = ">"
-
-nextButton.TextColor3 =
-    Color3.new(
-        1,
-        1,
-        1
-    )
-
-nextButton.Font =
-    GLOBAL_FONT
-
-nextButton.TextSize = 16
-
-nextButton.Parent =
-    spectateFrame
-
-Instance.new(
-    "UICorner",
-    nextButton
-).CornerRadius =
-    UDim.new(
-        0,
-        6
-    )
-
-local tpSpecButton =
-    Instance.new("TextButton")
-
-tpSpecButton.Size =
-    UDim2.new(
-        0,
-        160,
-        0,
-        28
-    )
-
-tpSpecButton.Position =
-    UDim2.new(
-        0.5,
-        -80,
-        0,
-        44
-    )
-
-tpSpecButton.BackgroundColor3 =
-    Color3.fromRGB(
-        45,
-        120,
-        210
-    )
-
-tpSpecButton.Text =
-    "🚀 Dịch Chuyển Tới"
-
-tpSpecButton.TextColor3 =
-    Color3.new(
-        1,
-        1,
-        1
-    )
-
-tpSpecButton.Font =
-    GLOBAL_FONT
-
-tpSpecButton.TextSize = 11
-
-tpSpecButton.Parent =
-    spectateFrame
-
-Instance.new(
-    "UICorner",
-    tpSpecButton
-).CornerRadius =
-    UDim.new(
-        0,
-        5
-    )
-
-local closeSpecButton =
-    Instance.new("TextButton")
-
-closeSpecButton.Size =
-    UDim2.new(
-        0,
-        120,
-        0,
-        24
-    )
-
-closeSpecButton.Position =
-    UDim2.new(
-        0.5,
-        -60,
-        0,
-        78
-    )
-
-closeSpecButton.BackgroundColor3 =
-    Color3.fromRGB(
-        200,
-        50,
-        50
-    )
-
-closeSpecButton.Text =
-    "Đóng Spectate"
-
-closeSpecButton.TextColor3 =
-    Color3.new(
-        1,
-        1,
-        1
-    )
-
-closeSpecButton.Font =
-    GLOBAL_FONT
-
-closeSpecButton.TextSize = 11
-
-closeSpecButton.Parent =
-    spectateFrame
-
-Instance.new(
-    "UICorner",
-    closeSpecButton
-).CornerRadius =
-    UDim.new(
-        0,
-        5
-    )
-
-prevButton.MouseButton1Click:Connect(
-    function()
-
-        spectateIndex -= 1
-        updateSpectateCamera()
-
-    end
-)
-
-nextButton.MouseButton1Click:Connect(
-    function()
-
-        spectateIndex += 1
-        updateSpectateCamera()
-
-    end
-)
-
-tpSpecButton.MouseButton1Click:Connect(
-    function()
-
-        teleportToSpectatedTarget()
-
-    end
-)
-
-closeSpecButton.MouseButton1Click:Connect(
-    function()
-
-        toggleSpectate(false)
-
-    end
-)
-
---========================================================--
--- FIX LAG TAB
---========================================================--
-
-local fixLagTab =
-    tabs["FixLag"]
-
-local _, r24 =
-    createToggleRow(
-        fixLagTab,
-        "fixLagBtn",
-        fixLagEnabled,
-        function(state)
-
-            toggleFixLag(state)
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r24
-)
-
-local _, r25 =
-    createToggleRow(
-        fixLagTab,
-        "hideMapBtn",
-        hideMapOthersEnabled,
-        function(state)
-
-            toggleHideMapAndOthers(
-                state
-            )
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r25
-)
-
-local _, r26 =
-    createToggleRow(
-        fixLagTab,
-        "muteSoundsBtn",
-        muteAllSoundsEnabled,
-        function(state)
-
-            toggleMuteAllSounds(
-                state
-            )
-
-        end
-    )
-
-table.insert(
-    refreshFuncs,
-    r26
-)
-
---========================================================--
--- MISC TAB
---========================================================--
-
-local miscTab =
-    tabs["Misc"]
-
-local function createLabel(
-    parent,
-    text
-)
-
-    local label =
-        Instance.new("TextLabel")
-
-    label.Size =
-        UDim2.new(
-            1,
-            0,
-            0,
-            18
-        )
-
-    label.BackgroundTransparency = 1
-    label.TextColor3 =
-        currentTextColor
-
-    label.Font =
-        GLOBAL_FONT
-
-    label.TextSize = 11
-
-    label.TextXAlignment =
-        Enum.TextXAlignment.Left
-
-    label.Text =
-        text
-
-    label.Parent =
-        parent
-
-    table.insert(
-        textElements,
-        label
-    )
-
-    return label
-
+task.spawn(function()
+	local missing = 0
+	while task.wait(1) do
+		if CONFIG.ResetIfStyleLost and (_G.AutoFarm or _G.Raid or _G.Pumpkin or _G.RaceV2 or _G.FlameKatana or _G.EvilNoob or _G.ItemQuest or _G.Boss) and not ShopBusy then
+			pcall(function()
+				local char = LocalPlayer.Character
+				local hum = char and char:FindFirstChildOfClass("Humanoid")
+				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if not hum or hum.Health <= 0
+					or tick() - spawnTime < 8
+					or tick() - lastReset < 15 then
+					missing = 0
+					return
+				end
+				if HasFarmTool() then
+					missing = 0
+				else
+					missing = missing + 1
+					if missing >= 3 then
+						warn("[AutoReset] Vũ khí/đòn đánh dùng để farm bị mất -> hồi sinh nhân vật")
+						hum.Health = 0
+						lastReset = tick()
+						missing = 0
+					end
+				end
+			end)
+		end
+	end
+end)
+
+-- ===================== Auto Raid =====================
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local RAID_JOIN_POS = CFrame.new(2749.188232421875, -57.323822021484375, -4525.55419921875)
+local RaidMode = (_G.Raid == true)
+local LastRaidWhy = nil
+
+local function RaidGuiVisible()
+	local ok, v = pcall(function() return LocalPlayer.PlayerGui.RaidGui.RaidFrame.Visible end)
+	return ok and v or false
 end
 
-local boardColorLabel =
-    createLabel(
-        miscTab,
-        translations.VI.boardColorLabel
-    )
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+task.spawn(function()
+	local offCount = 0
+	while task.wait(1) do
+		if CONFIG.AutoRaid then
+			pcall(function()
+				if RaidWanted() then
+					offCount = 0
+					LastRaidWhy = nil
+					if not RaidMode then
+						RaidMode = true
+						print("[Raid] Vào chế độ Raid")
+						_G.AutoFarm = false
+						_G.Raid = true
+						_G.GoRaid = true
+						StartMagnet = false
+					end
+				else
+					offCount = offCount + 1
+					local why = RaidWhyNot()
+					if why ~= LastRaidWhy then
+						LastRaidWhy = why
+						print("[Raid] Hiện không Raid vì:", why)
+					end
+					if RaidMode and offCount >= 3 and not RaidGuiVisible() then
+						RaidMode = false
+						print("[Raid] Thoát chế độ Raid -> quay lại farm cấp")
+						_G.Raid = false
+						_G.GoRaid = false
+						StartMagnet = false
+						HoverOrigin = nil
+						_G.DistanceMob = CONFIG.Distance
+						if FarmAllowed() then _G.AutoFarm = CONFIG.AutoFarm end
+					end
+				end
+			end)
+		end
+	end
+end)
 
-local boardPalette =
-    Instance.new("Frame")
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+task.spawn(function()
+	local tries = 0
+	while task.wait(2) do
+		pcall(function()
+			if InRaidNow() then return end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			if not DropX2Needed() then return end
+			local gem = LocalPlayer.PlayerData.Gem.Value
+			if gem < CONFIG.NoobRaidGems then return end
+			if tries >= 3 then _G.DropX2Bought = true warn("[Raid] Mua Drop X2 thất bại 3 lần, hủy -> dùng RaidStopGems") return end
+			tries = tries + 1
+			print("[Raid] Gem ถึง", CONFIG.NoobRaidGems, "-> Mua Drop Item X2 (lần", tries, ")")
+			pcall(function()
+				RS:WaitForChild("OtherEvent"):WaitForChild("BuyEvents"):WaitForChild("BuyProduct")
+					:FireServer({ Action = "Buy_Gamepass", GamepassId = CONFIG.DropX2GamepassId })
+			end)
+			task.wait(3)
+			if CheckDropX2Owned() then print("[Raid] Mua Drop X2 thành công") end
+		end)
+	end
+end)
 
-boardPalette.Size =
-    UDim2.new(
-        1,
-        0,
-        0,
-        28
-    )
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+task.spawn(function()
+	if not CONFIG.AutoBuyGemX2 then return end
+	local MPS = game:GetService("MarketplaceService")
+	local tries = 0
+	while task.wait(2) do
+		local done = false
+		pcall(function()
+			if MPS:UserOwnsGamePassAsync(LocalPlayer.UserId, CONFIG.GemX2GamepassId) then done = true return end
+			if InRaidNow() then return end
+			if LocalPlayer.PlayerData.Gem.Value < CONFIG.GemX2Gems then return end
+			if tries >= 3 then done = true warn("[GemX2] Mua thất bại 3 lần, đã hủy") return end
+			tries = tries + 1
+			print("[GemX2] Gem ถึง", CONFIG.GemX2Gems, "-> Mua Gem x2 (lần", tries, ")")
+			RS:WaitForChild("OtherEvent"):WaitForChild("BuyEvents"):WaitForChild("BuyProduct")
+				:FireServer({ Action = "Buy_Gamepass", GamepassId = CONFIG.GemX2GamepassId })
+			task.wait(3)
+		end)
+		if done then return end
+	end
+end)
 
-boardPalette.BackgroundTransparency = 1
-boardPalette.Parent =
-    miscTab
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+task.spawn(function()
+	local atSince, lastStart = nil, 0
+	while task.wait(0.2) do
+		if _G.GoRaid then
+			while FruitBusy or ShopBusy or StoreBusy do task.wait(0.1) end
+			if not RaidGuiVisible() then
+				pcall(TP, RAID_JOIN_POS)
 
-local boardColors = {
+				local near = false
+				pcall(function()
+					local hrp = LocalPlayer.Character.HumanoidRootPart
+					near = (hrp.Position - RAID_JOIN_POS.Position).Magnitude <= 25
+				end)
+				_G.RaidJoining = near   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if near then
+					atSince = atSince or tick()
+					if CONFIG.AutoStartRaid and tick() - atSince >= (CONFIG.RaidStartDelay or 3) and tick() - lastStart >= (CONFIG.RaidStartRetry or 1) then
+						lastStart = tick()
+						pcall(function()
+							game:GetService("ReplicatedStorage"):WaitForChild("OtherEvent", 5)
+								:WaitForChild("MiscEvents", 5):WaitForChild("StartRaid", 5)
+								:FireServer("Start")
+						end)
+						print("[Raid] Đã gửi Start")
+					end
+				else
+					atSince = nil
+				end
+			else
+				atSince = nil
+				_G.RaidJoining = false
+			end
+		else
+			atSince = nil
+			_G.RaidJoining = false
+		end
+	end
+end)
 
-    Color3.fromRGB(
-        20,
-        20,
-        25
-    ),
-
-    Color3.fromRGB(
-        40,
-        20,
-        20
-    ),
-
-    Color3.fromRGB(
-        20,
-        40,
-        20
-    ),
-
-    Color3.fromRGB(
-        20,
-        25,
-        40
-    ),
-
-    Color3.fromRGB(
-        40,
-        30,
-        20
-    )
-
-}
-
-local function applyBoardColor(
-    color
-)
-
-    local r =
-        math.floor(
-            color.R * 255
-        )
-
-    local g =
-        math.floor(
-            color.G * 255
-        )
-
-    local b =
-        math.floor(
-            color.B * 255
-        )
-
-    local dark =
-        Color3.fromRGB(
-            math.clamp(
-                r - 15,
-                0,
-                255
-            ),
-            math.clamp(
-                g - 15,
-                0,
-                255
-            ),
-            math.clamp(
-                b - 15,
-                0,
-                255
-            )
-        )
-
-    local light =
-        Color3.fromRGB(
-            math.clamp(
-                r + 10,
-                0,
-                255
-            ),
-            math.clamp(
-                g + 10,
-                0,
-                255
-            ),
-            math.clamp(
-                b + 10,
-                0,
-                255
-            )
-        )
-
-    gradientFrame.Color =
-        ColorSequence.new({
-
-            ColorSequenceKeypoint.new(
-                0,
-                dark
-            ),
-
-            ColorSequenceKeypoint.new(
-                0.5,
-                light
-            ),
-
-            ColorSequenceKeypoint.new(
-                1,
-                dark
-            )
-
-        })
-
-    sidebar.BackgroundColor3 =
-        dark
-
-    titleBar.BackgroundColor3 =
-        dark
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function MyHum()
+	local c = LocalPlayer.Character
+	return c and c:FindFirstChildOfClass("Humanoid")
 end
 
-for i, color in ipairs(
-    boardColors
-) do
-
-    local button =
-        Instance.new("TextButton")
-
-    button.Size =
-        UDim2.new(
-            0,
-            28,
-            0,
-            28
-        )
-
-    button.Position =
-        UDim2.new(
-            0,
-            (i - 1) * 34,
-            0,
-            0
-        )
-
-    button.BackgroundColor3 =
-        color
-
-    button.Text = ""
-
-    button.Parent =
-        boardPalette
-
-    Instance.new(
-        "UICorner",
-        button
-    ).CornerRadius =
-        UDim.new(
-            0,
-            6
-        )
-
-    button.MouseButton1Click:Connect(
-        function()
-
-            applyBoardColor(
-                color
-            )
-
-        end
-    )
-
+local function HpRatio()
+	local h = MyHum()
+	if h and h.MaxHealth > 0 then return h.Health / h.MaxHealth end
+	return 1
 end
 
-local themeLabel =
-    createLabel(
-        miscTab,
-        translations.VI.themeLabel
-    )
-
-local themePalette =
-    Instance.new("Frame")
-
-themePalette.Size =
-    UDim2.new(
-        1,
-        0,
-        0,
-        28
-    )
-
-themePalette.BackgroundTransparency = 1
-themePalette.Parent =
-    miscTab
-
-local themeColors = {
-
-    Color3.fromRGB(
-        35,
-        35,
-        45
-    ),
-
-    Color3.fromRGB(
-        50,
-        40,
-        80
-    ),
-
-    Color3.fromRGB(
-        30,
-        60,
-        90
-    ),
-
-    Color3.fromRGB(
-        70,
-        30,
-        40
-    ),
-
-    Color3.fromRGB(
-        30,
-        70,
-        50
-    )
-
-}
-
-for i, color in ipairs(
-    themeColors
-) do
-
-    local button =
-        Instance.new("TextButton")
-
-    button.Size =
-        UDim2.new(
-            0,
-            28,
-            0,
-            28
-        )
-
-    button.Position =
-        UDim2.new(
-            0,
-            (i - 1) * 34,
-            0,
-            0
-        )
-
-    button.BackgroundColor3 =
-        color
-
-    button.Text = ""
-
-    button.Parent =
-        themePalette
-
-    Instance.new(
-        "UICorner",
-        button
-    ).CornerRadius =
-        UDim.new(
-            0,
-            6
-        )
-
-    button.MouseButton1Click:Connect(
-        function()
-
-            applyThemeColor(
-                color
-            )
-
-        end
-    )
-
+local function IsDead()
+	local h = MyHum()
+	return (not h) or h.Health <= 0
 end
 
-local textLabel =
-    createLabel(
-        miscTab,
-        translations.VI.textLabel
-    )
-
-local textPalette =
-    Instance.new("Frame")
-
-textPalette.Size =
-    UDim2.new(
-        1,
-        0,
-        0,
-        28
-    )
-
-textPalette.BackgroundTransparency = 1
-textPalette.Parent =
-    miscTab
-
-local textColors = {
-
-    Color3.fromRGB(
-        255,
-        255,
-        255
-    ),
-
-    Color3.fromRGB(
-        255,
-        220,
-        100
-    ),
-
-    Color3.fromRGB(
-        100,
-        255,
-        200
-    ),
-
-    Color3.fromRGB(
-        255,
-        150,
-        200
-    )
-
-}
-
-for i, color in ipairs(
-    textColors
-) do
-
-    local button =
-        Instance.new("TextButton")
-
-    button.Size =
-        UDim2.new(
-            0,
-            28,
-            0,
-            28
-        )
-
-    button.Position =
-        UDim2.new(
-            0,
-            (i - 1) * 34,
-            0,
-            0
-        )
-
-    button.BackgroundColor3 =
-        color
-
-    button.Text = ""
-
-    button.Parent =
-        textPalette
-
-    Instance.new(
-        "UICorner",
-        button
-    ).CornerRadius =
-        UDim.new(
-            0,
-            6
-        )
-
-    button.MouseButton1Click:Connect(
-        function()
-
-            applyTextColor(
-                color
-            )
-
-        end
-    )
-
+local NoRetreatUntil = 0
+local function RetreatUntilHealed()
+	local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+	StartMagnet = false
+	local center = hrp.Position + Vector3.new(0, 120, 0)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local radius, speed = CONFIG.RaidOrbitRadius, CONFIG.RaidOrbitSpeed
+	local angle = 0
+	local t0 = tick()
+	print("[RaidSurvive] Máu thấp -> lùi lên cao và chạy vòng để né kỹ năng")
+	while (_G.Raid or _G.Pumpkin or _G.RaceV2 or _G.FlameKatana or _G.EvilNoob or _G.ItemQuest or _G.Boss) and tick() - t0 < 20 do
+		local dt = RunService.Heartbeat:Wait()
+		local h = MyHum()
+		local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+		if not h or not root or h.Health <= 0 then break end
+		if h.Health / h.MaxHealth >= CONFIG.RaidResumeHp then break end
+		angle = angle + speed * dt
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		local pos = center + Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
+		root.CFrame = CFrame.new(pos)
+		root.AssemblyLinearVelocity = Vector3.zero
+		root.AssemblyAngularVelocity = Vector3.zero
+	end
+	NoRetreatUntil = tick() + 10
 end
 
---========================================================--
--- LANGUAGE
---========================================================--
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local RaidKnownMobs = setmetatable({}, { __mode = "k" })
+task.spawn(function()
+	while task.wait(0.2) do
+		pcall(function()
+			if RaidGuiVisible() then return end
+			local folder = workspace:FindFirstChild("Monster")
+			if not folder then return end
+			for _, m in ipairs(folder:GetChildren()) do RaidKnownMobs[m] = true end
+		end)
+	end
+end)
 
-local langLabel =
-    createLabel(
-        miscTab,
-        translations.VI.langLabel
-    )
-
-local langFrame =
-    Instance.new("Frame")
-
-langFrame.Size =
-    UDim2.new(
-        1,
-        0,
-        0,
-        30
-    )
-
-langFrame.BackgroundTransparency = 1
-langFrame.Parent =
-    miscTab
-
-local englishButton =
-    Instance.new("TextButton")
-
-englishButton.Size =
-    UDim2.new(
-        0.48,
-        0,
-        1,
-        0
-    )
-
-englishButton.BackgroundColor3 =
-    currentThemeColor
-
-englishButton.Text =
-    "English"
-
-englishButton.TextColor3 =
-    currentTextColor
-
-englishButton.Font =
-    GLOBAL_FONT
-
-englishButton.TextSize = 11
-englishButton.Parent =
-    langFrame
-
-Instance.new(
-    "UICorner",
-    englishButton
-).CornerRadius =
-    UDim.new(
-        0,
-        6
-    )
-
-table.insert(
-    themeButtons,
-    englishButton
-)
-
-table.insert(
-    textElements,
-    englishButton
-)
-
-local vietnameseButton =
-    englishButton:Clone()
-
-vietnameseButton.Position =
-    UDim2.new(
-        0.52,
-        0,
-        0,
-        0
-    )
-
-vietnameseButton.Text =
-    "Tiếng Việt"
-
-vietnameseButton.Parent =
-    langFrame
-
-table.insert(
-    themeButtons,
-    vietnameseButton
-)
-
-table.insert(
-    textElements,
-    vietnameseButton
-)
-
---========================================================--
--- SERVER BUTTONS
---========================================================--
-
-local serverFrame =
-    Instance.new("Frame")
-
-serverFrame.Size =
-    UDim2.new(
-        1,
-        0,
-        0,
-        32
-    )
-
-serverFrame.BackgroundTransparency = 1
-serverFrame.Parent =
-    miscTab
-
-local rejoinButton =
-    englishButton:Clone()
-
-rejoinButton.Size =
-    UDim2.new(
-        0.48,
-        0,
-        1,
-        0
-    )
-
-rejoinButton.Position =
-    UDim2.new(
-        0,
-        0,
-        0,
-        0
-    )
-
-rejoinButton.Text =
-    translations.VI.rejoinBtn
-
-rejoinButton.Parent =
-    serverFrame
-
-table.insert(
-    themeButtons,
-    rejoinButton
-)
-
-table.insert(
-    textElements,
-    rejoinButton
-)
-
-local serverHopButton =
-    englishButton:Clone()
-
-serverHopButton.Size =
-    UDim2.new(
-        0.48,
-        0,
-        1,
-        0
-    )
-
-serverHopButton.Position =
-    UDim2.new(
-        0.52,
-        0,
-        0,
-        0
-    )
-
-serverHopButton.Text =
-    translations.VI.serverHopBtn
-
-serverHopButton.Parent =
-    serverFrame
-
-table.insert(
-    themeButtons,
-    serverHopButton
-)
-
-table.insert(
-    textElements,
-    serverHopButton
-)
-
-rejoinButton.MouseButton1Click:Connect(
-    rejoinServer
-)
-
-serverHopButton.MouseButton1Click:Connect(
-    serverHop
-)
-
---========================================================--
--- LANGUAGE UPDATE
---========================================================--
-
-local tabButtons = {}
-
-local function updateLanguage()
-
-    local t =
-        translations[currentLang]
-
-    titleText.Text =
-        t.title
-
-    godButton.Text =
-        t.godBtn
-
-    espColorLabel.Text =
-        t.espColorLabel
-
-    boardColorLabel.Text =
-        t.boardColorLabel
-
-    themeLabel.Text =
-        t.themeLabel
-
-    textLabel.Text =
-        t.textLabel
-
-    langLabel.Text =
-        t.langLabel
-
-    rejoinButton.Text =
-        t.rejoinBtn
-
-    serverHopButton.Text =
-        t.serverHopBtn
-
-    for _, refresh in ipairs(
-        refreshFuncs
-    ) do
-
-        pcall(refresh)
-
-    end
-
-    if tabButtons.Main then
-        tabButtons.Main.Text =
-            t.tabMain
-    end
-
-    if tabButtons.ESP then
-        tabButtons.ESP.Text =
-            t.tabEsp
-    end
-
-    if tabButtons.FixLag then
-        tabButtons.FixLag.Text =
-            t.tabFixLag
-    end
-
-    if tabButtons.Misc then
-        tabButtons.Misc.Text =
-            t.tabMisc
-    end
-
+local function PickRaidTarget()
+	local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	if not myRoot then return end
+	local best, bestHum, bestRoot, bestScore
+	local near = 0
+	local onlyNew = CONFIG.RaidOnlyNewMobs ~= false
+	for _, m in ipairs(workspace.Monster:GetChildren()) do
+		local hum, root = m:FindFirstChild("Humanoid"), m:FindFirstChild("HumanoidRootPart")
+		if hum and root and hum.Health > 0 and not (onlyNew and RaidKnownMobs[m]) then
+			local d = (myRoot.Position - root.Position).Magnitude
+			if d <= (CONFIG.RaidTargetRange or 1000) then   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if d <= 40 then near = near + 1 end
+				local hpRatio = hum.MaxHealth > 0 and hum.Health / hum.MaxHealth or 1
+				local score = d + hpRatio * 8           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if not bestScore or score < bestScore then
+					best, bestHum, bestRoot, bestScore = m, hum, root, score
+				end
+			end
+		end
+	end
+	return best, bestHum, bestRoot, near
 end
 
-englishButton.MouseButton1Click:Connect(
-    function()
-
-        currentLang = "EN"
-
-        updateLanguage()
-
-    end
-)
-
-vietnameseButton.MouseButton1Click:Connect(
-    function()
-
-        currentLang = "VI"
-
-        updateLanguage()
-
-    end
-)
-
---========================================================--
--- SIDEBAR BUTTONS
---========================================================--
-
-local yOffset = 10
-
-for i, name in ipairs(
-    tabNames
-) do
-
-    local button =
-        Instance.new("TextButton")
-
-    button.Size =
-        UDim2.new(
-            1,
-            -16,
-            0,
-            32
-        )
-
-    button.Position =
-        UDim2.new(
-            0,
-            8,
-            0,
-            yOffset
-        )
-
-    button.BackgroundColor3 =
-        i == 1
-        and Color3.fromRGB(
-            70,
-            70,
-            90
-        )
-        or Color3.fromRGB(
-            30,
-            30,
-            40
-        )
-
-    button.TextColor3 =
-        currentTextColor
-
-    button.Font =
-        GLOBAL_FONT
-
-    button.TextSize = 11
-    button.Parent =
-        sidebar
-
-    table.insert(
-        textElements,
-        button
-    )
-
-    Instance.new(
-        "UICorner",
-        button
-    ).CornerRadius =
-        UDim.new(
-            0,
-            6
-        )
-
-    button.MouseButton1Click:Connect(
-        function()
-
-            for _, tab in pairs(
-                tabs
-            ) do
-
-                tab.Visible = false
-
-            end
-
-            for _, otherButton in pairs(
-                tabButtons
-            ) do
-
-                otherButton.BackgroundColor3 =
-                    Color3.fromRGB(
-                        30,
-                        30,
-                        40
-                    )
-
-            end
-
-            tabs[name].Visible =
-                true
-
-            button.BackgroundColor3 =
-                Color3.fromRGB(
-                    70,
-                    70,
-                    90
-                )
-
-        end
-    )
-
-    tabButtons[name] =
-        button
-
-    yOffset += 40
-
+local LastRaidTargetPrint
+local RaidGuiSince = nil
+local RaidNav = { arena = nil, fixed = false, last = 0, warned = false }   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+if type(CONFIG.RaidArenaPos) == "table" and #CONFIG.RaidArenaPos >= 3 then
+	RaidNav.arena = Vector3.new(CONFIG.RaidArenaPos[1], CONFIG.RaidArenaPos[2], CONFIG.RaidArenaPos[3])
+	RaidNav.fixed = true
 end
 
---========================================================--
--- OPEN BUTTON
---========================================================--
-
-local openUIButton =
-    Instance.new("TextButton")
-
-openUIButton.Name =
-    "OpenHHubButton"
-
-openUIButton.Size =
-    UDim2.new(
-        0,
-        50,
-        0,
-        50
-    )
-
-openUIButton.Position =
-    UDim2.new(
-        0.05,
-        0,
-        0.4,
-        0
-    )
-
-openUIButton.BackgroundColor3 =
-    Color3.fromRGB(
-        25,
-        25,
-        30
-    )
-
-openUIButton.Text =
-    "HUB"
-
-openUIButton.TextColor3 =
-    Color3.new(
-        1,
-        1,
-        1
-    )
-
-openUIButton.Font =
-    GLOBAL_FONT
-
-openUIButton.TextSize = 16
-
-openUIButton.Visible = false
-openUIButton.Active = true
-openUIButton.Draggable = true
-
-openUIButton.Parent =
-    screenGui
-
-Instance.new(
-    "UICorner",
-    openUIButton
-).CornerRadius =
-    UDim.new(
-        1,
-        0
-    )
-
-local openStroke =
-    Instance.new("UIStroke")
-
-openStroke.Thickness = 2
-
-openStroke.Color =
-    Color3.fromRGB(
-        80,
-        80,
-        255
-    )
-
-openStroke.Parent =
-    openUIButton
-
---========================================================--
--- MINIMIZE
---========================================================--
-
-minimizeButton.MouseButton1Click:Connect(
-    function()
-
-        local tween =
-            TweenService:Create(
-                frame,
-                TweenInfo.new(
-                    0.3,
-                    Enum.EasingStyle.Back,
-                    Enum.EasingDirection.In
-                ),
-                {
-                    Size =
-                        UDim2.new(
-                            0,
-                            0,
-                            0,
-                            0
-                        )
-                }
-            )
-
-        tween:Play()
-
-        tween.Completed:Wait()
-
-        frame.Visible = false
-
-        openUIButton.Visible = true
-
-        openUIButton.Size =
-            UDim2.new(
-                0,
-                50,
-                0,
-                50
-            )
-
-    end
-)
-
---========================================================--
--- OPEN
---========================================================--
-
-openUIButton.MouseButton1Click:Connect(
-    function()
-
-        openUIButton.Visible = false
-
-        frame.Visible = true
-
-        frame.Size =
-            UDim2.new(
-                0,
-                0,
-                0,
-                0
-            )
-
-        TweenService:Create(
-            frame,
-            TweenInfo.new(
-                0.4,
-                Enum.EasingStyle.Back,
-                Enum.EasingDirection.Out
-            ),
-            {
-                Size =
-                    UDim2.new(
-                        0,
-                        390,
-                        0,
-                        320
-                    )
-            }
-        ):Play()
-
-    end
-)
-
---========================================================--
--- CLOSE / CLEANUP
---========================================================--
-
-local function cleanupHHub()
-
-    gradientRunning = false
-
-    tpEnabled = false
-
-    toggleNoclip(false)
-    toggleInvisibility(false)
-    toggleFly(false)
-    toggleInfJump(false)
-    toggleFreezeRay(false)
-    toggleFPSDisplay(false)
-    toggleAutoPressButton(false)
-    toggleFixLag(false)
-    toggleHideMapAndOthers(false)
-    toggleMuteAllSounds(false)
-    toggleSpectate(false)
-
-    walkConnection =
-        disconnectConnection(
-            walkConnection
-        )
-
-    jumpConnection =
-        disconnectConnection(
-            jumpConnection
-        )
-
-    gravityConnection =
-        disconnectConnection(
-            gravityConnection
-        )
-
-    if player.Character then
-
-        local humanoid =
-            player.Character:FindFirstChildOfClass(
-                "Humanoid"
-            )
-
-        if humanoid then
-
-            humanoid.WalkSpeed = 16
-            humanoid.JumpPower = 50
-
-        end
-
-    end
-
-    Workspace.Gravity = 196.2
-
-    espEnabled = false
-
-    updateESP()
-
-    if screenGui then
-        screenGui:Destroy()
-    end
-
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function RaidObjPos(o)
+	if o:IsA("BasePart") then return o.Position end
+	if o:IsA("Model") then
+		local ok, cf = pcall(function() return o:GetPivot() end)
+		if ok and cf then return cf.Position end
+	end
+end
+function RaidNav.FindInFolder()
+	local folder = workspace:FindFirstChild("Raids")
+	if not folder then return end
+	local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	local function pick(list)
+		local best, bestD
+		for _, o in ipairs(list) do
+			if string.find(string.lower(o.Name), "raid", 1, true) then
+				local pos = RaidObjPos(o)
+				if pos then
+					local d = hrp and (hrp.Position - pos).Magnitude or 0
+					if not bestD or d < bestD then best, bestD = pos, d end
+				end
+			end
+		end
+		return best
+	end
+	return pick(folder:GetChildren()) or pick(folder:GetDescendants())
 end
 
-closeButton.MouseButton1Click:Connect(
-    cleanupHHub
-)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function RaidNav.Ensure(sinceJoin)
+	if CONFIG.RaidReturn == false then return end
+	local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	if not hrp or IsDead() then return end
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if not RaidNav.fixed then
+		local fp = RaidNav.FindInFolder()
+		if fp then
+			local target = fp + Vector3.new(0, CONFIG.RaidFolderHeight or 5, 0)
+			if (hrp.Position - target).Magnitude > (CONFIG.RaidReturnDistance or 500) and tick() - RaidNav.last >= 1 then
+				RaidNav.last = tick()
+				print(string.format("[Raid] พบจุดเรดใน workspace.Raids (%.0f, %.0f, %.0f) -> วาร์ปไป", fp.X, fp.Y, fp.Z))
+				StartMagnet = false
+				HoverOrigin = nil
+				TP(CFrame.new(target))
+			end
+			return
+		end
+	end
+	if not RaidNav.arena then
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		local fromJoin = (hrp.Position - RAID_JOIN_POS.Position).Magnitude
+		if fromJoin > 150 and sinceJoin >= 0.5 then
+			RaidNav.arena = hrp.Position
+			print(string.format("[Raid] จำตำแหน่งเรด (%.0f, %.0f, %.0f)  -> ใส่ใน CONFIG.RaidArenaPos = {%.0f, %.0f, %.0f} ได้", RaidNav.arena.X, RaidNav.arena.Y, RaidNav.arena.Z, RaidNav.arena.X, RaidNav.arena.Y, RaidNav.arena.Z))
+		elseif sinceJoin >= 6 and not RaidNav.warned then
+			RaidNav.warned = true
+			warn("[Raid] ยังไม่รู้ตำแหน่งเรด (ตัวละครยังอยู่ที่จุดเข้าเรด) -> ใส่พิกัดที่ CONFIG.RaidArenaPos เพื่อให้เทเลพอตไปเรดได้")
+		end
+		return
+	end
+	if (hrp.Position - RaidNav.arena).Magnitude > (CONFIG.RaidReturnDistance or 500) and tick() - RaidNav.last >= 1 then
+		RaidNav.last = tick()
+		print("[Raid] ไม่ได้อยู่ตำแหน่งเรด -> เทเลพอตกลับไปที่เรด")
+		StartMagnet = false
+		HoverOrigin = nil
+		TP(CFrame.new(RaidNav.arena))
+	end
+end
+local RaidNoMobSince, RaidFoundMob = nil, false
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+task.spawn(function()
+	while task.wait() do
+		if _G.Raid then
+			pcall(function()
+				while FruitBusy or ShopBusy or StoreBusy do task.wait(0.1) end
+				if not RaidGuiVisible() then
+					_G.DistanceMob = CONFIG.Distance
+					RaidGuiSince = nil
+					if not RaidNav.fixed then RaidNav.arena = nil end
+					RaidNav.warned = false
+					RaidNoMobSince, RaidFoundMob = nil, false
+					return
+				end
+				if IsDead() then RaidNoMobSince = nil return end
 
---========================================================--
--- BUTTON SCALE EFFECT
---========================================================--
+				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if not RaidGuiSince then
+					RaidGuiSince = tick()
+					RaidNoMobSince, RaidFoundMob = nil, false
+					StartMagnet = false
+					print("[Raid] เข้าเรดแล้ว รอ", CONFIG.RaidFarmDelay or 11, "วินาทีก่อนเริ่มฟาร์ม")
+				end
+				RaidNav.Ensure(tick() - RaidGuiSince)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if tick() - RaidGuiSince < (CONFIG.RaidFarmDelay or 11) then
+					HoverWait()
+					return
+				end
 
-for _, obj in ipairs(
-    screenGui:GetDescendants()
-) do
+				local mob, hum, root, near = PickRaidTarget()
+				if not mob then
+					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					local limit = CONFIG.RaidNoMobResetSeconds or 0
+					if limit > 0 and not RaidFoundMob then
+						RaidNoMobSince = RaidNoMobSince or tick()
+						if tick() - RaidNoMobSince >= limit then
+							RaidNoMobSince = nil
+							warn("[Raid] ไม่เจอมอนเรด " .. limit .. " วิหลังรอครบ -> เรดบัค ฆ่าตัวตายรีตัวละคร")
+							local h = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+							if h then h.Health = 0 end
+							return
+						end
+					end
+					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					if RaidFoundMob and tick() - (RaidNav.lastKill or 0) < (CONFIG.RaidGapHold or 1.5) then
+						StartMagnet = false
+						return
+					end
+					HoverWait()                          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					return
+				end
+				RaidFoundMob, RaidNoMobSince = true, nil
+				HoverOrigin = nil
+				if mob ~= LastRaidTargetPrint then
+					LastRaidTargetPrint = mob
+					print(string.format("[Raid] เป้าหมายเรด: %s (%.0f, %.0f, %.0f)", mob.Name, root.Position.X, root.Position.Y, root.Position.Z))
+				end
 
-    if obj:IsA("TextButton") then
+				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if CONFIG.RaidSmart and near >= 5 and (CONFIG.RaidCrowdDistance or 0) > 0 then
+					_G.DistanceMob = math.max(CONFIG.Distance, CONFIG.RaidCrowdDistance)
+				else
+					_G.DistanceMob = CONFIG.Distance
+				end
 
-        local scale =
-            Instance.new("UIScale")
+				repeat
+					task.wait()
+					while FruitBusy or ShopBusy or StoreBusy do task.wait(0.1) end
+					if IsDead() then break end
 
-        scale.Scale = 1
-        scale.Parent = obj
+					if CONFIG.RaidSmart and tick() > NoRetreatUntil and HpRatio() < CONFIG.RaidRetreatHp then
+						RetreatUntilHealed()
+						if IsDead() then break end
+					end
 
-        obj.MouseEnter:Connect(
-            function()
+					StartMagnet = true
+					_G.SkillTarget = root
+					CombatEquip()
+					Follow.Set(root)
+					PosMon = root.CFrame
+					Mon = mob.Name
+					VirtualUser:CaptureController()
+					VirtualUser:Button1Down(Vector2.new(1280, 672), workspace.Camera.CFrame)
+				until not _G.Raid or not mob.Parent or hum.Health <= 0 or not RaidGuiVisible()
+				RaidNav.lastKill = tick()
+				StartMagnet = false
+			end)
+		end
+	end
+end)
 
-                TweenService:Create(
-                    scale,
-                    TweenInfo.new(
-                        0.12
-                    ),
-                    {
-                        Scale = 1.03
-                    }
-                ):Play()
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local PUMPKIN_SUMMON_POS = CFrame.new(-1180.260742, -87.373695, 1463.069946)
+local PUMPKIN_QUEST_POS  = CFrame.new(-1162.951660, -92.914436, 1462.343750)
+local SKULL_POS          = CFrame.new(-1489.832764, -92.846230, 1277.917725)
 
-            end
-        )
-
-        obj.MouseLeave:Connect(
-            function()
-
-                TweenService:Create(
-                    scale,
-                    TweenInfo.new(
-                        0.12
-                    ),
-                    {
-                        Scale = 1
-                    }
-                ):Play()
-
-            end
-        )
-
-        obj.MouseButton1Down:Connect(
-            function()
-
-                TweenService:Create(
-                    scale,
-                    TweenInfo.new(
-                        0.08
-                    ),
-                    {
-                        Scale = 0.95
-                    }
-                ):Play()
-
-            end
-        )
-
-        obj.MouseButton1Up:Connect(
-            function()
-
-                TweenService:Create(
-                    scale,
-                    TweenInfo.new(
-                        0.08
-                    ),
-                    {
-                        Scale = 1.03
-                    }
-                ):Play()
-
-            end
-        )
-
-    end
-
+local function PumpkinActive()
+	return _G.Pumpkin and not _G.Raid
 end
 
---========================================================--
--- CHARACTER RESPAWN HANDLER
---========================================================--
-
-player.CharacterAdded:Connect(
-    function()
-
-        task.wait(1)
-
-        if walkEnabled then
-
-            local character =
-                player.Character
-
-            local humanoid =
-                character
-                and character:FindFirstChildOfClass(
-                    "Humanoid"
-                )
-
-            if humanoid then
-                humanoid.WalkSpeed =
-                    walkSpeed
-            end
-
-        end
-
-        if jumpEnabled then
-
-            local character =
-                player.Character
-
-            local humanoid =
-                character
-                and character:FindFirstChildOfClass(
-                    "Humanoid"
-                )
-
-            if humanoid then
-
-                humanoid.UseJumpPower =
-                    true
-
-                humanoid.JumpPower =
-                    jumpPower
-
-            end
-
-        end
-
-        if espEnabled then
-            updateESP()
-        end
-
-    end
-)
-
---========================================================--
--- START
---========================================================--
-
-updateLanguage()
-
--- Đảm bảo tab đầu tiên hiện
-for name, tab in pairs(tabs) do
-
-    tab.Visible =
-        name == "Main"
-
+local function WaitBusy()
+	while FruitBusy or ShopBusy or StoreBusy do task.wait(0.1) end
 end
 
--- Đảm bảo frame có kích thước thật
-frame.Visible = true
+local function FindAlive(name)
+	local folder = workspace:FindFirstChild("Monster")
+	if not folder then return end
+	for _, m in ipairs(folder:GetChildren()) do
+		if m.Name == name then
+			local hum, root = m:FindFirstChild("Humanoid"), m:FindFirstChild("HumanoidRootPart")
+			if hum and root and hum.Health > 0 then return m, hum, root end
+		end
+	end
+end
 
-frame.Size =
-    UDim2.new(
-        0,
-        0,
-        0,
-        0
-    )
+local function PressE()
+	VIM:SendKeyEvent(true, "E", false, game)
+	task.wait(0.03)
+	VIM:SendKeyEvent(false, "E", false, game)
+end
 
-local showTween =
-    TweenService:Create(
-        frame,
-        TweenInfo.new(
-            0.5,
-            Enum.EasingStyle.Back,
-            Enum.EasingDirection.Out
-        ),
-        {
-            Size =
-                UDim2.new(
-                    0,
-                    390,
-                    0,
-                    320
-                )
-        }
-    )
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function CollectPrompts(cf, range)
+	local list = {}
+	if not fireproximityprompt then return list end
+	for _, d in ipairs(workspace:GetDescendants()) do
+		if d:IsA("ProximityPrompt") then
+			local part = d.Parent
+			if part and part:IsA("BasePart") and (part.Position - cf.Position).Magnitude <= range then
+				table.insert(list, d)
+			end
+		end
+	end
+	return list
+end
 
-showTween:Play()
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function SpawnLocation(name)
+	local ok, part = pcall(function()
+		return workspace.Location.Enemy_Location:FindFirstChild(name)
+	end)
+	if ok and part and part:IsA("BasePart") then return part.CFrame end
+end
 
--- Auto TP loop
-startTeleportLoop()
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function SpawnInfo(name)
+	local loc = SpawnLocation(name)
+	local count, nearest = 0, math.huge
+	local folder = workspace:FindFirstChild("Monster")
+	if folder then
+		for _, m in ipairs(folder:GetChildren()) do
+			if m.Name == name then
+				local hum, root = m:FindFirstChild("Humanoid"), m:FindFirstChild("HumanoidRootPart")
+				if hum and hum.Health > 0 then
+					count = count + 1
+					if root and loc then
+						local d = (root.Position - loc.Position).Magnitude
+						if d < nearest then nearest = d end
+					end
+				end
+			end
+		end
+	end
+	return count, nearest
+end
 
-print("==========================================")
-print("[H HUB] GUI HOÀN TẤT")
-print("[H HUB] ScreenGui:", screenGui:GetFullName())
-print("[H HUB] MainFrame:", frame:GetFullName())
-print("[H HUB] H HUB đã khởi động thành công!")
-print("==========================================")
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function PrintSpawnReport()
+	local ok, folder = pcall(function() return workspace.Location.Enemy_Location end)
+	if not ok or not folder then warn("ไม่พบ Enemy_Location") return end
+	local lines = {}
+	for _, location in ipairs(folder:GetChildren()) do
+		if location:IsA("BasePart") then
+			local count, nearest = SpawnInfo(location.Name)
+			local status = count > 0
+				and string.format("เกิดแล้ว | จำนวน: %d | ใกล้สุด: %.2f", count, nearest)
+				or "ยังไม่เกิด"
+			local line = location.Name .. " | " .. status
+			table.insert(lines, line)
+			print(line)
+		end
+		task.wait()
+	end
+	if setclipboard then pcall(setclipboard, table.concat(lines, "\n")) end
+	print("ตรวจสอบทั้งหมด:", #lines)
+end
+
+local function AttackStep(root)
+	CheckStuck(root.Parent)
+	_G.SkillTarget = root
+	CombatEquip()
+	Follow.Set(root)
+	VirtualUser:CaptureController()
+	VirtualUser:Button1Down(Vector2.new(1280, 672), workspace.Camera.CFrame)
+end
+
+local function MaybeRetreat()
+	if tick() > NoRetreatUntil and HpRatio() < CONFIG.RaidRetreatHp then
+		RetreatUntilHealed()
+	end
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function SummonPumpkin()
+	_G.PumpkinStatus = "Summoning Giant Pumpkin"
+	StartMagnet = false
+	TP(PUMPKIN_SUMMON_POS)
+	task.wait(0.4)
+	local prompts = CollectPrompts(PUMPKIN_SUMMON_POS, 25)
+	for _ = 1, CONFIG.SummonPresses do         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		if not PumpkinActive() then return false end
+		WaitBusy()
+		if IsDead() then return false end
+		if FindAlive("Giant Pumpkin") then return true end
+		pcall(TP, PUMPKIN_SUMMON_POS)
+		PressE()
+		for _, pr in ipairs(prompts) do pcall(fireproximityprompt, pr) end
+		task.wait(0.25)
+	end
+	local t1 = tick()                          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	while PumpkinActive() and tick() - t1 < 2 do
+		if FindAlive("Giant Pumpkin") then return true end
+		task.wait(0.2)
+	end
+	return FindAlive("Giant Pumpkin") ~= nil
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function FightPumpkin()
+	local mob, hum, root = FindAlive("Giant Pumpkin")
+	if not mob then return end
+
+	_G.PumpkinStatus = "Pumpkin Quest"
+	StartMagnet = false
+	local prompts = CollectPrompts(PUMPKIN_QUEST_POS, 25)
+	local tries = 0
+	while PumpkinActive() and tries < 8 do
+		WaitBusy()
+		if IsDead() then return end
+		local needQuest = true
+		pcall(function()
+			local slot = LocalPlayer.PlayerGui.QuestGui.Holder.QuestSlot1
+			if slot.Visible then
+				if string.find(string.lower(slot.Target.Text), "pumpkin") then
+					needQuest = false
+				else   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					RS.OtherEvent.QuestEvents.Quest:FireServer("Abandon_Quest", { QuestSlot = "QuestSlot1" })
+				end
+			end
+		end)
+		if not needQuest then break end
+		tries = tries + 1
+		TP(PUMPKIN_QUEST_POS)
+		task.wait(0.3)
+		PressE()
+		for _, pr in ipairs(prompts) do pcall(fireproximityprompt, pr) end
+		task.wait(0.5)
+	end
+
+	_G.PumpkinStatus = "Fighting Giant Pumpkin"
+	repeat
+		task.wait()
+		WaitBusy()
+		if IsDead() then break end
+		if CONFIG.RaidSmart then MaybeRetreat() end
+		AttackStep(root)
+	until not PumpkinActive() or not mob.Parent or hum.Health <= 0
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local function FarmSkulls()
+	_G.PumpkinStatus = "Farming Scary Skull"
+	TP(SKULL_POS)
+	local kills, idle = 0, 0
+	while PumpkinActive() and kills < CONFIG.PumpkinSkullKills do
+		WaitBusy()
+		if IsDead() then break end
+		if FindAlive("Giant Pumpkin") then break end          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		_G.PumpkinStatus = string.format("Farming Scary Skull (%d/%d)", kills, CONFIG.PumpkinSkullKills)
+		local mob, hum, root = FindAlive("Scary Skull")
+		if mob then
+			idle = 0
+			repeat
+				task.wait()
+				WaitBusy()
+				if IsDead() then break end
+				if CONFIG.RaidSmart then MaybeRetreat() end
+				StartMagnet = true
+				PosMon = root.CFrame
+				Mon = "Scary Skull"
+				AttackStep(root)
+			until not PumpkinActive() or not mob.Parent or hum.Health <= 0
+			StartMagnet = false
+			if hum.Health <= 0 then
+				kills = kills + 1
+				print("[Pumpkin] Scary Skull", kills, "/", CONFIG.PumpkinSkullKills)
+			end
+		else
+			-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			local waitCF = (idle > 20 and SpawnLocation("Scary Skull")) or SKULL_POS
+			pcall(TP, waitCF)
+			task.wait(0.3)
+			idle = idle + 1
+			if idle > 60 then break end                       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		end
+	end
+	StartMagnet = false
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+task.spawn(function()
+	while task.wait(0.3) do
+		if PumpkinActive() then
+			pcall(function()
+				WaitBusy()
+				if IsDead() then return end
+				if FindAlive("Giant Pumpkin") then
+					FightPumpkin()
+				elseif not SummonPumpkin() then
+					if PumpkinActive() and not IsDead() then FarmSkulls() end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				end
+			end)
+		else
+			_G.PumpkinStatus = nil
+		end
+	end
+end)
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+task.spawn(function()
+	local offCount = 0
+	while task.wait(1) do
+		if CONFIG.AutoPumpkin then
+			pcall(function()
+				if PumpkinWanted() and not _G.Raid then
+					offCount = 0
+					if not _G.Pumpkin then
+						_G.Pumpkin = true
+						_G.AutoFarm = false
+						StartMagnet = false
+						print("[Pumpkin] เข้าโหมด Giant Pumpkin")
+					end
+				else
+					offCount = offCount + 1
+					if _G.Pumpkin and offCount >= 2 then
+						_G.Pumpkin = false
+						StartMagnet = false
+						HoverOrigin = nil
+						if FarmAllowed() then _G.AutoFarm = CONFIG.AutoFarm end
+						print("[Pumpkin] ออกจากโหมด Giant Pumpkin")
+					end
+				end
+			end)
+		end
+	end
+end)
+
+if CONFIG.DebugSpawn then
+	task.spawn(function() pcall(PrintSpawnReport) end)
+end
+
+-- ===================== Auto Race V2 =====================
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+do
+	local RACE_QUEST_POS = CFrame.new(-2621.948486, -77.402916, -2003.441772)
+	local RACE_MOB = "Sogga"
+
+	local function QuestSlot()
+		local ok, slot = pcall(function() return LocalPlayer.PlayerGui.QuestGui.Holder.QuestSlot1 end)
+		return ok and slot or nil
+	end
+
+	local function HasSoggaQuest()
+		local slot = QuestSlot()
+		return slot and slot.Visible and string.find(string.lower(slot.Target.Text), string.lower(RACE_MOB)) ~= nil
+	end
+
+	local function RaceActive() return _G.RaceV2 and not _G.Raid end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function TakeQuest()
+		_G.RaceV2Status = "Race V2: Quest"
+		StartMagnet = false
+		local prompts = CollectPrompts(RACE_QUEST_POS, 25)
+		for _ = 1, 10 do
+			if not RaceActive() then return false end
+			WaitBusy()
+			if IsDead() then return false end
+			local slot = QuestSlot()
+			if slot and slot.Visible then
+				if HasSoggaQuest() then return true end
+				RS.OtherEvent.QuestEvents.Quest:FireServer("Abandon_Quest", { QuestSlot = "QuestSlot1" })
+				task.wait(0.5)
+			end
+			TP(RACE_QUEST_POS)
+			task.wait(0.3)
+			PressE()
+			for _, pr in ipairs(prompts) do pcall(fireproximityprompt, pr) end
+			task.wait(0.6)
+		end
+		return HasSoggaQuest()
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function FarmSogga()
+		local idle = 0
+		while RaceActive() and HasSoggaQuest() do
+			WaitBusy()
+			if IsDead() then task.wait(1) return end
+			_G.RaceV2Status = "Race V2: Farming Sogga"
+			local mob, hum, root = FindAlive(RACE_MOB)
+			if mob then
+				idle = 0
+				repeat
+					task.wait()
+					WaitBusy()
+					if IsDead() then break end
+					StartMagnet = true
+					PosMon = root.CFrame
+					Mon = RACE_MOB
+					AttackStep(root)
+				until not RaceActive() or not mob.Parent or hum.Health <= 0 or not HasSoggaQuest()
+				StartMagnet = false
+			else
+				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				pcall(TP, SpawnLocation(RACE_MOB) or RACE_QUEST_POS)
+				task.wait(0.3)
+				idle = idle + 1
+			end
+		end
+		StartMagnet = false
+	end
+
+	local function FindOrb()
+		local c = LocalPlayer.Character
+		return FindTool("Awakening Orb")
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function UseOrb()
+		_G.RaceV2Status = "Race V2: Using Awakening Orb"
+		if not FindOrb() then
+			pcall(function()
+				RS:WaitForChild("OtherEvent"):WaitForChild("ItemEvents"):WaitForChild("UpdateInventory")
+					:InvokeServer("Item", { Action = "Unstore", SelectedItem = "Awakening Orb" })
+			end)
+			local t0 = tick()
+			while not FindOrb() and tick() - t0 < 5 do task.wait(0.2) end
+		end
+		local orb = FindOrb()
+		if not orb then return false end
+		if orb.Parent ~= LocalPlayer.Character then
+			pcall(function() LocalPlayer.Character.Humanoid:EquipTool(orb) end)
+			task.wait(0.4)
+		end
+		local ok = pcall(function()
+			local tool = LocalPlayer.Character:WaitForChild("Awakening Orb", 5)
+			RS:WaitForChild("OtherEvent"):WaitForChild("MainEvents"):WaitForChild("Modules")
+				:FireServer("Awakening_Orb", { Action = "Use", Tool = tool })
+		end)
+		return ok
+	end
+
+	local function OrbInHand()
+		local c = LocalPlayer.Character
+		return c and c:FindFirstChild("Awakening Orb") ~= nil
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function StoreOrb()
+		_G.RaceV2Status = "Race V2: Storing Awakening Orb"
+		for _ = 1, 3 do
+			local orb = FindOrb()
+			if not orb then return true end
+			if orb.Parent ~= LocalPlayer.Character then
+				pcall(function() LocalPlayer.Character.Humanoid:EquipTool(orb) end)
+				task.wait(0.4)
+			end
+			pcall(function()
+				local tool = LocalPlayer.Character:WaitForChild("Awakening Orb", 5)
+				RS:WaitForChild("OtherEvent"):WaitForChild("MainEvents"):WaitForChild("Modules")
+					:FireServer("Awakening_Orb", { Action = "Store", Tool = tool })
+			end)
+			local t0 = tick()
+			while FindOrb() and tick() - t0 < 3 do task.wait(0.2) end
+			if not FindOrb() then return true end
+		end
+		return false
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local NA_FILE = "MemeSea_RaceV2NA_" .. LocalPlayer.UserId .. ".txt"
+	local NA = {}
+	pcall(function()
+		if isfile and readfile and isfile(NA_FILE) then
+			for n in string.gmatch(readfile(NA_FILE), "[^,\n]+") do NA[n] = true end
+		end
+	end)
+	local function MarkNA(name)
+		NA[name] = true
+		if writefile then
+			local list = {}
+			for n in pairs(NA) do table.insert(list, n) end
+			pcall(writefile, NA_FILE, table.concat(list, ","))
+		end
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local WM_NAME = "Watermelon Man"
+	local WATERMELON_POS = nil   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local wmWarned = false
+
+	local function InstCF(inst)
+		if inst:IsA("Model") then return inst:GetPivot() end
+		if inst:IsA("BasePart") then return inst.CFrame end
+		local part = inst:FindFirstChildWhichIsA("BasePart", true)
+		return part and part.CFrame
+	end
+
+	local function FindWatermelon()
+		if WATERMELON_POS then return WATERMELON_POS end
+		for _, d in ipairs(workspace:GetDescendants()) do
+			if d.Name == WM_NAME then
+				local cf = InstCF(d)
+				if cf then return cf end
+			end
+		end
+	end
+
+	local rerolls, noChange = 0, 0
+	local function Reroll()
+		if rerolls >= CONFIG.RaceRerollMax then
+			_G.RaceV2Done = true
+			warn("[RaceV2] รีเผ่าครบ " .. CONFIG.RaceRerollMax .. " ครั้งแล้วยังไม่ได้เผ่าที่อัพได้ หยุดโหมดนี้")
+			return
+		end
+		rerolls = rerolls + 1
+		_G.RaceV2Status = string.format("Race V2: Reroll Race (%d/%d)", rerolls, CONFIG.RaceRerollMax)
+		StartMagnet = false
+		local before = ReadRace()
+		local cf = FindWatermelon()
+		if cf then
+			TP(CFrame.new(cf.Position + Vector3.new(0, 3, 0)))
+		elseif not wmWarned then
+			wmWarned = true
+			warn("[RaceV2] ไม่พบ NPC " .. WM_NAME .. " ใน workspace -> ยิงรีเผ่าจากตำแหน่งปัจจุบัน (ถ้าไม่เวิร์กให้ใส่พิกัดที่ WATERMELON_POS)")
+		end
+		task.wait(0.6)
+		pcall(function()
+			RS:WaitForChild("OtherEvent"):WaitForChild("MainEvents"):WaitForChild("Modules")
+				:FireServer("Reroll_Race", WM_NAME)
+		end)
+		local t0, after = tick(), nil
+		repeat
+			task.wait(0.3)
+			after = ReadRace()
+		until (after and after ~= before) or tick() - t0 > 4
+		if after and after ~= before then
+			noChange = 0
+			print("[RaceV2] รีเผ่า:", before, "->", after)
+			task.wait(1.5)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		else
+			noChange = noChange + 1
+			if noChange >= 3 then
+				_G.RaceV2Done = true
+				warn("[RaceV2] รีเผ่า 3 ครั้งติดแล้วเผ่าไม่เปลี่ยน (อาจไม่พอเงิน/อยู่ไกล NPC) หยุดโหมดนี้")
+			end
+		end
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function TryOrb()
+		if not UseOrb() then return "none" end
+		local t0 = tick()
+		while tick() - t0 < 4 and OrbInHand() do task.wait(0.2) end
+		if OrbInHand() then
+			StoreOrb()
+			return "na"
+		end
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		for i = 1, 10 do
+			task.wait(0.5)
+			local _, ver = ReadRace()
+			if ver and ver >= 2 then return "v2" end
+			if i == 4 or i == 8 then   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if ProbeRaceV2(true) == 2 then return "v2" end
+			end
+		end
+		return "unknown"
+	end
+
+	task.spawn(function()
+		local orbOwned, probed = false, false
+		while task.wait(0.3) do
+			if RaceActive() then
+				pcall(function()
+					WaitBusy()
+					if IsDead() then return end
+					local rn = ReadRace()
+					if not rn then task.wait(1) return end
+
+					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					if NA[rn] then
+						if CONFIG.AutoRerollRace then Reroll() else _G.RaceV2Done = true end
+						return
+					end
+
+					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					if not orbOwned and not probed and not FindOrb() then
+						probed = true
+						_G.RaceV2Status = "Race V2: Checking Orb"
+						pcall(function()
+							RS:WaitForChild("OtherEvent"):WaitForChild("ItemEvents"):WaitForChild("UpdateInventory")
+								:InvokeServer("Item", { Action = "Unstore", SelectedItem = "Awakening Orb" })
+						end)
+						local t0 = tick()
+						while not FindOrb() and tick() - t0 < 2 do task.wait(0.2) end
+					end
+					if FindOrb() then orbOwned = true end
+
+					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					if orbOwned then
+						local r = TryOrb()
+						if r == "v2" then
+							_G.RaceV2Done = true
+							print("[RaceV2] เผ่าเป็น V2 แล้ว")
+						elseif r == "na" then
+							MarkNA(rn)
+							warn("[RaceV2] Orb ไม่หายหลังใช้ -> เผ่า " .. tostring(rn) .. " อัพไม่ได้ เก็บ Orb กลับคลังแล้ว")
+							if not CONFIG.AutoRerollRace then _G.RaceV2Done = true end
+						elseif r == "none" then
+							orbOwned = false          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						else
+							_G.RaceV2Done = true      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+							warn("[RaceV2] Orb หายแต่ยังไม่เห็นเผ่าเป็น V2 หยุดโหมดนี้ (เช็กเผ่าเองอีกที)")
+						end
+						return
+					end
+
+					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					if not HasSoggaQuest() then
+						if not TakeQuest() then task.wait(3) return end
+					end
+					FarmSogga()
+					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					if RaceActive() and not HasSoggaQuest() then
+						_G.RaceV2Status = "Race V2: Quest Complete"
+						orbOwned = true
+						task.wait(1)
+					end
+				end)
+			end
+		end
+	end)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	task.spawn(function()
+		local offCount = 0
+		while task.wait(1) do
+			pcall(function()
+				if RaceV2Wanted() then
+					offCount = 0
+					if not _G.RaceV2 and not _G.Raid and not RaidGuiVisible() then
+						_G.RaceV2 = true
+						_G.EvilNoob = false
+						_G.ItemQuest = false
+						_G.Pumpkin = false
+						_G.AutoFarm = false
+						StartMagnet = false
+						print("[RaceV2] เข้าโหมด Race V2")
+					end
+				else
+					offCount = offCount + 1
+					if _G.RaceV2 and offCount >= 2 then
+						_G.RaceV2 = false
+						_G.RaceV2Status = nil
+						StartMagnet = false
+						HoverOrigin = nil
+						if FarmAllowed() then _G.AutoFarm = CONFIG.AutoFarm end
+						print("[RaceV2] ออกจากโหมด Race V2")
+					end
+				end
+			end)
+		end
+	end)
+end
+
+-- ===================== Flame Katana =====================
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+do
+	local KATANA = "Flame Katana"
+	local UI_KEY = "Weapon: Flame Katana"
+	local SELLER_POS = CFrame.new(111.174164, -3.414658, -1575.120850)
+	local BUY_ARGS = { "Weapon_Seller", "Cheems" }   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local DOG = "Walter Dog"
+	local DOG_FALLBACK = CFrame.new(10.436995506286621, -37.043067932128906, -1034.9451904296875)
+
+	local function FlameActive() return _G.FlameKatana and not _G.Raid end
+
+	local function HaveKatana()
+		local c = LocalPlayer.Character
+		return (FindTool(KATANA)) ~= nil
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function Unstore()
+		pcall(function()
+			RS:WaitForChild("OtherEvent"):WaitForChild("ItemEvents"):WaitForChild("UpdateInventory")
+				:InvokeServer("Weapon", { SelectedItem = KATANA })
+		end)
+		local t0 = tick()
+		while not HaveKatana() and tick() - t0 < 3 do task.wait(0.2) end
+		return HaveKatana()
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function KillWalterDog()
+		local t0 = tick()
+		while FlameActive() and tick() - t0 < 150 do
+			WaitBusy()
+			if IsDead() then
+				task.wait(1)
+			else
+				local mob, hum, root = FindAlive(DOG)
+				if mob then
+					_G.FlameStatus = "Flame Katana: Fighting " .. DOG
+					repeat
+						task.wait()
+						WaitBusy()
+						if IsDead() then break end
+						if CONFIG.RaidSmart then MaybeRetreat() end
+						StartMagnet = true
+						PosMon = root.CFrame
+						Mon = DOG
+						AttackStep(root)
+					until not FlameActive() or not mob.Parent or hum.Health <= 0
+					StartMagnet = false
+					if hum.Health <= 0 then return true end
+				else
+					_G.FlameStatus = "Flame Katana: Waiting " .. DOG
+					pcall(TP, SpawnLocation(DOG) or DOG_FALLBACK)
+					task.wait(0.3)
+				end
+			end
+		end
+		return false
+	end
+
+	local function Cycle()
+		_G.FlameStatus = "Flame Katana: Checking bag"
+		if HaveKatana() or Unstore() then return true end
+		if not FlameActive() then return false end
+
+		_G.FlameStatus = "Flame Katana: Buying"
+		StartMagnet = false
+		TP(SELLER_POS)
+		task.wait(0.6)
+		pcall(function()
+			RS:WaitForChild("OtherEvent"):WaitForChild("MainEvents"):WaitForChild("Modules")
+				:FireServer(unpack(BUY_ARGS))
+		end)
+		task.wait(1.2)
+		if Unstore() then return true end
+		if not FlameActive() then return false end
+
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		KillWalterDog()
+		return false
+	end
+
+	task.spawn(function()
+		local cycles = 0
+		while task.wait(0.3) do
+			if FlameActive() then
+				pcall(function()
+					WaitBusy()
+					if IsDead() then return end
+					cycles = cycles + 1
+					if cycles > CONFIG.FlameKatanaMaxCycles then
+						_G.FlameDone = true
+						warn("[FlameKatana] วนครบ " .. CONFIG.FlameKatanaMaxCycles .. " รอบแล้วยังไม่ได้ดาบ หยุดโหมดนี้")
+						return
+					end
+					print("[FlameKatana] รอบที่", cycles)
+					if Cycle() then
+						SetDone(UI_KEY)
+						_G.FlameDone = true
+						print("[FlameKatana] ได้ Flame Katana แล้ว")
+					end
+				end)
+			end
+		end
+	end)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	task.spawn(function()
+		local offCount = 0
+		while task.wait(1) do
+			pcall(function()
+				if HaveKatana() then SetDone(UI_KEY) end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if FlameWanted() then
+					offCount = 0
+					if not _G.FlameKatana and not _G.Raid and not RaidGuiVisible() then
+						_G.FlameKatana = true
+						_G.EvilNoob = false
+						_G.ItemQuest = false
+						_G.RaceV2 = false
+						_G.Pumpkin = false
+						_G.AutoFarm = false
+						StartMagnet = false
+						print("[FlameKatana] เข้าโหมด Flame Katana")
+					end
+				else
+					offCount = offCount + 1
+					if _G.FlameKatana and offCount >= 2 then
+						_G.FlameKatana = false
+						_G.FlameStatus = nil
+						StartMagnet = false
+						HoverOrigin = nil
+						if FarmAllowed() then _G.AutoFarm = CONFIG.AutoFarm end
+						print("[FlameKatana] ออกจากโหมด Flame Katana")
+					end
+				end
+			end)
+		end
+	end)
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+do
+	local BUY_POS  = CFrame.new(1713.286987, -76.123375, -4726.944336)
+	local FARM_POS = CFrame.new(1306.447998, -54.330990, -4598.696289)
+	local BUY_ARGS = { "FightingStyle_Teacher", "Baller" }
+	local MOB      = "Baller"
+	local UI_KEY    = "Fighting Style: Baller"
+	local SAVE_NAME = "MemeSea_Baller_" .. LocalPlayer.UserId .. ".json"
+
+	local function BallerActive() return _G.Baller and not _G.Raid end
+
+	local function MarkDone(save)
+		_G.BallerDone = true
+		SetDone(UI_KEY)
+		if save and writefile then pcall(writefile, SAVE_NAME, "{\"done\":true}") end
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local fromFile = false
+	pcall(function()
+		if SavedFlag(SAVE_NAME) then fromFile = true MarkDone(false) print("[Baller] ไฟล์เซฟบอกว่าซื้อแล้ว -> กำลังตรวจของจริง") end
+	end)
+	if BallerHave() then MarkDone(true) fromFile = false end
+
+	if fromFile then
+		task.spawn(function()
+			pcall(WaitToolsLoaded, 20)
+			local t0 = tick()
+			while tick() - t0 < 30 do
+				if BallerHave() then MarkDone(true) print("[Baller] ตรวจแล้วมีหมัด Baller จริง") return end
+				task.wait(0.5)
+			end
+			-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			_G.BallerDone = false
+			SetLive(UI_KEY, false)
+			if writefile then pcall(writefile, SAVE_NAME, '{"done":false}') end
+			warn("[Baller] ไฟล์เซฟบอกว่าซื้อแล้ว แต่ไม่พบหมัด Baller -> ยกเลิกสถานะ จะซื้อใหม่เมื่อเงินถึง")
+		end)
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function TryBuy()
+		_G.BallerStatus = "Baller: Buying"
+		StartMagnet = false
+		TP(BUY_POS)
+		task.wait(0.6)
+		pcall(function()
+			RS:WaitForChild("OtherEvent"):WaitForChild("MainEvents"):WaitForChild("Modules")
+				:FireServer(unpack(BUY_ARGS))
+		end)
+		local t0 = tick()
+		while not BallerHave() and tick() - t0 < 3 do task.wait(0.2) end
+		return BallerHave()
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function FarmBallers()
+		local kills, t0 = 0, tick()
+		while BallerActive() and kills < CONFIG.BallerKills and tick() - t0 < 240 do
+			WaitBusy()
+			if IsDead() then
+				task.wait(1)
+			else
+				local mob, hum, root = FindAlive(MOB)
+				if mob then
+					_G.BallerStatus = string.format("Baller: Farming %d/%d", kills, CONFIG.BallerKills)
+					repeat
+						task.wait()
+						WaitBusy()
+						if IsDead() then break end
+						if CONFIG.RaidSmart then MaybeRetreat() end
+						StartMagnet = true
+						PosMon = root.CFrame
+						Mon = MOB
+						AttackStep(root)
+					until not BallerActive() or not mob.Parent or hum.Health <= 0
+					StartMagnet = false
+					if hum.Health <= 0 then kills = kills + 1 end
+				else
+					_G.BallerStatus = "Baller: Waiting spawn"
+					pcall(TP, FARM_POS)
+					task.wait(0.3)
+				end
+			end
+		end
+		StartMagnet = false
+		return kills
+	end
+
+	task.spawn(function()
+		while task.wait(0.3) do
+			if BallerActive() then
+				pcall(function()
+					WaitBusy()
+					if IsDead() then return end
+					if BallerHave() then MarkDone(true) return end
+					if TryBuy() then
+						MarkDone(true)
+						print("[Baller] ได้หมัด Baller แล้ว")
+						return
+					end
+					if not BallerActive() then return end
+					print("[Baller] ยังไม่มีในกระเป๋า -> ไปฟาร์ม Baller " .. CONFIG.BallerKills .. " ตัว")
+					_G.BallerStatus = "Baller: Going to farm"
+					TP(FARM_POS)
+					task.wait(0.5)
+					FarmBallers()
+				end)
+			end
+		end
+	end)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	task.spawn(function()
+		local offCount = 0
+		while task.wait(1) do
+			pcall(function()
+				if BallerWanted() then
+					offCount = 0
+					if not _G.Baller and not _G.Raid and not RaidGuiVisible() then
+						_G.Baller = true
+						_G.FlameKatana = false
+						_G.EvilNoob = false
+						_G.ItemQuest = false
+						_G.RaceV2 = false
+						_G.Pumpkin = false
+						_G.AutoFarm = false
+						StartMagnet = false
+						print("[Baller] เข้าโหมดซื้อหมัด Baller")
+					end
+				else
+					offCount = offCount + 1
+					if _G.Baller and offCount >= 2 then
+						_G.Baller = false
+						_G.BallerStatus = nil
+						StartMagnet = false
+						HoverOrigin = nil
+						if FarmAllowed() then _G.AutoFarm = CONFIG.AutoFarm end
+						print("[Baller] ออกจากโหมด Baller")
+					end
+				end
+			end)
+		end
+	end)
+end
+
+-- ===================== Auto Haki (Aura Master) =====================
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+do
+	local BUY_POS  = CFrame.new(6961.393066, 30.827995, 4922.719238)
+	local BUY_ARGS = { "Ability_Teacher", "Aura Master" }
+	local UI_KEY    = "Ability: Aura Master"
+	local SAVE_NAME = "MemeSea_Aura_" .. LocalPlayer.UserId .. ".json"
+
+	local function AuraFolder()
+		local c = LocalPlayer.Character
+		local f = c and c:FindFirstChild("AuraColor_Folder")
+		if f then return f end
+		local ok, r = pcall(function() return workspace.Character[LocalPlayer.Name].AuraColor_Folder end)
+		return ok and r or nil
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function AuraOn()
+		local f = AuraFolder()
+		return f ~= nil and #f:GetChildren() > 0
+	end
+
+	local function EnableAura()
+		pcall(function()
+			RS:WaitForChild("OtherEvent"):WaitForChild("MainEvents"):WaitForChild("Ability"):InvokeServer("Aura")
+		end)
+	end
+
+	local function MarkDone(save)
+		_G.AuraDone = true
+		_G.AuraTask = nil
+		_G.AuraNeedBoss = false
+		SetDone(UI_KEY)
+		if save and writefile then pcall(writefile, SAVE_NAME, "{\"done\":true}") end
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function BossFind()
+		local folder = workspace:FindFirstChild("Monster")
+		if not folder then return end
+		local want = string.lower(CONFIG.AuraBossName or "Meme Beast")
+		for _, m in ipairs(folder:GetChildren()) do
+			local n = string.lower(m.Name)
+			if n == want then
+				local hum, root = m:FindFirstChild("Humanoid"), m:FindFirstChild("HumanoidRootPart")
+				if hum and root and hum.Health > 0 then return m, hum, root end
+			end
+		end
+	end
+
+	pcall(function()
+		if SavedFlag(SAVE_NAME) then
+			_G.AuraFromFile = true   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			MarkDone(false)
+			print("[Haki] ไฟล์เซฟบอกว่าซื้อ Aura Master แล้ว -> กำลังตรวจของจริง")
+		end
+	end)
+
+	local function AuraActive() return _G.Aura and not _G.Raid and _G.AuraTask ~= nil end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function TryBuyAura()
+		_G.AuraStatus = "Haki: Buying"
+		StartMagnet = false
+		if AuraOn() then return true end                 -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		TP(BUY_POS)
+		task.wait(0.6)
+		pcall(function()
+			RS:WaitForChild("OtherEvent"):WaitForChild("MainEvents"):WaitForChild("Modules")
+				:FireServer(unpack(BUY_ARGS))
+		end)
+		task.wait(0.6)
+		EnableAura()
+		local t0 = tick()
+		while not AuraOn() and tick() - t0 < 3 do task.wait(0.2) end
+		return AuraOn()
+	end
+
+	local function FightBoss()
+		local t0 = tick()
+		while AuraActive() and _G.AuraTask == "boss" and tick() - t0 < 300 do
+			WaitBusy()
+			if IsDead() then task.wait(1) else
+				local mob, hum, root = BossFind()
+				if not mob then return true end          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				_G.AuraStatus = "Haki: Boss " .. mob.Name
+				repeat
+					task.wait()
+					WaitBusy()
+					if IsDead() then break end
+					if CONFIG.RaidSmart then MaybeRetreat() end
+					StartMagnet = false
+					AttackStep(root)
+				until not AuraActive() or not mob.Parent or hum.Health <= 0
+				StartMagnet = false
+			end
+		end
+		return BossFind() == nil
+	end
+
+	task.spawn(function()
+		while task.wait(0.3) do
+			if AuraActive() then
+				pcall(function()
+					WaitBusy()
+					if IsDead() then return end
+					if _G.AuraTask == "buy" then
+						-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						if not _G.AuraNeedBoss and (ReadMoney() or 0) < CONFIG.AuraMoney then
+							_G.AuraTask = nil
+							return
+						end
+						if TryBuyAura() then
+							MarkDone(true)
+							print("[Haki] เปิดฮาคิได้แล้ว")
+							return
+						end
+						if not AuraActive() then return end
+						_G.AuraTried = true
+						_G.AuraNeedBoss = true
+						_G.AuraTask = nil
+						_G.AuraStatus = nil
+						print("[Haki] ซื้อไม่ได้ -> รอบอส " .. tostring(CONFIG.AuraBossName) .. " เกิด (ระหว่างนี้ทำอย่างอื่น)")
+					elseif _G.AuraTask == "boss" then
+						if FightBoss() and not IsDead() then
+							_G.AuraTask = "buy"          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						elseif not BossFind() then
+							_G.AuraTask = nil
+						end
+					end
+				end)
+			end
+		end
+	end)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	task.spawn(function()
+		local offCount, wasAlive = 0, false
+		while task.wait(1) do
+			pcall(function()
+				if CONFIG.AutoHaki and not _G.AuraDone and _G.AuraProbed then
+					if AuraOn() then
+						MarkDone(true)
+						print("[Haki] ฮาคิเปิดอยู่แล้ว (AuraColor_Folder มีของ)")
+					else
+						local alive = BossFind() ~= nil
+						-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						if _G.AuraNeedBoss and wasAlive and not alive and _G.AuraTask == nil then
+							_G.AuraTask = "buy"
+						end
+						wasAlive = alive
+						if _G.AuraTask == nil then
+							if not _G.AuraTried then
+								local m = ReadMoney()
+								if m and m >= CONFIG.AuraMoney then _G.AuraTask = "buy" end
+							elseif _G.AuraNeedBoss and alive then
+								_G.AuraTask = "boss"
+							end
+						end
+					end
+				end
+
+				if AuraWanted() then
+					offCount = 0
+					if not _G.Aura and not _G.Raid and not RaidGuiVisible() then
+						_G.Aura = true
+						_G.FlameKatana = false
+						_G.EvilNoob = false
+						_G.ItemQuest = false
+						_G.RaceV2 = false
+						_G.Pumpkin = false
+						_G.AutoFarm = false
+						StartMagnet = false
+						print("[Haki] เข้าโหมด Auto Haki:", _G.AuraTask)
+					end
+				else
+					offCount = offCount + 1
+					if _G.Aura and offCount >= 2 then
+						_G.Aura = false
+						_G.AuraStatus = nil
+						StartMagnet = false
+						HoverOrigin = nil
+						if FarmAllowed() then _G.AutoFarm = CONFIG.AutoFarm end
+						print("[Haki] ออกจากโหมด Auto Haki")
+					end
+				end
+			end)
+		end
+	end)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	_G.AuraProbed = false
+	task.spawn(function()
+		pcall(function()
+			if not CONFIG.AutoHaki or (_G.AuraDone and not _G.AuraFromFile) then return end
+			local t0 = tick()
+			-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			while tick() - t0 < 15 do
+				local c = LocalPlayer.Character
+				if c and c:FindFirstChild("Humanoid") and c:FindFirstChild("HumanoidRootPart") and AuraFolder() then break end
+				task.wait(0.25)
+			end
+			if AuraOn() then
+				MarkDone(true)
+				print("[Haki] เช็กตอนเริ่ม: ฮาคิเปิดอยู่แล้ว -> มี Aura Master")
+				return
+			end
+			for _ = 1, 2 do   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				EnableAura()
+				local t1 = tick()
+				while not AuraOn() and tick() - t1 < 3 do task.wait(0.2) end
+				if AuraOn() then break end
+				task.wait(1.5)
+			end
+			if AuraOn() then
+				_G.AuraFromFile = false
+				MarkDone(true)
+				print("[Haki] เช็กตอนเริ่ม: เปิดฮาคิได้ -> ซื้อ Aura Master ไว้แล้ว")
+			else
+				print("[Haki] เช็กตอนเริ่ม: ฮาคิเปิดไม่ได้ -> ยังไม่ได้ซื้อ")
+				if _G.AuraFromFile then   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					_G.AuraFromFile = false
+					_G.AuraDone = false
+					SetLive(UI_KEY, false)
+					if writefile then pcall(writefile, SAVE_NAME, '{"done":false}') end
+					warn("[Haki] ไฟล์เซฟบอกว่าซื้อ Aura Master แล้ว แต่เปิดฮาคิไม่ได้ -> ยกเลิกสถานะ จะซื้อใหม่เมื่อเงินถึง")
+				end
+			end
+		end)
+		_G.AuraProbed = true
+	end)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	task.spawn(function()
+		pcall(function()
+			local t0 = tick()
+			while tick() - t0 < 15 do
+				local c = LocalPlayer.Character
+				if c and c:FindFirstChild("Humanoid") and c:FindFirstChild("HumanoidRootPart") then break end
+				task.wait(0.25)
+			end
+			task.wait(1)
+			local _, ver = ReadRace()
+			if ver ~= 2 then ver = ProbeRaceV2(true) end
+			if ver == 2 then
+				_G.RaceV2Done = true
+				print("[Race] เช็กตอนเริ่ม: เผ่าเป็น V2 แล้ว")
+			else
+				print("[Race] เช็กตอนเริ่ม: เผ่ายังเป็น V1")
+			end
+		end)
+	end)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	task.spawn(function()
+		while task.wait(5) do
+			pcall(function()
+				if CONFIG.AutoHakiKeepOn and _G.AuraDone and not _G.Raid and not _G.HakiReroll and not IsDead() and not AuraOn() then
+					EnableAura()
+				end
+			end)
+		end
+	end)
+end
+
+-- ===================== Auto Haki Color Reroll =====================
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+do
+	local HAKI_POS = CFrame.new(5149.385742, -83.470528, -1390.509277)
+
+	local function GemNow()
+		local ok, v = pcall(function() return LocalPlayer.PlayerData.Gem.Value end)
+		return ok and v or nil
+	end
+
+	local function AuraFolder()
+		local c = LocalPlayer.Character
+		local f = c and c:FindFirstChild("AuraColor_Folder")
+		if f then return f end
+		local ok, r = pcall(function() return workspace.Character[LocalPlayer.Name].AuraColor_Folder end)
+		return ok and r or nil
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function ColorOf(o)
+		local ok, v = pcall(function() return o.Color end)
+		if ok then
+			if typeof(v) == "Color3" then return v end
+			if typeof(v) == "ColorSequence" and #v.Keypoints > 0 then return v.Keypoints[1].Value end
+		end
+		if o:IsA("Color3Value") then return o.Value end
+		if o:IsA("Highlight") then return o.FillColor end
+	end
+
+	local function ReadAuraColor()
+		local f = AuraFolder()
+		local inst = f and f:FindFirstChild("LeftHand_AuraColor")
+		if not inst then return nil end
+		local c = ColorOf(inst)
+		if c then return c end
+		for _, d in ipairs(inst:GetDescendants()) do
+			c = ColorOf(d)
+			if c then return c end
+		end
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local PALETTE = {
+		{ "Red", 255, 0, 0 }, { "Dark Red", 139, 0, 0 }, { "Crimson", 220, 20, 60 }, { "Maroon", 110, 0, 20 },
+		{ "Orange", 255, 140, 0 }, { "Peach", 255, 180, 130 }, { "Gold", 255, 200, 0 }, { "Yellow", 255, 255, 0 },
+		{ "Lime", 150, 255, 0 }, { "Green", 0, 200, 0 }, { "Dark Green", 0, 100, 0 }, { "Mint", 120, 255, 190 },
+		{ "Teal", 0, 128, 128 }, { "Turquoise", 64, 224, 208 }, { "Cyan", 0, 255, 255 }, { "Sky Blue", 100, 190, 255 },
+		{ "Blue", 0, 0, 255 }, { "Royal Blue", 65, 105, 225 }, { "Navy", 0, 0, 128 }, { "Indigo", 75, 0, 130 },
+		{ "Purple", 128, 0, 200 }, { "Violet", 170, 100, 255 }, { "Lavender", 200, 180, 255 }, { "Magenta", 255, 0, 255 },
+		{ "Pink", 255, 150, 200 }, { "Hot Pink", 255, 60, 150 }, { "Brown", 120, 70, 30 },
+		{ "White", 255, 255, 255 }, { "Silver", 190, 190, 190 }, { "Gray", 128, 128, 128 },
+		{ "Dark Gray", 64, 64, 64 }, { "Black", 0, 0, 0 },
+	}
+	local function ColorName(c3)
+		local r, g, b = c3.R * 255, c3.G * 255, c3.B * 255
+		local best, bd = "Unknown", math.huge
+		for _, p in ipairs(PALETTE) do
+			local d = 2 * (r - p[2]) ^ 2 + 4 * (g - p[3]) ^ 2 + 3 * (b - p[4]) ^ 2
+			if d < bd then best, bd = p[1], d end
+		end
+		return best
+	end
+	local function Hex(c3)
+		return string.format("#%02X%02X%02X", math.floor(c3.R * 255 + 0.5), math.floor(c3.G * 255 + 0.5), math.floor(c3.B * 255 + 0.5))
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local UI
+	local function BuildUI()
+		if UI then return UI end
+		local UIS = game:GetService("UserInputService")
+		local C = {
+			bg1 = Color3.fromRGB(16, 21, 38), bg2 = Color3.fromRGB(9, 12, 22), card = Color3.fromRGB(20, 27, 48),
+			row = Color3.fromRGB(24, 32, 56), line = Color3.fromRGB(36, 46, 76), gray = Color3.fromRGB(120, 132, 168),
+			white = Color3.fromRGB(240, 244, 255), blue = Color3.fromRGB(70, 190, 255), violet = Color3.fromRGB(125, 120, 255),
+			green = Color3.fromRGB(70, 235, 130),
+		}
+		local gui = Instance.new("ScreenGui")
+		gui.Name = "SeiHubHakiUI"; gui.ResetOnSpawn = false; gui.IgnoreGuiInset = true
+		gui.DisplayOrder = 998; gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+		pcall(function() if syn and syn.protect_gui then syn.protect_gui(gui) end end)
+		local parented = false
+		pcall(function() gui.Parent = (gethui and gethui()) or game:GetService("CoreGui"); parented = true end)
+		if not parented then gui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+
+		local function corner(o, r) local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, r); c.Parent = o end
+		local function stroke(o, col, th, tr)
+			local s = Instance.new("UIStroke"); s.Color = col; s.Thickness = th; s.Transparency = tr or 0
+			s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border; s.Parent = o
+		end
+		local function frame(p, x, y, w, h, col)
+			local f = Instance.new("Frame"); f.Position = UDim2.fromOffset(x, y); f.Size = UDim2.fromOffset(w, h)
+			f.BackgroundColor3 = col; f.BorderSizePixel = 0; f.Parent = p
+			return f
+		end
+		local function label(p, text, size, col, x, y, w, h, font, align)
+			local t = Instance.new("TextLabel"); t.BackgroundTransparency = 1; t.Text = text; t.TextSize = size
+			t.TextColor3 = col; t.Font = font or Enum.Font.Gotham; t.TextXAlignment = align or Enum.TextXAlignment.Left
+			t.Position = UDim2.fromOffset(x, y); t.Size = UDim2.fromOffset(w, h); t.Parent = p
+			return t
+		end
+
+		local W, H = 250, 340
+		local vp = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 400)
+		local main = frame(gui, math.max(0, vp.X - W - 12), 70, W, H, C.bg1)
+		main.Active = true; corner(main, 14); stroke(main, C.violet, 1.5, 0.55)
+		local g = Instance.new("UIGradient"); g.Color = ColorSequence.new(C.bg1, C.bg2); g.Rotation = 90; g.Parent = main
+		local scale = Instance.new("UIScale"); scale.Parent = main
+		local function fit()
+			local cam = workspace.CurrentCamera
+			if not cam then return end
+			local v = cam.ViewportSize
+			scale.Scale = math.min(1, (v.X * 0.6) / W, (v.Y * 0.88) / H)
+		end
+		fit()
+		if workspace.CurrentCamera then workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fit) end
+
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		do
+			local dragging, dragStart, startPos = false, nil, nil
+			main.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					dragging, dragStart, startPos = true, input.Position, main.Position
+					input.Changed:Connect(function()
+						if input.UserInputState == Enum.UserInputState.End then dragging = false end
+					end)
+				end
+			end)
+			UIS.InputChanged:Connect(function(input)
+				if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+					local d = input.Position - dragStart
+					main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X / scale.Scale, startPos.Y.Scale, startPos.Y.Offset + d.Y / scale.Scale)
+				end
+			end)
+		end
+
+		label(main, "HAKI COLOR REROLL", 14, C.white, 14, 10, 222, 22, Enum.Font.GothamBold)
+		local div = frame(main, 14, 36, W - 28, 2, C.blue)
+		local dg = Instance.new("UIGradient"); dg.Color = ColorSequence.new(C.blue, C.violet); dg.Parent = div
+
+		local gemCard = frame(main, 14, 46, 108, 46, C.card); corner(gemCard, 8)
+		label(gemCard, "GEM LEFT", 10, C.gray, 10, 4, 90, 14, Enum.Font.GothamMedium)
+		local gemV = label(gemCard, "-", 17, C.white, 10, 20, 90, 22, Enum.Font.GothamBold)
+		local rollCard = frame(main, 128, 46, 108, 46, C.card); corner(rollCard, 8)
+		label(rollCard, "REROLLS", 10, C.gray, 10, 4, 90, 14, Enum.Font.GothamMedium)
+		local rollV = label(rollCard, "0", 17, C.green, 10, 20, 90, 22, Enum.Font.GothamBold)
+
+		local curCard = frame(main, 14, 100, W - 28, 46, C.card); corner(curCard, 8)
+		label(curCard, "CURRENT", 10, C.gray, 10, 4, 90, 14, Enum.Font.GothamMedium)
+		local curSw = frame(curCard, 10, 20, 20, 20, C.off or Color3.fromRGB(58, 66, 94)); corner(curSw, 6)
+		stroke(curSw, C.white, 1, 0.6)
+		local curV = label(curCard, "-", 15, C.white, 38, 18, 190, 24, Enum.Font.GothamBold)
+
+		label(main, "COLORS OBTAINED", 10, C.gray, 16, 152, 160, 14, Enum.Font.GothamMedium)
+		local listCard = frame(main, 14, 168, W - 28, 124, C.card); corner(listCard, 8)
+		local scroller = Instance.new("ScrollingFrame")
+		scroller.BackgroundTransparency = 1; scroller.BorderSizePixel = 0
+		scroller.Position = UDim2.fromOffset(0, 4); scroller.Size = UDim2.new(1, 0, 1, -8)
+		scroller.CanvasSize = UDim2.fromOffset(0, 0); scroller.ScrollBarThickness = 4
+		scroller.ScrollBarImageColor3 = C.violet; scroller.Active = true
+		scroller.ScrollingDirection = Enum.ScrollingDirection.Y; scroller.Parent = listCard
+
+		local bar = frame(main, 14, 300, W - 28, 28, C.card); corner(bar, 8)
+		local statusV = label(bar, "Waiting...", 12, C.white, 10, 0, W - 48, 28, Enum.Font.GothamMedium)
+
+		local order, byKey = {}, {}
+		local api = { rolls = 0 }
+		local function lum(c) return 0.299 * c.R + 0.587 * c.G + 0.114 * c.B end
+		local function textColor(c) return lum(c) < 0.35 and c:Lerp(Color3.new(1, 1, 1), 0.55) or c end
+
+		function api.setStatus(s) statusV.Text = s end
+		function api.setGem(n) gemV.Text = n and Fmt(n) or "-" end
+		function api.setCurrent(c3)
+			if not c3 then curV.Text = "Unknown"; return end
+			curSw.BackgroundColor3 = c3
+			curV.Text = ColorName(c3) .. "  " .. Hex(c3)
+			curV.TextColor3 = textColor(c3)
+		end
+		function api.add(c3)
+			api.rolls = api.rolls + 1
+			rollV.Text = tostring(api.rolls)
+			api.setCurrent(c3)
+			if not c3 then return end
+			local key = Hex(c3)
+			local e = byKey[key]
+			if e then
+				e.count = e.count + 1
+				e.cnt.Text = "x" .. e.count
+				return
+			end
+			local y = 4 + #order * 30
+			local row = frame(scroller, 6, y, W - 28 - 22, 26, C.row); corner(row, 6)
+			local sw = frame(row, 6, 4, 18, 18, c3); corner(sw, 5); stroke(sw, C.white, 1, 0.6)
+			label(row, ColorName(c3), 13, textColor(c3), 32, 0, 84, 26, Enum.Font.GothamBold)
+			label(row, key, 10, C.gray, 118, 0, 52, 26, Enum.Font.Gotham)
+			local cnt = label(row, "x1", 12, C.white, 0, 0, W - 28 - 22 - 8, 26, Enum.Font.GothamBold, Enum.TextXAlignment.Right)
+			e = { count = 1, cnt = cnt }
+			byKey[key] = e
+			table.insert(order, key)
+			scroller.CanvasSize = UDim2.fromOffset(0, 8 + #order * 30)
+			scroller.CanvasPosition = Vector2.new(0, math.max(0, 8 + #order * 30 - 116))
+		end
+		task.spawn(function()
+			while task.wait(0.5) do
+				if not gui.Parent then break end
+				api.setGem(GemNow())
+			end
+		end)
+		UI = api
+		return api
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local runId = 0
+	local function EnsureAuraOn()
+		local f = AuraFolder()
+		if f and #f:GetChildren() > 0 then return end
+		pcall(function()
+			RS:WaitForChild("OtherEvent"):WaitForChild("MainEvents"):WaitForChild("Ability"):InvokeServer("Aura")
+		end)
+		task.wait(1)
+	end
+
+	local function RunReroll(myId)
+		local ui = BuildUI()
+		local rolls, fails, cost = 0, 0, _G.HakiRerollCost
+		local exhausted = false
+		ui.setStatus("Going to Halved Sorcerer")
+		while _G.HakiReroll and myId == runId do
+			if _G.Raid or _G.Boss then break end
+			WaitBusy()
+			if IsDead() then
+				ui.setStatus("Waiting to respawn")
+				task.wait(1)
+			else
+				pcall(function()
+					local hrp = LocalPlayer.Character.HumanoidRootPart
+					if (hrp.Position - HAKI_POS.Position).Magnitude > 8 then TP(HAKI_POS) end
+				end)
+				local g0 = GemNow()
+				if g0 and (g0 <= 0 or (cost and g0 < cost)) then
+					exhausted = true
+					break
+				end
+				EnsureAuraOn()
+				ui.setStatus("Rerolling Haki color...")
+				pcall(function()
+					RS:WaitForChild("OtherEvent"):WaitForChild("MainEvents"):WaitForChild("Modules")
+						:FireServer("Reroll_Color", CONFIG.HakiRerollNPC or "Halved Sorcerer")
+				end)
+				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				local t0, spent = tick(), false
+				while tick() - t0 < 3 do
+					local g1 = GemNow()
+					if g0 and g1 and g1 < g0 then
+						cost = g0 - g1
+						_G.HakiRerollCost = cost
+						spent = true
+						break
+					end
+					task.wait(0.15)
+				end
+				if spent then
+					fails = 0
+					rolls = rolls + 1
+					_G.HakiRerollTotal = (_G.HakiRerollTotal or 0) + 1
+					task.wait(0.4)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					local c3 = ReadAuraColor()
+					ui.add(c3)
+					ui.setGem(GemNow())
+					print(string.format("[HakiReroll] #%d -> %s %s | Gem %s", rolls, c3 and ColorName(c3) or "?", c3 and Hex(c3) or "", tostring(GemNow())))
+				else
+					fails = fails + 1
+					if fails >= 3 then exhausted = true break end
+				end
+				task.wait(CONFIG.HakiRerollDelay or 0.6)
+			end
+		end
+		if exhausted then
+			if (_G.HakiRerollTotal or 0) > 0 and not CONFIG.HakiRerollRepeat then
+				_G.HakiRerollDone = true
+				ui.setStatus("Done - out of Gems")
+			else
+				_G.HakiRerollNeedGem = math.max(CONFIG.HakiRerollMinGems or 1, cost or ((GemNow() or 0) + 50))
+				ui.setStatus("Out of Gems - waiting for more")
+			end
+			print("[HakiReroll] Gem หมดแล้ว สุ่มรอบนี้ไป", rolls, "ครั้ง")
+			_G.HakiReroll = false      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			StartMagnet = false
+			HoverOrigin = nil
+			if FarmAllowed() then _G.AutoFarm = CONFIG.AutoFarm end
+		end
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	task.spawn(function()
+		local offCount = 0
+		while task.wait(1) do
+			pcall(function()
+				if HakiRerollWanted() then
+					offCount = 0
+					if not _G.HakiReroll and not _G.Raid and not RaidGuiVisible() and not _G.Boss then
+						_G.HakiReroll = true
+						_G.FlameKatana = false
+						_G.EvilNoob = false
+						_G.ItemQuest = false
+						_G.RaceV2 = false
+						_G.Pumpkin = false
+						_G.AutoFarm = false
+						StartMagnet = false
+						runId = runId + 1
+						local myId = runId
+						print("[HakiReroll] เข้าโหมดสุ่มสีฮาคิ")
+						task.spawn(function() pcall(RunReroll, myId) end)
+					end
+				else
+					offCount = offCount + 1
+					if _G.HakiReroll and offCount >= 2 then
+						_G.HakiReroll = false
+						_G.HakiRerollStatus = nil
+						StartMagnet = false
+						HoverOrigin = nil
+						if FarmAllowed() then _G.AutoFarm = CONFIG.AutoFarm end
+						print("[HakiReroll] ออกจากโหมดสุ่มสีฮาคิ")
+					end
+				end
+			end)
+		end
+	end)
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+do
+	local NOOB = "Evil Noob"
+	local MOAI = "Moai"
+	local BLADE = "Yellow Blade"
+	local NOOB_POS   = CFrame.new(3283.780273, -51.630680, 4484.267090)
+	local QUEST_POS  = CFrame.new(2890.924561, -51.792477, 4207.233887)
+	local SUMMON_POS = CFrame.new(-2356.497559, -75.346283, 3180.454346)
+	local MOAI_POS   = CFrame.new(-2685.326172, -80.996971, 3442.507080)
+
+	local function Active() return _G.EvilNoob and not _G.Raid and not _G.NoobRaidPhase end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function NoobSpawned()
+		local count = SpawnInfo(NOOB)
+		return count > 0 or FindAlive(NOOB) ~= nil
+	end
+
+	local function QuestSlot()
+		local ok, slot = pcall(function() return LocalPlayer.PlayerGui.QuestGui.Holder.QuestSlot1 end)
+		return ok and slot or nil
+	end
+
+	local function HasNoobQuest()
+		local slot = QuestSlot()
+		return slot and slot.Visible and string.find(string.lower(slot.Target.Text), "evil noob") ~= nil
+	end
+
+	local function HaveBlade()
+		local c = LocalPlayer.Character
+		return (FindTool(BLADE)) ~= nil
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function GetBlade()
+		if not HaveBlade() then
+			pcall(function()
+				RS:WaitForChild("OtherEvent"):WaitForChild("ItemEvents"):WaitForChild("UpdateInventory")
+					:InvokeServer("Weapon", { SelectedItem = BLADE })
+			end)
+			local t0 = tick()
+			while not HaveBlade() and tick() - t0 < 3 do task.wait(0.2) end
+		end
+		if not HaveBlade() then return false end
+		pcall(function()
+			local tool = LocalPlayer.Backpack:FindFirstChild(BLADE)
+			if tool then LocalPlayer.Character.Humanoid:EquipTool(tool) end
+		end)
+		return true
+	end
+
+	local function TakeQuest()
+		_G.EvilNoobStatus = "Evil Noob: Quest"
+		StartMagnet = false
+		local prompts = CollectPrompts(QUEST_POS, 25)
+		for _ = 1, 10 do
+			if not Active() then return false end
+			WaitBusy()
+			if IsDead() then return false end
+			local slot = QuestSlot()
+			if slot and slot.Visible then
+				if HasNoobQuest() then return true end
+				RS.OtherEvent.QuestEvents.Quest:FireServer("Abandon_Quest", { QuestSlot = "QuestSlot1" })
+				task.wait(0.5)
+			end
+			TP(QUEST_POS)
+			task.wait(0.3)
+			PressE()
+			for _, pr in ipairs(prompts) do pcall(fireproximityprompt, pr) end
+			task.wait(0.6)
+		end
+		return HasNoobQuest()
+	end
+
+	local function FightNoob(mob, hum, root)
+		_G.EvilNoobStatus = "Evil Noob: Fighting"
+		StartMagnet = false
+		repeat
+			task.wait()
+			WaitBusy()
+			if IsDead() then break end
+			if CONFIG.RaidSmart then MaybeRetreat() end
+			AttackStep(root)
+		until not Active() or not mob.Parent or hum.Health <= 0
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function CheckNoob(seconds)
+		seconds = seconds or CONFIG.NoobCheckSeconds
+		local t0 = tick()
+		while Active() and tick() - t0 < seconds do
+			pcall(TP, NOOB_POS)               -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			if NoobSpawned() then return true end
+			task.wait(0.2)
+		end
+		return NoobSpawned()
+	end
+
+	local function FarmMoai()
+		_G.EvilNoobStatus = "Evil Noob: Farming Moai"
+		pcall(TP, MOAI_POS)
+		local kills, idle = 0, 0
+		while Active() and kills < CONFIG.MoaiKills do
+			WaitBusy()
+			if IsDead() then
+				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				StartMagnet = false
+				local td = tick()
+				while Active() and IsDead() and tick() - td < 15 do task.wait(0.3) end
+				task.wait(1)
+				pcall(TP, MOAI_POS)
+				idle = 0
+				continue
+			end
+			if NoobSpawned() then break end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			local mob, hum, root = FindAlive(MOAI)
+			if mob then
+				idle = 0
+				repeat
+					task.wait()
+					WaitBusy()
+					if IsDead() then break end
+					if CONFIG.RaidSmart then MaybeRetreat() end
+					StartMagnet = true
+					PosMon = root.CFrame
+					Mon = MOAI
+					AttackStep(root)
+				until not Active() or not mob.Parent or hum.Health <= 0 or NoobSpawned()   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				StartMagnet = false
+				if NoobSpawned() then break end
+				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if (hum.Health <= 0 or not mob.Parent) and not IsDead() and Active() then
+					kills = kills + 1
+					print("[EvilNoob] Moai", kills, "/", CONFIG.MoaiKills)
+				end
+			else
+				pcall(TP, SpawnLocation(MOAI) or MOAI_POS)
+				task.wait(0.3)
+				idle = idle + 1
+				if idle > 150 then break end  -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			end
+		end
+		StartMagnet = false
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function SummonNoob()
+		for round = 1, CONFIG.EvilNoobSummonRounds do
+			if not Active() then return false end
+			WaitBusy()
+			if IsDead() then
+				task.wait(1)
+			else
+				if round > 1 and CheckNoob(2) then return true end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				_G.EvilNoobStatus = string.format("Evil Noob: Summoning (%d)", round)
+				StartMagnet = false
+				TP(SUMMON_POS)
+				task.wait(0.4)
+				local prompts = CollectPrompts(SUMMON_POS, 25)
+				for _ = 1, CONFIG.SummonPresses do   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					if not Active() then break end
+					WaitBusy()
+					if IsDead() then break end
+					if NoobSpawned() then return true end
+					pcall(TP, SUMMON_POS)
+					PressE()
+					for _, pr in ipairs(prompts) do pcall(fireproximityprompt, pr) end
+					task.wait(0.25)
+				end
+				if not Active() then return false end
+				_G.EvilNoobStatus = "Evil Noob: Checking spawn"
+				if CheckNoob() then return true end
+				FarmMoai()
+				if NoobSpawned() then return true end
+			end
+		end
+		return NoobSpawned()
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function Cycle()
+		_G.EvilNoobStatus = "Evil Noob: Checking sword"
+		if HaveBlade() or GetBlade() then return true end
+		if not Active() then return false end
+
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		_G.EvilNoobStatus = "Evil Noob: Searching"
+		if not CheckNoob(3) then
+			if not SummonNoob() then return false end
+		end
+
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		if not HasNoobQuest() then
+			if not TakeQuest() then return false end
+		end
+
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		local guard = 0
+		while Active() and HasNoobQuest() and guard < 20 do
+			guard = guard + 1
+			local mob, hum, root = FindAlive(NOOB)
+			if not mob and CheckNoob(4) then mob, hum, root = FindAlive(NOOB) end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			if mob then
+				FightNoob(mob, hum, root)
+			else
+				if not SummonNoob() then break end
+			end
+		end
+		if not Active() then return false end
+
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		_G.EvilNoobStatus = "Evil Noob: Checking sword"
+		task.wait(1)
+		return HaveBlade() or GetBlade()
+	end
+
+	task.spawn(function()
+		local cycles = 0
+		while task.wait(0.3) do
+			if Active() then
+				pcall(function()
+					WaitBusy()
+					if IsDead() then return end
+					print("[EvilNoob] รอบที่", cycles + 1)
+					if Cycle() then
+						_G.EvilNoobDone = true
+						SetDone("Weapon: Yellow Blade")
+						print("[EvilNoob] ได้ Yellow Blade แล้ว")
+					elseif Active() then   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						cycles = cycles + 1
+						if CONFIG.EvilNoobMaxCycles > 0 and cycles >= CONFIG.EvilNoobMaxCycles then
+							cycles = 0
+							if CONFIG.AutoRaid then
+								_G.NoobRaidPhase = true
+								warn("[EvilNoob] ครบ " .. CONFIG.EvilNoobMaxCycles .. " รอบแล้วยังไม่ได้ Yellow Blade -> ไปเรดจน Gem ถึง " .. CONFIG.NoobRaidGems .. " แล้วกลับมาทำดาบ")
+							end
+						end
+					end
+				end)
+			end
+		end
+	end)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	task.spawn(function()
+		while task.wait(1) do
+			pcall(function()
+				if not _G.NoobRaidPhase then return end
+				if InRaidNow() then return end
+				if HaveBlade() then _G.NoobRaidPhase = false return end
+				local gem = LocalPlayer.PlayerData.Gem.Value
+				if gem < CONFIG.NoobRaidGems then return end
+				if CONFIG.AutoBuyDropX2 and not _G.DropX2Bought and not _G.DropX2Owned then
+					_G.DropX2Bought = true
+					pcall(function()
+						RS:WaitForChild("OtherEvent"):WaitForChild("BuyEvents"):WaitForChild("BuyProduct")
+							:FireServer({ Action = "Buy_Gamepass", GamepassId = CONFIG.DropX2GamepassId })
+					end)
+					print("[EvilNoob] Gem ถึง", CONFIG.NoobRaidGems, "-> ซื้อ Drop Item X2")
+					task.wait(1.5)
+				end
+				_G.NoobRaidPhase = false
+				print("[EvilNoob] กลับมาทำ Yellow Blade ต่อ")
+			end)
+		end
+	end)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	task.spawn(function()
+		local offCount = 0
+		while task.wait(1) do
+			pcall(function()
+				if HaveBlade() then SetDone("Weapon: Yellow Blade") end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if EvilNoobWanted() then
+					offCount = 0
+					if not _G.EvilNoob and not _G.Raid and not RaidGuiVisible() then
+						_G.EvilNoob = true
+						_G.FlameKatana = false
+						_G.ItemQuest = false
+						_G.RaceV2 = false
+						_G.Pumpkin = false
+						_G.AutoFarm = false
+						StartMagnet = false
+						print("[EvilNoob] เข้าโหมด Evil Noob")
+					end
+				else
+					offCount = offCount + 1
+					if _G.EvilNoob and offCount >= 2 then
+						_G.EvilNoob = false
+						_G.EvilNoobStatus = nil
+						StartMagnet = false
+						HoverOrigin = nil
+						if FarmAllowed() then _G.AutoFarm = CONFIG.AutoFarm end
+						print("[EvilNoob] ออกจากโหมด Evil Noob")
+					end
+				end
+			end)
+		end
+	end)
+end
+
+-- ===================== Item Quests (Pink Hammer / Banana / Purple Katana) =====================
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+do
+	local RS_ = game:GetService("ReplicatedStorage")
+
+	local PINK_POS      = CFrame.new(1909.125610, 121.997841, 2997.842285)
+	local PINK_MOB      = "Pink Absorber"
+
+	local BANANA_SELLER = CFrame.new(-2895.317871, -62.025990, 354.285858)
+	local GORILLA_POS   = CFrame.new(-3804.777344, -91.349503, 377.166351)
+	local GORILLA       = "Gorilla King"
+
+	local LORD          = "Lord Sus"
+	local DUCK          = "Sus Duck"
+	local LORD_POS      = CFrame.new(6653.638184, -94.733131, 4496.267090)
+	local LORD_QUEST    = CFrame.new(6565.654785, -94.791138, 4794.839355)
+	local LORD_SUMMON   = CFrame.new(6644.367188, -94.872475, 4809.016113)
+	local DUCK_POS      = CFrame.new(1529.334229, -51.696487, 2317.537109)
+
+	local function Active() return _G.ItemQuest and not _G.Raid end
+	local function KeyActive(key) return Active() and _G.ItemQuestKey == key and not _G.ItemDone[key] end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function Status(txt) _G.ItemQuestStatus = txt end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function FightOne(key, mob, hum, root, bring, abortFn)
+		local nextCheck = 0
+		repeat
+			task.wait()
+			WaitBusy()
+			if IsDead() then break end
+			if CONFIG.RaidSmart then MaybeRetreat() end
+			if abortFn and tick() >= nextCheck then
+				nextCheck = tick() + 0.5
+				if abortFn() then break end
+			end
+			if bring then
+				StartMagnet = true
+				PosMon = root.CFrame
+				Mon = mob.Name
+			else
+				StartMagnet = false
+			end
+			AttackStep(root)
+		until not KeyActive(key) or not mob.Parent or hum.Health <= 0
+		StartMagnet = false
+		return hum.Health <= 0
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function KillOne(key, mobName, waitPos, label)
+		local t0 = tick()
+		while KeyActive(key) and tick() - t0 < 150 do
+			WaitBusy()
+			if IsDead() then
+				task.wait(1)
+			else
+				local mob, hum, root = FindAlive(mobName)
+				if mob then
+					Status(label .. ": Fighting " .. mobName)
+					if FightOne(key, mob, hum, root, true) then return true end
+				else
+					Status(label .. ": Waiting " .. mobName)
+					pcall(TP, SpawnLocation(mobName) or waitPos)
+					task.wait(0.3)
+				end
+			end
+		end
+		return false
+	end
+
+	-- ========================= Pink Hammer =========================
+	local function PinkCycle()
+		local item = ITEM_INFO.PinkHammer.name
+		Status("Pink Hammer: Checking bag")
+		if ItemUnstore(item, 2) then return true end
+		if not KeyActive("PinkHammer") then return false end
+
+		StartMagnet = false
+		pcall(TP, PINK_POS)
+		task.wait(0.5)
+		local abort = function() return ItemHave(item) end
+		while KeyActive("PinkHammer") do
+			WaitBusy()
+			if IsDead() then
+				task.wait(1)
+			else
+				local mob, hum, root = FindAlive(PINK_MOB)
+				if mob then
+					Status("Pink Hammer: Fighting " .. PINK_MOB)
+					FightOne("PinkHammer", mob, hum, root, true, abort)
+					if hum.Health <= 0 or ItemHave(item) then
+						Status("Pink Hammer: Checking bag")
+						if ItemUnstore(item, 2) then return true end
+					end
+				else
+					Status("Pink Hammer: Waiting " .. PINK_MOB)
+					pcall(TP, PINK_POS)
+					task.wait(0.3)
+				end
+			end
+		end
+		return false
+	end
+
+	-- ========================= Banana =========================
+	local function BananaCycle()
+		local item = ITEM_INFO.Banana.name
+		Status("Banana: Checking bag")
+		if ItemUnstore(item, 2) then return true end
+		if not KeyActive("Banana") then return false end
+
+		Status("Banana: Buying")
+		StartMagnet = false
+		pcall(TP, BANANA_SELLER)
+		task.wait(0.6)
+		pcall(function()
+			RS_:WaitForChild("OtherEvent"):WaitForChild("MainEvents"):WaitForChild("Modules")
+				:FireServer("Weapon_Seller", "Smiling Cat")
+		end)
+		task.wait(1.2)
+		if ItemUnstore(item, 3) then return true end
+		if not KeyActive("Banana") then return false end
+
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		pcall(TP, GORILLA_POS)
+		task.wait(0.4)
+		KillOne("Banana", GORILLA, GORILLA_POS, "Banana")
+		return false
+	end
+
+	-- ========================= Purple Katana =========================
+	local function LordSpawned()
+		local count = SpawnInfo(LORD)
+		return count > 0 or FindAlive(LORD) ~= nil
+	end
+
+	local function QuestSlot()
+		local ok, slot = pcall(function() return LocalPlayer.PlayerGui.QuestGui.Holder.QuestSlot1 end)
+		return ok and slot or nil
+	end
+
+	local function HasLordQuest()
+		local slot = QuestSlot()
+		return slot and slot.Visible and string.find(string.lower(slot.Target.Text), "lord sus") ~= nil
+	end
+
+	local function TakeLordQuest()
+		Status("Purple Katana: Quest")
+		StartMagnet = false
+		local prompts = CollectPrompts(LORD_QUEST, 25)
+		for _ = 1, 8 do
+			if not KeyActive("PurpleKatana") then return false end
+			WaitBusy()
+			if IsDead() then return false end
+			local slot = QuestSlot()
+			if slot and slot.Visible then
+				if HasLordQuest() then return true end
+				RS_.OtherEvent.QuestEvents.Quest:FireServer("Abandon_Quest", { QuestSlot = "QuestSlot1" })
+				task.wait(0.5)
+			end
+			pcall(TP, LORD_QUEST)
+			task.wait(0.3)
+			PressE()
+			for _, pr in ipairs(prompts) do pcall(fireproximityprompt, pr) end
+			task.wait(0.6)
+		end
+		return HasLordQuest()
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function FarmDucks()
+		pcall(TP, DUCK_POS)
+		local kills, idle = 0, 0
+		while KeyActive("PurpleKatana") and kills < CONFIG.SusDuckKills do
+			WaitBusy()
+			if IsDead() then break end
+			if LordSpawned() then return true end
+			Status(string.format("Purple Katana: Farming Sus Duck (%d/%d)", kills, CONFIG.SusDuckKills))
+			local mob, hum, root = FindAlive(DUCK)
+			if mob then
+				idle = 0
+				if FightOne("PurpleKatana", mob, hum, root, true, LordSpawned) then
+					kills = kills + 1
+					print("[PurpleKatana] Sus Duck", kills, "/", CONFIG.SusDuckKills)
+				end
+			else
+				pcall(TP, SpawnLocation(DUCK) or DUCK_POS)
+				task.wait(0.3)
+				idle = idle + 1
+				if idle > 60 then break end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			end
+		end
+		StartMagnet = false
+		return LordSpawned()
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function SummonLord()
+		for round = 1, CONFIG.LordSusSummonRounds do
+			if not KeyActive("PurpleKatana") then return false end
+			WaitBusy()
+			if IsDead() then
+				task.wait(1)
+			else
+				Status(string.format("Purple Katana: Summoning (%d)", round))
+				StartMagnet = false
+				pcall(TP, LORD_SUMMON)
+				task.wait(0.4)
+				local prompts = CollectPrompts(LORD_SUMMON, 25)
+				for _ = 1, CONFIG.SummonPresses do   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					if not KeyActive("PurpleKatana") then break end
+					WaitBusy()
+					if IsDead() then break end
+					if LordSpawned() then return true end
+					pcall(TP, LORD_SUMMON)
+					PressE()
+					for _, pr in ipairs(prompts) do pcall(fireproximityprompt, pr) end
+					task.wait(0.25)
+				end
+				if not KeyActive("PurpleKatana") then return false end
+
+				Status("Purple Katana: Checking spawn")
+				pcall(TP, LORD_POS)
+				local t1 = tick()
+				while KeyActive("PurpleKatana") and tick() - t1 < 2 do
+					if LordSpawned() then return true end
+					task.wait(0.3)
+				end
+				if LordSpawned() then return true end
+
+				if FarmDucks() then return true end
+			end
+		end
+		return LordSpawned()
+	end
+
+	local function PurpleCycle()
+		local item = ITEM_INFO.PurpleKatana.name
+		Status("Purple Katana: Checking bag")
+		if ItemUnstore(item, 2) then return true end
+		if not KeyActive("PurpleKatana") then return false end
+
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		if not LordSpawned() then
+			Status("Purple Katana: Searching Lord Sus")
+			StartMagnet = false
+			pcall(TP, LORD_POS)
+			task.wait(1.5)
+			if not LordSpawned() then
+				if not SummonLord() then return false end
+			end
+		end
+
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		if not HasLordQuest() then TakeLordQuest() end
+
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		local abort = function() return ItemHave(item) end
+		local guard = 0
+		while KeyActive("PurpleKatana") and guard < 20 do
+			guard = guard + 1
+			if ItemHave(item) then break end
+			WaitBusy()
+			if IsDead() then
+				task.wait(1)
+			else
+				local mob, hum, root = FindAlive(LORD)
+				if mob then
+					Status("Purple Katana: Fighting " .. LORD)
+					FightOne("PurpleKatana", mob, hum, root, false, abort)
+				elseif HasLordQuest() then
+					if not SummonLord() then break end
+				else
+					break
+				end
+			end
+		end
+		if not KeyActive("PurpleKatana") then return false end
+
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		Status("Purple Katana: Checking bag")
+		task.wait(1)
+		return ItemUnstore(item, 3)
+	end
+
+	local CYCLES = { PinkHammer = PinkCycle, Banana = BananaCycle, PurpleKatana = PurpleCycle }
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	task.spawn(function()
+		while task.wait(0.2) do
+			if CONFIG.AutoItemQuests then
+				for key, info in pairs(ITEM_INFO) do
+					if not _G.ItemDone[key] and ItemHave(info.name) then
+						_G.ItemDone[key] = true
+						SetDone(info.ui)
+						StartMagnet = false
+						print("[ItemQuest] ได้ " .. info.name .. " แล้ว -> หยุดทันที")
+					end
+				end
+			end
+		end
+	end)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	task.spawn(function()
+		local cycles = {}
+		while task.wait(0.3) do
+			if Active() then
+				pcall(function()
+					WaitBusy()
+					if IsDead() then return end
+					local key = _G.ItemQuestKey
+					if not key or _G.ItemDone[key] or not CYCLES[key] then return end
+					local n = (cycles[key] or 0) + 1
+					local cap = CONFIG.ItemQuestMaxCycles or 0
+					if cap > 0 and n > cap then
+						_G.ItemDone[key] = true   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						warn("[ItemQuest] " .. key .. " ครบ " .. cap .. " รอบแล้วยังไม่ได้ หยุดอันนี้")
+						return
+					end
+					print("[ItemQuest]", key, "รอบที่", n)
+					if CYCLES[key]() then
+						_G.ItemDone[key] = true
+						SetDone(ITEM_INFO[key].ui)
+						StartMagnet = false
+						print("[ItemQuest] ได้ " .. ITEM_INFO[key].name .. " แล้ว")
+					elseif KeyActive(key) then
+						cycles[key] = n   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					end
+				end)
+			end
+		end
+	end)
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	task.spawn(function()
+		local offCount = 0
+		while task.wait(1) do
+			pcall(function()
+				if not CONFIG.AutoItemQuests then return end
+				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				for key, info in pairs(ITEM_INFO) do
+					if not _G.ItemDone[key] and ItemHave(info.name) then
+						_G.ItemDone[key] = true
+						SetDone(info.ui)
+					end
+				end
+
+				local want = ItemQuestWanted()
+				if want then
+					offCount = 0
+					if not _G.ItemQuest then
+						if not _G.Raid and not RaidGuiVisible() then
+							_G.ItemQuest = true
+							_G.ItemQuestKey = want
+							_G.FlameKatana = false
+							_G.RaceV2 = false
+							_G.EvilNoob = false
+							_G.Pumpkin = false
+							_G.AutoFarm = false
+							StartMagnet = false
+							print("[ItemQuest] เข้าโหมด Item Quest:", want)
+						end
+					elseif _G.ItemQuestKey ~= want then
+						_G.ItemQuestKey = want   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						StartMagnet = false
+						print("[ItemQuest] ไปทำอันถัดไป:", want)
+					end
+				else
+					offCount = offCount + 1
+					if _G.ItemQuest and offCount >= 2 then
+						_G.ItemQuest = false
+						_G.ItemQuestKey = nil
+						_G.ItemQuestStatus = nil
+						StartMagnet = false
+						HoverOrigin = nil
+						if FarmAllowed() then _G.AutoFarm = CONFIG.AutoFarm end
+						print("[ItemQuest] ออกจากโหมด Item Quest")
+					end
+				end
+			end)
+		end
+	end)
+end
+
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+do
+	local function Level()
+		local ok, lv = pcall(function() return LocalPlayer.PlayerData.Level.Value end)
+		return ok and lv or nil
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function Spawned(name)
+		local count, nearest = SpawnInfo(name)
+		return (count > 0 or FindAlive(name) ~= nil), nearest
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function NoobBossReady()
+		if not CONFIG.AutoBossWatch then return false end
+		if DropX2Needed and DropX2Needed() then return false end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		local lv = Level()
+		if not lv then return false end
+		if CONFIG.AutoEvilNoob and not _G.EvilNoobDone and not _G.NoobRaidPhase and lv >= CONFIG.EvilNoobMinLevel then
+			local c = LocalPlayer.Character
+			local have = FindTool("Yellow Blade")
+			if not have then
+				local s, d = Spawned("Evil Noob")
+				if s then return true, d end
+			end
+		end
+		return false
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function FindBoss()
+		if not CONFIG.AutoBossWatch then return end
+		local lv = Level()
+		if not lv then return end
+		if lv >= CONFIG.MemeBeastMinLevel and not _G.Aura then
+			local s, d = Spawned("Meme Beast")
+			if s then return "Meme Beast", d end
+		end
+		local nb, nd = NoobBossReady()
+		if nb then return "Evil Noob", nd end
+		if lv >= CONFIG.GiantPumpkinWatchMinLevel and not _G.Pumpkin then
+			local s, d = Spawned("Giant Pumpkin")
+			if s then return "Giant Pumpkin", d end
+		end
+	end
+
+	local NOOB_QUEST_POS = CFrame.new(2890.924561, -51.792477, 4207.233887)
+	local function NoobQuest()
+		_G.BossStatus = "Boss: Evil Noob Quest"
+		local prompts = CollectPrompts(NOOB_QUEST_POS, 25)
+		local tries = 0
+		while _G.Boss and tries < 8 do
+			WaitBusy()
+			if IsDead() then return end
+			local need = true
+			pcall(function()
+				local slot = LocalPlayer.PlayerGui.QuestGui.Holder.QuestSlot1
+				if slot.Visible then
+					if string.find(string.lower(slot.Target.Text), "evil noob") then
+						need = false
+					else
+						RS.OtherEvent.QuestEvents.Quest:FireServer("Abandon_Quest", { QuestSlot = "QuestSlot1" })
+					end
+				end
+			end)
+			if not need then break end
+			tries = tries + 1
+			TP(NOOB_QUEST_POS)
+			task.wait(0.3)
+			PressE()
+			for _, pr in ipairs(prompts) do pcall(fireproximityprompt, pr) end
+			task.wait(0.5)
+		end
+	end
+
+	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	task.spawn(function()
+		task.wait(3)
+		for _, n in ipairs({ "Meme Beast", "Giant Pumpkin", "Evil Noob", "Moai" }) do
+			local cf = SpawnLocation(n)
+			if cf then
+				print(string.format("[Spawn] %s จุดเกิด (%.0f, %.0f, %.0f)", n, cf.X, cf.Y, cf.Z))
+			else
+				warn("[Spawn] ไม่พบพาร์ต '" .. n .. "' ใน workspace.Location.Enemy_Location")
+			end
+		end
+	end)
+
+	local function PumpkinQuest()
+		_G.BossStatus = "Boss: Giant Pumpkin Quest"
+		local prompts = CollectPrompts(PUMPKIN_QUEST_POS, 25)
+		local tries = 0
+		while _G.Boss and tries < 8 do
+			WaitBusy()
+			if IsDead() then return end
+			local need = true
+			pcall(function()
+				local slot = LocalPlayer.PlayerGui.QuestGui.Holder.QuestSlot1
+				if slot.Visible then
+					if string.find(string.lower(slot.Target.Text), "pumpkin") then
+						need = false
+					else
+						RS.OtherEvent.QuestEvents.Quest:FireServer("Abandon_Quest", { QuestSlot = "QuestSlot1" })
+					end
+				end
+			end)
+			if not need then break end
+			tries = tries + 1
+			TP(PUMPKIN_QUEST_POS)
+			task.wait(0.3)
+			PressE()
+			for _, pr in ipairs(prompts) do pcall(fireproximityprompt, pr) end
+			task.wait(0.5)
+		end
+	end
+
+	local function RunBoss(name)
+		_G.BossStatus = "Boss: " .. name
+		StartMagnet = false
+		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		local t0 = tick()
+		while (_G.Raid or _G.RaceV2 or _G.FlameKatana or _G.EvilNoob or _G.ItemQuest or _G.Pumpkin or _G.Baller or _G.Aura or _G.HakiReroll) and tick() - t0 < 6 do
+			task.wait(0.2)
+		end
+		if _G.Raid then return end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+
+		if name == "Giant Pumpkin" then PumpkinQuest() end
+		if name == "Evil Noob" then NoobQuest() end
+
+		print("[Boss] ไปฟาร์ม", name)
+		_G.BossStatus = "Boss: " .. name
+		local preempted = false
+		while _G.Boss do
+			WaitBusy()
+			if IsDead() then break end
+			local mob, hum, root = FindAlive(name)
+			if not mob then break end
+			repeat
+				task.wait()
+				WaitBusy()
+				if IsDead() then break end
+				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if name == "Giant Pumpkin" and NoobBossReady() then
+					preempted = true
+					print("[Boss] Evil Noob เกิด -> ทิ้ง Giant Pumpkin ไปตี Evil Noob ก่อน")
+					break
+				end
+				if CONFIG.RaidSmart then MaybeRetreat() end
+				StartMagnet = false
+				AttackStep(root)
+			until not _G.Boss or not mob.Parent or hum.Health <= 0
+			StartMagnet = false
+			if preempted or IsDead() then break end
+		end
+	end
+
+	task.spawn(function()
+		while task.wait(0.5) do
+			if not _G.Boss then
+				local ok, name, dist = pcall(FindBoss)
+				if ok and name and not RaidGuiVisible() and not IsDead() then
+					_G.Boss = true
+					_G.BossTarget = name
+					_G.AutoFarm = false
+					print("[Boss] พบ", name, dist and dist < math.huge and string.format("(ห่างจุดเกิด %.0f)", dist) or "", "-> หยุดทุกอย่างแล้วไปฟาร์ม")
+					pcall(RunBoss, name)
+					_G.Boss = false
+					_G.BossTarget = nil
+					_G.BossStatus = nil
+					StartMagnet = false
+					HoverOrigin = nil
+					if FarmAllowed() then _G.AutoFarm = CONFIG.AutoFarm end
+					task.wait(1)
+				end
+			end
+		end
+	end)
+end
+
+end -- __HHUBMain
+
+do
+	local attempts = 0
+	while MY_GEN == _G.__HHUBGen and attempts < 5 do
+		local ok, err = xpcall(__HHUBMain, debug.traceback)
+		if ok then break end
+		attempts = attempts + 1
+		warn(string.format("[Recover] สคริปต์หลัก Error (รอบ %d/5) -> รันใหม่ใน 3 วิ\n%s", attempts, tostring(err)))
+		for _, th in ipairs(_G.__HHUBThreads) do if _cancel then pcall(_cancel, th) end end
+		_G.__HHUBThreads = {}
+		_wait(3)
+	end
+end
