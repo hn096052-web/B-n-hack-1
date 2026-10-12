@@ -576,7 +576,7 @@ local function CreateStatusUI()
 	logo.ScaleType = Enum.ScaleType.Fit; logo.Parent = main
 	local title = label(main, "", 16, C.white, 56, 12, 420, 26, Enum.Font.GothamBold)
 	title.RichText = true
-	title.Text = '<font color="rgb(150,160,255)">' .. HUB_NAME .. '</font>  <font color="rgb(120,132,168)">THỐNG KÊ TÀI KHOẢN</font>'
+	title.Text = '<font color="rgb(150,160,255)">' .. HUB_NAME .. '</font>  <font color="rgb(120,132,168)">CHÍNH</font>'
 
 	local div = frame(main, 18, 48, W - 36, 2, C.blue)
 	local dg = Instance.new("UIGradient")
@@ -840,8 +840,143 @@ pcall(function()
 	end
 end)
 
+-- ===================== Bảng PHỤ: bật/tắt từng tính năng riêng =====================
+local function CreateFeatureUI()
+	local UIS = game:GetService("UserInputService")
+	local C = {
+		bg1 = Color3.fromRGB(16, 21, 38), bg2 = Color3.fromRGB(9, 12, 22), card = Color3.fromRGB(20, 27, 48),
+		row = Color3.fromRGB(24, 32, 56), line = Color3.fromRGB(36, 46, 76), gray = Color3.fromRGB(120, 132, 168),
+		text = Color3.fromRGB(205, 213, 235), white = Color3.fromRGB(240, 244, 255),
+		blue = Color3.fromRGB(70, 190, 255), violet = Color3.fromRGB(125, 120, 255),
+		green = Color3.fromRGB(70, 235, 130), red = Color3.fromRGB(220, 70, 70), off = Color3.fromRGB(58, 66, 94),
+	}
+	local function corner(obj, r) local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, r); c.Parent = obj end
+	local function stroke(obj, color, th, tr)
+		local s = Instance.new("UIStroke"); s.Color = color; s.Thickness = th or 1; s.Transparency = tr or 0
+		s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border; s.Parent = obj; return s
+	end
+	local function frame(parent, x, y, w, h, color)
+		local f = Instance.new("Frame"); f.Position = UDim2.fromOffset(x, y); f.Size = UDim2.fromOffset(w, h)
+		f.BackgroundColor3 = color; f.BorderSizePixel = 0; f.Parent = parent; return f
+	end
+	local function label(parent, text, size, color, x, y, w, h, font, align)
+		local t = Instance.new("TextLabel"); t.BackgroundTransparency = 1; t.Text = text; t.TextSize = size
+		t.TextColor3 = color; t.Font = font or Enum.Font.Gotham
+		t.TextXAlignment = align or Enum.TextXAlignment.Left
+		t.Position = UDim2.fromOffset(x, y); t.Size = UDim2.fromOffset(w, h); t.Parent = parent; return t
+	end
+
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "XHHubFeatureUI"; gui.ResetOnSpawn = false; gui.IgnoreGuiInset = true
+	gui.DisplayOrder = 997; gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	pcall(function() if syn and syn.protect_gui then syn.protect_gui(gui) end end)
+	local parented = false
+	pcall(function() gui.Parent = (gethui and gethui()) or game:GetService("CoreGui"); parented = true end)
+	if not parented then gui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+
+	local W, H = 280, 420
+	local main = frame(gui, 0, 0, W, H, C.bg1)
+	main.AnchorPoint = Vector2.new(0, 0.5)
+	local vp = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 400)
+	main.Position = UDim2.fromOffset(12, math.floor(vp.Y * 0.5))
+	main.Active = true
+	corner(main, 14)
+	local g = Instance.new("UIGradient"); g.Color = ColorSequence.new(C.bg1, C.bg2); g.Rotation = 90; g.Parent = main
+	stroke(main, C.violet, 1.5, 0.55)
+
+	label(main, "XH HUB  •  PHỤ", 14, C.white, 14, 10, 250, 22, Enum.Font.GothamBold)
+	local div = frame(main, 14, 36, W - 28, 2, C.blue)
+	local dg = Instance.new("UIGradient"); dg.Color = ColorSequence.new(C.blue, C.violet); dg.Parent = div
+
+	-- Danh sách tính năng có thể bật/tắt riêng
+	local FEATURES = {
+		{ key = "AutoFarm",       label = "Auto Farm Level",     get = function() return CONFIG.AutoFarm end,       set = function(v) CONFIG.AutoFarm = v; if not v then _G.AutoFarm = false end; if v and _G.XH_Auto then _G.AutoFarm = true end end },
+		{ key = "AutoRaid",       label = "Auto Raid",           get = function() return CONFIG.AutoRaid end,       set = function(v) CONFIG.AutoRaid = v; if not v then _G.Raid = false; _G.GoRaid = false end end },
+		{ key = "AutoPumpkin",    label = "Auto Pumpkin",        get = function() return CONFIG.AutoPumpkin end,    set = function(v) CONFIG.AutoPumpkin = v; if not v then _G.Pumpkin = false end end },
+		{ key = "AutoEvilNoob",   label = "Auto Evil Noob",      get = function() return CONFIG.AutoEvilNoob end,   set = function(v) CONFIG.AutoEvilNoob = v; if not v then _G.EvilNoob = false end end },
+		{ key = "AutoFlameKatana",label = "Auto Flame Katana",   get = function() return CONFIG.AutoFlameKatana end,set = function(v) CONFIG.AutoFlameKatana = v; if not v then _G.FlameKatana = false end end },
+		{ key = "AutoRaceV2",     label = "Auto Race V2",        get = function() return CONFIG.AutoRaceV2 end,     set = function(v) CONFIG.AutoRaceV2 = v; if not v then _G.RaceV2 = false end end },
+		{ key = "AutoBallerStyle",label = "Auto Baller",         get = function() return CONFIG.AutoBallerStyle end,set = function(v) CONFIG.AutoBallerStyle = v; if not v then _G.Baller = false end end },
+		{ key = "AutoHaki",       label = "Auto Haki",           get = function() return CONFIG.AutoHaki end,       set = function(v) CONFIG.AutoHaki = v; if not v then _G.Aura = false; _G.AuraTask = nil end end },
+		{ key = "AutoHakiReroll", label = "Auto Random Haki",    get = function() return CONFIG.AutoHakiReroll end, set = function(v) CONFIG.AutoHakiReroll = v; if not v then _G.HakiReroll = false end end },
+		{ key = "AutoItemQuests", label = "Auto Item Quests",    get = function() return CONFIG.AutoItemQuests end, set = function(v) CONFIG.AutoItemQuests = v; if not v then _G.ItemQuest = false end end },
+		{ key = "AutoBossWatch",  label = "Auto Boss Watch",     get = function() return CONFIG.AutoBossWatch end,  set = function(v) CONFIG.AutoBossWatch = v; if not v then _G.Boss = false end end },
+		{ key = "BringMob",       label = "Bring Mob",           get = function() return CONFIG.BringMob end,       set = function(v) CONFIG.BringMob = v; _G.BringMonster = v end },
+		{ key = "AutoStats",      label = "Auto Stats",          get = function() return CONFIG.AutoStats end,      set = function(v) CONFIG.AutoStats = v end },
+		{ key = "AntiLag",        label = "Anti Lag",            get = function() return CONFIG.AntiLag end,        set = function(v) CONFIG.AntiLag = v end },
+	}
+
+	local scroller = Instance.new("ScrollingFrame")
+	scroller.BackgroundTransparency = 1; scroller.BorderSizePixel = 0
+	scroller.Position = UDim2.fromOffset(10, 48); scroller.Size = UDim2.new(1, -20, 1, -60)
+	scroller.CanvasSize = UDim2.fromOffset(0, 8 + #FEATURES * 34)
+	scroller.ScrollBarThickness = 4; scroller.ScrollBarImageColor3 = C.violet
+	scroller.ScrollingDirection = Enum.ScrollingDirection.Y; scroller.Active = true
+	scroller.Parent = main
+
+	for i, feat in ipairs(FEATURES) do
+		local y = 4 + (i - 1) * 34
+		local row = frame(scroller, 0, y, W - 30, 30, C.row); corner(row, 8)
+		label(row, feat.label, 13, C.text, 10, 0, 160, 30, Enum.Font.GothamMedium)
+
+		local btn = Instance.new("TextButton")
+		btn.AutoButtonColor = false; btn.BorderSizePixel = 0
+		btn.Size = UDim2.fromOffset(60, 22); btn.Position = UDim2.fromOffset(W - 30 - 70, 4)
+		btn.Font = Enum.Font.GothamBold; btn.TextSize = 12; btn.TextColor3 = C.white
+		btn.Parent = row; corner(btn, 6)
+
+		local function refreshBtn()
+			local on = feat.get()
+			btn.Text = on and "BẬT" or "TẮT"
+			btn.BackgroundColor3 = on and C.green or C.red
+		end
+		refreshBtn()
+
+		btn.MouseButton1Click:Connect(function()
+			local newVal = not feat.get()
+			feat.set(newVal)
+			refreshBtn()
+			print("[XH HUB][PHỤ]", feat.label, newVal and "BẬT" or "TẮT")
+		end)
+	end
+
+	-- Kéo thả bảng PHỤ
+	do
+		local dragging, dragStart, startPos = false, nil, nil
+		main.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				dragging, dragStart, startPos = true, input.Position, main.Position
+				input.Changed:Connect(function()
+					if input.UserInputState == Enum.UserInputState.End then dragging = false end
+				end)
+			end
+		end)
+		UIS.InputChanged:Connect(function(input)
+			if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+				local d = input.Position - dragStart
+				main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+			end
+		end)
+	end
+
+	-- Nút ẩn/hiện bảng PHỤ
+	local toggle = Instance.new("TextButton")
+	toggle.Name = "ToggleFeatureUI"; toggle.Text = ""; toggle.AutoButtonColor = false
+	toggle.BackgroundColor3 = C.bg1; toggle.BorderSizePixel = 0
+	toggle.Size = UDim2.fromOffset(44, 44)
+	toggle.Position = UDim2.fromOffset(12, math.floor(vp.Y * 0.5) + 220)
+	toggle.Parent = gui; corner(toggle, 12)
+	stroke(toggle, C.violet, 1.5, 0.35)
+	local tLogo = Instance.new("TextLabel")
+	tLogo.BackgroundTransparency = 1; tLogo.Text = "PHỤ"; tLogo.TextSize = 12
+	tLogo.Font = Enum.Font.GothamBold; tLogo.TextColor3 = C.white
+	tLogo.Size = UDim2.fromScale(1, 1); tLogo.Parent = toggle
+	toggle.MouseButton1Click:Connect(function() main.Visible = not main.Visible end)
+end
+
 if CONFIG.ShowUI then
 	task.spawn(function() pcall(CreateStatusUI) end)
+	task.spawn(function() pcall(CreateFeatureUI) end)
 end
 
 -- ===================== Redeem Code (ทำก่อนทุกอย่าง) =====================
@@ -2243,10 +2378,10 @@ local QuestPromptCache = {}
 
 task.spawn(function()
 	while task.wait() do
-		if _G.AutoFarm and not _G.Raid then
+		if _G.XH_Auto and _G.AutoFarm and not _G.Raid then
 			while FruitBusy or ShopBusy or StoreBusy do task.wait(0.1) end
 			pcall(function()
-				if not _G.AutoFarm or _G.Raid then return end   -- โหมดเปลี่ยนระหว่างรอ -> ไม่วาร์ปไปฟาร์ม
+				if not _G.XH_Auto or not _G.AutoFarm or _G.Raid then return end   -- โหมดเปลี่ยนระหว่างรอ -> ไม่วาร์ปไปฟาร์ม
 				CheckQuest()
 				local gui = LocalPlayer.PlayerGui.QuestGui.Holder.QuestSlot1
 				if not string.find(gui.Target.Text, Mob) then
@@ -3161,7 +3296,7 @@ local PUMPKIN_QUEST_POS  = CFrame.new(-1162.951660, -92.914436, 1462.343750)
 local SKULL_POS          = CFrame.new(-1489.832764, -92.846230, 1277.917725)
 
 local function PumpkinActive()
-	return _G.Pumpkin and not _G.Raid
+	return _G.XH_Auto and _G.Pumpkin and not _G.Raid
 end
 
 local function WaitBusy()
@@ -3444,7 +3579,7 @@ do
 		return slot and slot.Visible and string.find(string.lower(slot.Target.Text), string.lower(RACE_MOB)) ~= nil
 	end
 
-	local function RaceActive() return _G.RaceV2 and not _G.Raid end
+	local function RaceActive() return _G.XH_Auto and _G.RaceV2 and not _G.Raid end
 
 	-- ไปรับเควส: เควสนี้รับได้แค่ 1 ใน 2 ภารกิจ ถ้าได้ภารกิจที่ไม่ใช่ Sogga -> ยกเลิกแล้วคุยใหม่
 	local function TakeQuest()
@@ -3767,7 +3902,7 @@ do
 	local DOG = "Walter Dog"
 	local DOG_FALLBACK = CFrame.new(10.436995506286621, -37.043067932128906, -1034.9451904296875)
 
-	local function FlameActive() return _G.FlameKatana and not _G.Raid end
+	local function FlameActive() return _G.XH_Auto and _G.FlameKatana and not _G.Raid end
 
 	local function HaveKatana()
 		local c = LocalPlayer.Character
@@ -3908,7 +4043,7 @@ do
 	local UI_KEY    = "Fighting Style: Baller"
 	local SAVE_NAME = "MemeSea_Baller_" .. LocalPlayer.UserId .. ".json"
 
-	local function BallerActive() return _G.Baller and not _G.Raid end
+	local function BallerActive() return _G.XH_Auto and _G.Baller and not _G.Raid end
 
 	local function MarkDone(save)
 		_G.BallerDone = true
@@ -4104,7 +4239,7 @@ do
 		end
 	end)
 
-	local function AuraActive() return _G.Aura and not _G.Raid and _G.AuraTask ~= nil end
+	local function AuraActive() return _G.XH_Auto and _G.Aura and not _G.Raid and _G.AuraTask ~= nil end
 
 	-- ซื้อ + เปิดฮาคิ แล้วเช็กโฟลเดอร์ (true = เปิดได้แล้ว)
 	local function TryBuyAura()
@@ -4660,7 +4795,7 @@ do
 	local SUMMON_POS = CFrame.new(-2356.497559, -75.346283, 3180.454346)
 	local MOAI_POS   = CFrame.new(-2685.326172, -80.996971, 3442.507080)
 
-	local function Active() return _G.EvilNoob and not _G.Raid and not _G.NoobRaidPhase end
+	local function Active() return _G.XH_Auto and _G.EvilNoob and not _G.Raid and not _G.NoobRaidPhase end
 
 	-- เช็กสปอว์นจาก workspace.Location.Enemy_Location (พาร์ตชื่อ = ชื่อมอน) + มอนที่มีชีวิตใน workspace.Monster
 	local function NoobSpawned()
@@ -4973,7 +5108,7 @@ do
 	local LORD_SUMMON   = CFrame.new(6644.367188, -94.872475, 4809.016113)
 	local DUCK_POS      = CFrame.new(1529.334229, -51.696487, 2317.537109)
 
-	local function Active() return _G.ItemQuest and not _G.Raid end
+	local function Active() return _G.XH_Auto and _G.ItemQuest and not _G.Raid end
 	local function KeyActive(key) return Active() and _G.ItemQuestKey == key and not _G.ItemDone[key] end   -- ได้ไอเทมแล้ว = ทุกลูปหยุดทันที
 	local function Status(txt) _G.ItemQuestStatus = txt end
 
@@ -5375,7 +5510,7 @@ do
 
 	-- ลำดับความสำคัญบอส: Meme Beast > Evil Noob > Giant Pumpkin (เกิดพร้อมกัน Noob มาก่อนฟักทอง)
 	local function FindBoss()
-		if not CONFIG.AutoBossWatch then return end
+		if not _G.XH_Auto or not CONFIG.AutoBossWatch then return end
 		local lv = Level()
 		if not lv then return end
 		if lv >= CONFIG.MemeBeastMinLevel and not _G.Aura then
