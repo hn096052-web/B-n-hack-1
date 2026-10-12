@@ -1,170 +1,162 @@
--- XH HUB - BAN GIAO GIAM LOI QUEUE
--- Da tat mac dinh cac tac vu tu dong de giam nguy co spam RemoteEvent khi khoi dong.
--- ShowUI van bat. Hay bat tung tinh nang sau khi giao dien da hien.
--- LUU Y: loi "attempt to call a nil value" chua the ket luan da duoc sua chi tu anh console;
--- can stack trace day du hoac ten ham loi de xac dinh dung nguyen nhan.
-
 local CONFIG = {
-	AutoPlay      = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	Team          = "Floppa",      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoPumpkin   = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoPlay      = true,          -- เลือกทีม + กดปุ่ม Play ที่หน้า Loading (ทำก่อนทุกอย่าง)
+	Team          = "Floppa",      -- ทีมที่เลือก
+	AutoPumpkin   = true,          -- เลเวล PumpkinMinLevel..PumpkinMaxLevel-1: เสก/ฆ่า Giant Pumpkin (ฟาร์ม Scary Skull เมื่อเสกไม่ออก)
 	PumpkinMinLevel = 1100,
-	PumpkinMaxLevel = 1200,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	SummonPresses = 2,             -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	PumpkinSkullKills = 5,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	DebugSpawn    = false,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AntiLag       = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	Highlight     = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	ShowUI        = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoRedeem    = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RedeemURL     = "https://pastebin.com/raw/2W4kMG3c", -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RedeemOwnCode = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoRaceV2    = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	PumpkinMaxLevel = 1200,        -- ถึงเลเวลนี้แล้วกลับไปฟาร์มเลเวลปกติ
+	SummonPresses = 2,             -- กด E เสกบอสกี่รอบ (Pumpkin/Evil Noob/Lord Sus) แล้วเช็กสปอว์นทันที
+	PumpkinSkullKills = 5,         -- ฆ่า Scary Skull กี่ตัวแล้วกลับไปเสก
+	DebugSpawn    = false,         -- true = ตอนเริ่มพิมพ์/คัดลอกรายงานสปอว์นมอนทุกจุด (Enemy_Location)
+	AntiLag       = true,          -- ลบพื้นผิว/เอฟเฟกต์/เงา ลดแลค
+	Highlight     = true,          -- ไฮไลต์สีฟ้ารอบตัวละครตลอด
+	ShowUI        = true,          -- แผงสถานะ (ซ้าย: เลเวล/เงิน/Gem ขวา: เช็กลิสต์ ทำเสร็จเป็นสีเขียว)
+	AutoRedeem    = false,          -- Redeem โค้ดทั้งหมดก่อนเริ่มทำอย่างอื่น (รอจนเสร็จ)
+	RedeemURL     = "https://pastebin.com/raw/2W4kMG3c", -- ดึงรายการโค้ดจาก raw (1 บรรทัด/โค้ด) ดึงไม่ได้ = ใช้รายการสำรองในสคริปต์
+	RedeemOwnCode = true,          -- Redeem โค้ดของตัวเอง (เฉพาะเมื่อ LocalPlayer.Code เป็นค่าข้อความ ไม่ใช่โฟลเดอร์)
+	AutoRaceV2    = true,          -- เลเวล RaceV2MinLevel+ และเผ่ายังเป็น V1 -> ทำเควส Sogga แล้วใช้ Awakening Orb
 	RaceV2MinLevel = 500,
-	AutoBossWatch = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	MemeBeastMinLevel = 1500,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	GiantPumpkinWatchMinLevel = 1100, -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoEvilNoob  = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoBossWatch = true,          -- เช็กบอสเกิดตลอด: เกิดแล้วหยุดทุกอย่างไปฟาร์มก่อน (ไม่แทรกกลางเรดที่กำลังสู้อยู่)
+	MemeBeastMinLevel = 1500,      -- เลเวลนี้ขึ้นไปเช็ก Meme Beast
+	GiantPumpkinWatchMinLevel = 1100, -- เลเวลนี้ขึ้นไปเช็ก Giant Pumpkin (รับเควสแล้วตี)
+	AutoEvilNoob  = true,          -- เลเวล EvilNoobMinLevel+ : เควส Evil Noob (เสกเองถ้าไม่เกิด) จนได้ Yellow Blade
 	EvilNoobMinLevel = 2000,
-	EvilNoobMaxCycles = 3,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	NoobRaidGems = 50000,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoBuyDropX2 = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	DropX2GamepassId = 876020870,  -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoBuyGemX2  = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	EvilNoobMaxCycles = 3,         -- ทำ Evil Noob ครบกี่รอบแล้วยังไม่ได้ Yellow Blade -> ไปเรดจน Gem ถึง NoobRaidGems แล้วกลับมาทำดาบต่อ (0 = วนจนกว่าจะได้ ไม่ไปเรดก่อน)
+	NoobRaidGems = 50000,          -- Gem เป้าหมายตอนไปเรดระหว่างรอพักทำดาบ (ถึงแล้วซื้อ Drop X2 แล้วกลับไปทำดาบ)
+	AutoBuyDropX2 = true,          -- ซื้อ Gamepass Drop Item X2 ตอน Gem ถึง NoobRaidGems (ซื้อครั้งเดียว)
+	DropX2GamepassId = 876020870,  -- GamepassId Drop Item X2 ที่ซื้อตอน Gem ถึง NoobRaidGems
+	AutoBuyGemX2  = true,          -- ซื้อ Gamepass Gem x2 ตอน Gem ถึง GemX2Gems (ซื้อครั้งเดียว ก่อน Drop X2)
 	GemX2Gems     = 30000,
 	GemX2GamepassId = 86944271,    -- GamepassId Gem x2
-	NoobCheckSeconds = 8,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	EvilNoobSummonRounds = 30,     -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	MoaiKills = 5,                 -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoRerollRace = false,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaceRerollMax = 30,            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoFlameKatana = false,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	NoobCheckSeconds = 8,          -- กด E แล้ววาร์ปไปจุด Evil Noob รอเช็กสปอว์นสูงสุดกี่วินาที (บอสเกิดช้า + ต้องอยู่ใกล้ถึงจะโหลดมอน)
+	EvilNoobSummonRounds = 30,     -- วนเสก/ไปฟาร์ม Moai สูงสุดกี่รอบต่อหนึ่งครั้งที่หามอนไม่เจอ
+	MoaiKills = 5,                 -- ฟาร์ม Moai กี่ตัวต่อรอบ แล้วกลับไปเสกใหม่
+	AutoRerollRace = true,         -- เผ่าที่อัพ V2 ไม่ได้ (Orb ไม่หายหลังใช้) -> เก็บ Orb แล้วไปรีเผ่า (Watermelon Man) แล้วลองใหม่
+	RaceRerollMax = 30,            -- รีเผ่าได้สูงสุดกี่ครั้งก่อนหยุด
+	AutoFlameKatana = true,        -- เลเวล FlameKatanaMinLevel+ : เอา Flame Katana ออกจากคลัง / ไม่มี -> ซื้อ / ซื้อแล้วยังไม่ได้ -> ไปตี Walter Dog แล้วทำซ้ำ
 	FlameKatanaMinLevel = 250,
-	FlameKatanaMaxCycles = 8,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoBallerStyle = false,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	BallerMoney   = 10000000,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	UseBallerWhenOwned = true,     -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	BallerSkills  = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	FlameKatanaMaxCycles = 8,      -- วนซื้อ/ตี Walter Dog ได้สูงสุดกี่รอบก่อนยอมแพ้ (กันค้างไม่จบ)
+	AutoBallerStyle = true,        -- เงินถึง BallerMoney -> ไปซื้อหมัด Baller ก่อนทุกอย่าง (ไม่มีในกระเป๋า -> ไปฟาร์ม Baller แล้วกลับมาซื้อวนจนได้)
+	BallerMoney   = 10000000,      -- เงินขั้นต่ำที่จะเริ่มซื้อ
+	UseBallerWhenOwned = true,     -- ได้ Baller แล้วใช้ Baller เป็นหมัดหลักทุกเลเวล
+	BallerSkills  = true,          -- ถือ Baller: ใช้สกิล Z/X/C/V เมื่อพร้อม (กดปุ่มแบบเดิม หันกล้องไปที่มอน ไม่ยิงรีโมท)
 	BallerKeys    = { "Z", "X", "C", "V" },
-	BallerSkillRange = 120,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	BallerSkillGap   = 2.5,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	BallerKills   = 10,            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoHaki      = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AuraMoney     = 10000000,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AuraBossName  = "Meme Beast",  -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoHakiKeepOn = true,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoHakiReroll = true,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	HakiRerollWaitAll = true,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	HakiRerollNPC = "Halved Sorcerer", -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	HakiRerollMinGems = 1,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	HakiRerollDelay = 0.6,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	HakiRerollRepeat = false,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoFarm      = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	UseSelectedMonster = false,
-	SelectedMonster = "Floppa",
-	BringMob      = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	BringFruit    = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoStore     = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	FruitFullRetrySeconds = 600,   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoStats     = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	ResetIfStyleLost = true,       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoRaid      = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	BallerSkillRange = 120,        -- ใช้สกิลเมื่อมอนอยู่ในระยะนี้ (studs)
+	BallerSkillGap   = 2.5,        -- ถ้าอ่านคูลดาวจาก GUI ไม่ได้ ใช้สกิลเดิมซ้ำห่างกันอย่างน้อยกี่วินาที
+	BallerKills   = 10,            -- ฟาร์มมอน Baller กี่ตัวต่อรอบ แล้วกลับไปซื้อใหม่
+	AutoHaki      = true,          -- เงินถึง AuraMoney -> ไปซื้อ Aura Master + เปิดฮาคิ (ซื้อไม่ได้ = รอบอส AuraBossName เกิด -> ไปตี -> กลับมาซื้อซ้ำ ระหว่างรอทำอย่างอื่น)
+	AuraMoney     = 10000000,      -- เงินขั้นต่ำที่จะเริ่มซื้อ Aura Master
+	AuraBossName  = "Meme Beast",  -- ชื่อบอสที่ต้องตีเพื่อซื้อ Aura Master
+	AutoHakiKeepOn = true,         -- ซื้อแล้ว: ถ้าฮาคิหลุด (ตาย/รีสปอว์น) เปิดใหม่ให้เอง
+	AutoHakiReroll = true,         -- ทำของ/ดาบครบ + มี Aura Master -> ไปสุ่มสีฮาคิที่ Halved Sorcerer ซ้ำจน Gem หมด (แผง HAKI COLOR REROLL โชว์สีที่ได้)
+	HakiRerollWaitAll = true,      -- true = รอ Baller/Flame Katana/Yellow Blade/Pink Hammer/Banana/Purple Katana ครบก่อน / false = มี Aura Master + มี Gem ก็สุ่มเลย
+	HakiRerollNPC = "Halved Sorcerer", -- อาร์กิวเมนต์ที่ส่งไปกับ Reroll_Color
+	HakiRerollMinGems = 1,         -- Gem ขั้นต่ำก่อนเริ่มสุ่ม (หลังสุ่มครั้งแรกสคริปต์จำราคาสุ่มจาก Gem ที่ลดจริง)
+	HakiRerollDelay = 0.6,         -- รอกี่วินาทีระหว่างการสุ่มแต่ละครั้ง
+	HakiRerollRepeat = false,      -- true = Gem หมดแล้ว กลับไปเรดเก็บ Gem แล้วมาสุ่มต่อได้อีก / false = สุ่มจน Gem หมดรอบเดียวแล้วจบ
+	AutoFarm      = true,          -- ฟาร์มเลเวลอัตโนมัติ (รับเควส + ตีมอนตามเลเวล)
+	BringMob      = true,          -- ดึงมอนมารวมที่จุดฟาร์ม
+	BringFruit    = true,          -- วาร์ปไปเก็บผลไม้ที่ดรอปบนพื้น
+	AutoStore     = true,          -- เก็บผลไม้ที่ได้เข้าคลังอัตโนมัติ
+	FruitFullRetrySeconds = 600,   -- เก็บผลไหนเข้าคลังไม่ได้ = คลังผลนั้นเต็ม -> ไม่เก็บ/ไม่เก็บจากพื้นผลนั้นกี่วินาที แล้วค่อยลองใหม่
+	AutoStats     = true,          -- อัพสเตตัสอัตโนมัติ: Melee จนตัน (2400) แล้วสลับ Defense / Sword
+	ResetIfStyleLost = true,       -- ถ้าหมัด/อาวุธที่ใช้ฟาร์มหายไป (เกมบัค) ให้รีตัวละครอัตโนมัติ
+	AutoRaid      = true,          -- เลเวลถึง RaidMinLevel (2000) -> Auto Join + Auto Raid (หยุดเมื่อ Gem ถึง RaidStopGems)
 	RaidMinLevel  = 2000,
 	RaidStopGems  = 20000,
-	AutoStartRaid = false,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidStartDelay = 3,            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidStartRetry = 1,            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidOnlyNewMobs = true,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidNoMobResetSeconds = 5,     -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidFarmDelay = 11,            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidTargetRange = 1000,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidReturn    = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidReturnDistance = 500,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidFolderHeight = 5,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidArenaPos  = nil,           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidSmart     = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidRetreatHp = 0.45,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidResumeHp  = 0.85,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidOrbitRadius = 20,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidOrbitSpeed  = 8,           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoBuy       = false,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoStartRaid = false,         -- false = ไม่ส่ง StartRaid เอง ไปยืนรอที่จุดเข้าเรดเฉยๆ / true = ส่ง Start ตาม RaidStartDelay + RaidStartRetry
+	RaidStartDelay = 3,            -- ยืนที่จุดเข้าเรดครบกี่วินาที แล้วค่อยส่ง Start (ส่งซ้ำตาม RaidStartRetry จนเรดเริ่ม)
+	RaidStartRetry = 1,            -- ส่ง Start แล้วเรดยังไม่เริ่ม -> ส่งซ้ำทุกกี่วินาที
+	RaidOnlyNewMobs = true,        -- ในเรดตีเฉพาะมอนที่เกิดใหม่หลังเรดเริ่ม (ไม่ตีมอนข้างนอกที่มีอยู่ก่อน) / ยังไม่มีมอนเรด -> ลอยรอ
+	RaidNoMobResetSeconds = 5,     -- รอครบ RaidFarmDelay แล้วยังไม่เจอมอนเรดเลยกี่วินาที -> ฆ่าตัวตายรีตัวละคร (เรดบัค) / 0 = ปิด
+	RaidFarmDelay = 11,            -- เรดเริ่ม (RaidGui ขึ้น) แล้วรอกี่วินาทีก่อนเริ่มตีมอน (ลอยรออยู่เฉยๆ ไม่โจมตี)
+	RaidTargetRange = 1000,        -- ในเรดเลือกตีเฉพาะมอนที่อยู่ห่างไม่เกินกี่ studs
+	RaidReturn    = true,          -- Join เรดแล้ว (RaidGui ขึ้น) ถ้าตัวละครไม่ได้อยู่ตำแหน่งเรด -> เทเลพอตกลับไปจุดเรดอัตโนมัติ (รวมถึงตายแล้วเกิดใหม่)
+	RaidReturnDistance = 500,      -- ห่างจุดเรดเกินกี่ studs ถือว่า "ไม่ได้อยู่ตำแหน่งเรด" (ต้องมากกว่าระยะที่ใช้ตีมอนในเรด)
+	RaidFolderHeight = 5,          -- ตอนวาร์ปไปที่ของใน workspace.Raids ให้ยกสูงขึ้นกี่ studs (กันจมพื้น)
+	RaidArenaPos  = nil,           -- (ไม่บังคับ) พิกัดจุดเรด เช่น {1234, 56, -789} / nil = สคริปต์จำเองตอน Join เรดครั้งแรก (ดูพิกัดจาก Output แล้วเอามาใส่ได้)
+	RaidSmart     = true,          -- โหมดเอาตัวรอดใน Raid (เลือกเป้าฉลาด/ยืนห่างเมื่อถูกรุม/ถอยฟื้นเลือด)
+	RaidRetreatHp = 0.45,          -- เลือดต่ำกว่านี้ (สัดส่วน) -> ถอยขึ้นที่สูง
+	RaidResumeHp  = 0.85,          -- ฟื้นถึงเท่านี้ -> กลับไปสู้
+	RaidOrbitRadius = 20,          -- ตอนถอย: วิ่งวนเป็นวงกลมรัศมีเท่านี้ (หลบสกิลมอน)
+	RaidOrbitSpeed  = 8,           -- ความเร็ววน (เรเดียน/วินาที) 8 ≈ 1.3 รอบ/วินาที
+	AutoBuy       = true,          -- ซื้อของอัตโนมัติเมื่อเงินถึงเกณฑ์ (ดูรายการที่ SHOP_LIST)
 	Weapon        = "FightingStyle", -- "FightingStyle" | "Power" | "Weapon"
 	Method        = "Upper",       -- "Upper" | "Behind" | "Below"
-	Distance      = 8,             -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidCrowdDistance = 0,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	FollowSmooth  = 20,            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidGapHold   = 1.5,           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RaidFreezeMob = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	FollowLead    = 0.08,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	BringRange    = 250,           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	MaxBringMobs  = 3,             -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	BringSpread   = 2,             -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	BringOrbitSpeed = 2,           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	UseSwordSkills = true,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	MaxLevel      = 2400,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	SwordOnlyAtMax = true,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	SwordRotateInRaid = true,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	SwordSwapSettle = 0.12,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	SwordCdSample = 0.1,           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	SwordRotateBlock = 1.0,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	SwordRetrySeconds = 1.5,       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	SwordPriority = { "Purple Katana", "Yellow Blade", "Pink Hammer", "Banana", "Flame Katana" },   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	ResetIfHitStuck = true,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	Distance      = 8,             -- ระยะห่างจากมอน
+	RaidCrowdDistance = 0,         -- มอนรุมเยอะ (>=5) ในเรดให้ยืนห่างเท่านี้ / 0 = ไม่ถอยห่าง ใช้ Distance เดิม (ไม่ขยาย hitbox แล้ว ถ้าห่างเกินหมัดจะไม่โดน)
+	FollowSmooth  = 20,            -- (เฉพาะในเรด) ทำให้ตัวละครตามมอนนุ่มขึ้น กันพุ่งไปมาตอนมอนกระเด็น/ความเร็วกระตุก / 0 = ปิด
+	RaidGapHold   = 1.5,           -- ตีมอนตัวหนึ่งเสร็จแล้วยังไม่เจอตัวต่อไป: ยืนรอที่เดิมกี่วินาทีก่อนค่อยลอยรอ (กันขึ้นๆลงๆ ระหว่างเวฟ)
+	RaidFreezeMob = true,          -- ในเรด: ล็อกความเร็วมอนที่กำลังตีให้นิ่งทุกเฟรม (กันมอนพุ่ง/กระเด็นไปมา)
+	FollowLead    = 0.08,          -- ตามมอนล่วงหน้ากี่วินาที (คำนวณจากความเร็วมอน กันวาร์ปตามไม่ทัน) / 0 = ปิด
+	BringRange    = 250,           -- รัศมีดึงมอน
+	MaxBringMobs  = 3,             -- จำนวนมอนที่ดึงสูงสุด
+	BringSpread   = 2,             -- ระยะที่กระจายมอนรอบจุดฟาร์ม (แต่ละตัวอยู่คนละจุด)
+	BringOrbitSpeed = 2,           -- มอนที่ถูกดึงมาหมุนรอบจุดฟาร์ม (เรเดียน/วินาที 2 ≈ 0.3 รอบ/วินาที, 0 = ไม่หมุน)
+	-- ===== Item Quests: Pink Hammer / Banana / Purple Katana (ทำต่อจาก Flame Katana / Race V2 / Evil Noob) =====
+	UseSwordSkills = true,         -- มีดาบที่ซื้อแล้ว -> ถือดาบดีสุดตีด้วย + ใช้สกิล Z/X ตอนไม่คูลดาว (คูลดาวทั้งคู่ -> สลับกลับไปใช้หมัด)
+	MaxLevel      = 2400,          -- เลเวลสูงสุดของเกม
+	SwordOnlyAtMax = true,         -- ถึง MaxLevel แล้วไม่ว่าฟาร์มอะไรถือดาบอย่างเดียว (ไม่สลับไปหมัด) ใช้สกิล Z/X เมื่อไม่คูลดาว
+	SwordRotateInRaid = true,      -- LvMax + ในเรด: ดาบเล่มนี้คูลดาวทั้ง Z/X -> สลับไปดาบอีกเล่มที่พร้อมใช้สกิลทันที วนไปเรื่อย ๆ
+	SwordSwapSettle = 0.12,        -- สลับดาบแล้วรอกี่วินาทีให้ GUI คูลดาวอัปเดต ก่อนเช็ก (ยิ่งน้อยยิ่งสลับไว)
+	SwordCdSample = 0.1,           -- เช็กคูลดาว: อ่านขนาดแถบ 2 ครั้งห่างกันกี่วินาที (ขยับ = คูลดาว)
+	SwordRotateBlock = 1.0,        -- ดาบที่เพิ่งคูลดาวทั้งคู่ ข้ามไปกี่วินาทีก่อนกลับมาเช็กใหม่
+	SwordRetrySeconds = 1.5,       -- สลับไปหมัดแล้วรอกี่วินาทีก่อนลองสลับกลับมาเช็กคูลดาวดาบ
+	SwordPriority = { "Purple Katana", "Yellow Blade", "Pink Hammer", "Banana", "Flame Katana" },   -- ดีสุด -> รองลงไป
+	ResetIfHitStuck = true,        -- ตีมอนแล้วเลือดมอนไม่ลดนาน StuckSeconds วินาที -> ฆ่าตัวตายรีตัวละคร (กันบัค)
 	StuckSeconds    = 3,
-	AutoItemQuests = false,         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	PinkHammerMinLevel = 1350,     -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	BananaMinLevel = 800,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	BananaMinMoney = 350000,       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	PurpleKatanaMinLevel = 1700,   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	LordSusSummonRounds = 30,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	SusDuckKills = 9,              -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	ItemQuestMaxCycles = 0,        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AntiAFK       = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoItemQuests = true,         -- เปิด/ปิดเควสไอเทมทั้ง 3 อัน (ก่อนเริ่มจะเอาออกจากคลังมาเช็กก่อนทุกอัน)
+	PinkHammerMinLevel = 1350,     -- เลเวลขั้นต่ำทำ Pink Hammer (ฟาร์ม Pink Absorber)
+	BananaMinLevel = 800,          -- เลเวลขั้นต่ำทำ Banana (ซื้อ Smiling Cat / ไม่ได้ -> ฟาร์ม Gorilla King)
+	BananaMinMoney = 350000,       -- เงินขั้นต่ำที่ต้องมีก่อนเริ่มทำ Banana
+	PurpleKatanaMinLevel = 1700,   -- เลเวลขั้นต่ำทำ Purple Katana (Lord Sus)
+	LordSusSummonRounds = 30,      -- วนเสก/ไปฟาร์ม Sus Duck สูงสุดกี่รอบต่อหนึ่งครั้งที่หา Lord Sus ไม่เจอ
+	SusDuckKills = 9,              -- ฟาร์ม Sus Duck กี่ตัวต่อรอบ แล้วกลับไปเสกใหม่
+	ItemQuestMaxCycles = 0,        -- วนซ้ำสูงสุดกี่รอบต่อไอเทม (0 = วนจนกว่าจะได้)
+	-- ===== AFK / กันบัค =====
+	AntiAFK       = true,          -- กันโดนเตะเพราะ AFK (Idled + ขยับจำลองทุก ๆ AntiAFKInterval วินาที)
 	AntiAFKInterval = 120,
-	AutoRecover   = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RecoverMaxRestarts = 200,      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	AutoRejoin    = true,          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	RejoinScript  = "",            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	AutoRecover   = true,          -- ลูป/เธรดไหน Error กลางคัน -> รีสตาร์ทเธรดนั้นเองอัตโนมัติ (ไม่ทำให้สคริปต์หยุด)
+	RecoverMaxRestarts = 200,      -- รีสตาร์ทเธรดเดียวได้สูงสุดกี่ครั้ง (ถ้ารันนานเกิน 30 วิ ถือว่าปกติ นับใหม่)
+	AutoRejoin    = true,          -- หลุดเซิร์ฟ/ขึ้นหน้าต่าง Error -> เข้าเกมเดิมใหม่อัตโนมัติ
+	RejoinScript  = "",            -- (ไม่บังคับ) โค้ดที่จะรันหลังรีจอยผ่าน queue_on_teleport เช่น loadstring(game:HttpGet("URL"))()  ถ้าใช้ Auto Execute ของ executor ปล่อยว่างได้
 }
 
 repeat task.wait() until game:IsLoaded()
 
 -- ===================== Runtime: Anti-AFK / Auto Recover / Auto Rejoin =====================
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ส่วนนี้อยู่นอกตัวสคริปต์หลัก ต่อให้สคริปต์หลัก Error ก็ยังทำงานต่อ
 local _spawn, _wait, _cancel = task.spawn, task.wait, task.cancel
 local _LP = game:GetService("Players").LocalPlayer
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-_G.__XHHubGen = (_G.__XHHubGen or 0) + 1
-local MY_GEN = _G.__XHHubGen
-for _, th in ipairs(_G.__XHHubThreads or {}) do if _cancel then pcall(_cancel, th) end end
-for _, cn in ipairs(_G.__XHHubConns or {}) do pcall(function() cn:Disconnect() end) end
-_G.__XHHubThreads, _G.__XHHubConns = {}, {}
-local function KeepConn(cn) table.insert(_G.__XHHubConns, cn) return cn end
+-- รันสคริปต์ซ้ำ -> เก็บกวาดของรอบเก่าก่อน (เธรด/คอนเนกชัน) กันทำงานซ้อน
+_G.__MemeSeaGen = (_G.__MemeSeaGen or 0) + 1
+local MY_GEN = _G.__MemeSeaGen
+for _, th in ipairs(_G.__MemeSeaThreads or {}) do if _cancel then pcall(_cancel, th) end end
+for _, cn in ipairs(_G.__MemeSeaConns or {}) do pcall(function() cn:Disconnect() end) end
+_G.__MemeSeaThreads, _G.__MemeSeaConns = {}, {}
+local function KeepConn(cn) table.insert(_G.__MemeSeaConns, cn) return cn end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- task.spawn แบบกันตาย: ถ้าฟังก์ชัน Error -> พิมพ์เตือนแล้วรันใหม่เอง (ฟังก์ชันที่จบปกติจะไม่ถูกรันซ้ำ)
 local function ResilientSpawn(fn, ...)
 	local args = table.pack(...)
 	local th = _spawn(function()
 		local restarts = 0
-		while MY_GEN == _G.__XHHubGen do
+		while MY_GEN == _G.__MemeSeaGen do
 			local t0 = tick()
 			local ok, err = xpcall(function() return fn(table.unpack(args, 1, args.n)) end, debug.traceback)
 			if ok then return end
-			if not CONFIG.AutoRecover then warn("[Recover] Error (đã tắt AutoRecover):", err) return end
-			if tick() - t0 > 30 then restarts = 0 end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			if not CONFIG.AutoRecover then warn("[Recover] Error (ปิด AutoRecover):", err) return end
+			if tick() - t0 > 30 then restarts = 0 end   -- เคยรันปกติ >30 วิ -> ไม่นับว่าพังรัว
 			restarts = restarts + 1
-			warn(string.format("[Recover] Luồng gặp lỗi -> khởi động lại (%d/%d)\n%s", restarts, CONFIG.RecoverMaxRestarts, tostring(err)))
-			if restarts >= CONFIG.RecoverMaxRestarts then warn("[Recover] Luồng lỗi quá số lần cho phép, đã dừng") return end
+			warn(string.format("[Recover] เธรด Error -> รีสตาร์ท (%d/%d)\n%s", restarts, CONFIG.RecoverMaxRestarts, tostring(err)))
+			if restarts >= CONFIG.RecoverMaxRestarts then warn("[Recover] เธรดนี้พังรัวเกินกำหนด หยุดเธรดนี้") return end
 			_wait(math.min(0.5 + restarts * 0.25, 5))
 		end
 	end)
-	if th then table.insert(_G.__XHHubThreads, th) end
+	if th then table.insert(_G.__MemeSeaThreads, th) end
 	return th
 end
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ใช้ task.spawn แบบกันตายทั้งไฟล์ (task.wait/อื่น ๆ ใช้ของเดิมผ่าน __index)
 local task = setmetatable({ spawn = ResilientSpawn }, { __index = task })
 
 -- ===== Anti-AFK =====
@@ -178,22 +170,22 @@ if CONFIG.AntiAFK then
 	end
 	KeepConn(_LP.Idled:Connect(Nudge))
 	_spawn(function()
-		while MY_GEN == _G.__XHHubGen do
+		while MY_GEN == _G.__MemeSeaGen do
 			_wait(CONFIG.AntiAFKInterval or 120)
 			Nudge()
 		end
 	end)
-	print("[AntiAFK] đã bật")
+	print("[AntiAFK] เปิดใช้งาน")
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===== Auto Rejoin (หลุดเซิร์ฟ / ขึ้นหน้าต่าง Error) =====
 if CONFIG.AutoRejoin then
 	local TeleportService = game:GetService("TeleportService")
 	local rejoining = false
 	local function Rejoin(reason)
 		if rejoining then return end
 		rejoining = true
-		warn("[Rejoin] " .. tostring(reason) .. " -> vào lại trò chơi")
+		warn("[Rejoin] " .. tostring(reason) .. " -> เข้าเกมใหม่")
 		if CONFIG.RejoinScript ~= "" and queue_on_teleport then pcall(queue_on_teleport, CONFIG.RejoinScript) end
 		for _ = 1, 40 do
 			pcall(function() TeleportService:Teleport(game.PlaceId, _LP) end)
@@ -221,11 +213,11 @@ if CONFIG.AutoRejoin then
 	end)
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-local function __XHHubMain()
+-- ===== ตัวสคริปต์หลักอยู่ในฟังก์ชันนี้ ถ้า Error ระดับบนสุด จะเก็บกวาดแล้วรันใหม่ (สูงสุด 5 รอบ) =====
+local function __MemeSeaMain()
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== Auto Play (เลือกทีม + กดปุ่ม Play) =====================
+-- ทำก่อนทุกอย่าง เพราะตัวละครจะยังไม่เกิดจนกว่าจะกด Play
 if CONFIG.AutoPlay then
 	local Players0 = game:GetService("Players")
 	local VIM0 = game:GetService("VirtualInputManager")
@@ -238,7 +230,7 @@ if CONFIG.AutoPlay then
 		return bg and bg:FindFirstChild("Play"), g
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- รอหน้า Loading โผล่ (สูงสุด ~10 วินาที) ถ้าไม่มีแปลว่าเข้าเกมแล้ว ข้ามไป
 	local playBtn = GetPlay()
 	if not playBtn then
 		pcall(function()
@@ -250,7 +242,7 @@ if CONFIG.AutoPlay then
 	end
 
 	if playBtn then
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- 1) เลือกทีม
 		pcall(function()
 			game:GetService("ReplicatedStorage"):WaitForChild("OtherEvent", 10)
 				:WaitForChild("MainEvents", 10):WaitForChild("TeamChoose", 10)
@@ -258,7 +250,7 @@ if CONFIG.AutoPlay then
 		end)
 		task.wait(1)
 
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- 2) กดปุ่ม Play จริง (ลองซ้ำจนกว่าหน้า Loading จะหาย สูงสุด 10 รอบ)
 		local function StillLoading()
 			local btn, g = GetPlay()
 			return btn ~= nil and g.Enabled and btn.Visible and btn.Parent.Visible
@@ -270,11 +262,11 @@ if CONFIG.AutoPlay then
 				local pos, size = btn.AbsolutePosition, btn.AbsoluteSize
 				local x, y
 				if attempt <= 2 then
-					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					-- สูตรตำแหน่งเดิมที่ใช้ได้
 					x = pos.X + size.X / 1
 					y = pos.Y + size.Y / 2 + 50
 				else
-					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					-- สำรอง: กลางปุ่ม (บวก GuiInset)
 					x = pos.X + size.X / 2
 					y = pos.Y + size.Y / 2 + GuiService0:GetGuiInset().Y
 				end
@@ -305,10 +297,10 @@ _G.BringOrbitSpeed = CONFIG.BringOrbitSpeed
 local StartMagnet, PosMon, Mon, Mob, FrameQ, MethodFarm
 local FruitBusy = false
 local ShopBusy = false
-local StoreBusy = false     -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local StoreBusy = false     -- กำลังเก็บผลไม้เข้าคลัง (ต้องถือผลไม้ ห้ามแย่งถือหมัด)
 local Delta = LocalPlayer.Name
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== ลดแลค (ลบพื้นผิว) + ไฮไลต์ตัวละคร =====================
 if CONFIG.AntiLag then
 	local Lighting0 = game:GetService("Lighting")
 
@@ -331,7 +323,7 @@ if CONFIG.AntiLag then
 		end
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ของที่เกิดใหม่ทีหลัง (มอน เอฟเฟกต์สกิล ฯลฯ) ก็ลดให้อัตโนมัติ
 	workspace.DescendantAdded:Connect(function(v)
 		task.defer(function() pcall(Optimize, v) end)
 	end)
@@ -351,14 +343,14 @@ if CONFIG.AntiLag then
 		end)
 		pcall(function() settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 end)
 
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- ไล่ลดของที่มีอยู่แล้ว แบ่งเป็นชุดๆ กันจอค้าง
 		local list = workspace:GetDescendants()
 		for i, v in ipairs(list) do
 			pcall(Optimize, v)
 			if i % 400 == 0 then task.wait() end
 		end
 		for _, v in ipairs(Lighting0:GetDescendants()) do pcall(Optimize, v) end
-		print("[AntiLag] đã giảm giật lag")
+		print("[AntiLag] ลดแลคเสร็จ")
 	end)
 end
 
@@ -383,7 +375,7 @@ if CONFIG.Highlight then
 		task.wait(0.5)
 		ApplyHighlight(c)
 	end)
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- กันถูกลบ: เช็กทุก 2 วินาที ถ้าหายให้สร้างใหม่
 	task.spawn(function()
 		while task.wait(2) do
 			local c = LocalPlayer.Character
@@ -394,16 +386,17 @@ if CONFIG.Highlight then
 	end)
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== Status UI (แผงสถานะ) =====================
+-- ซ้าย: Level / Gem / เงิน / Race   ขวา: รายการซื้อของ (จุดเรืองแสงสีเขียวเมื่อซื้อสำเร็จ)
+-- ล่าง: สถานะที่กำลังทำอยู่   ปุ่มโลโก้: แตะเพื่อเปิด/ปิด ลากเพื่อย้ายได้
 local HUB_NAME = "XH HUB"
 local LOGO_ASSET = "rbxassetid://99118312841228"
 local Checklist = {}
 local StatusOverride, CurrentShopItem
+_G.XH_Auto = true   -- Master switch: bật/tắt toàn bộ auto (nút trên bảng)
 
 function SetDone(key) Checklist[key] = true end
-function SetLive(key, v) Checklist[key] = v and true or nil end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+function SetLive(key, v) Checklist[key] = v and true or nil end   -- แถวสถานะสด: เขียว/เทา ตามค่าปัจจุบัน
 
 local function Fmt(n)
 	local str = tostring(math.floor(tonumber(n) or 0))
@@ -411,7 +404,7 @@ local function Fmt(n)
 	return (out:gsub("^,", ""))
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- อ่านเงินจากข้อความใน GUI (รองรับ "$ 39,323" และตัวย่อ K/M/B)
 local function ParseAmount(text)
 	if not text then return nil end
 	local t = string.upper((string.gsub(text, "[,%s$]", "")))
@@ -430,13 +423,13 @@ function ReadMoney()
 	return ok and v or nil
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- รายการที่แสดงทางขวา = ของที่ซื้อเท่านั้น (key ต้องตรงกับ name ใน SHOP_LIST)
 local UI_ROWS = {}
 if CONFIG.AutoBallerStyle then
 	table.insert(UI_ROWS, { "Fighting Style: Baller", "Baller Style" })
 end
 if CONFIG.AutoHaki then
-	table.insert(UI_ROWS, { "Ability: Aura Master", "Haki" })   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	table.insert(UI_ROWS, { "Ability: Aura Master", "Haki" })   -- เขียว = ซื้อแล้ว (เช็กจาก AuraColor_Folder)
 end
 if CONFIG.AutoBuy then
 	table.insert(UI_ROWS, { "Upgrade Quest: Popcat", "Popcat Quest" })
@@ -452,32 +445,33 @@ end
 if CONFIG.AutoEvilNoob then
 	table.insert(UI_ROWS, { "Weapon: Yellow Blade", "Yellow Blade" })
 end
-if CONFIG.AutoItemQuests then   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+if CONFIG.AutoItemQuests then   -- ต่อจากไอเทมเดิม (เลื่อนดูได้)
 	table.insert(UI_ROWS, { "Weapon: Pink Hammer", "Pink Hammer" })
 	table.insert(UI_ROWS, { "Weapon: Banana", "Banana" })
 	table.insert(UI_ROWS, { "Weapon: Purple Katana", "Purple Katana" })
 end
 
 local function CurrentStatus()
+	if not _G.XH_Auto then return "ĐÃ TẮT AUTO" end
 	if StatusOverride then return StatusOverride end
-	if ShopBusy then return "Buying: " .. tostring(CurrentShopItem or "") end
-	if FruitBusy then return "Đang nhặt trái cây" end
-	if StoreBusy then return "Đang cất trái cây" end
+	if ShopBusy then return "Đang mua: " .. tostring(CurrentShopItem or "") end
+	if FruitBusy then return "Đang nhặt trái" end
+	if StoreBusy then return "Đang cất trái" end
 	if _G.Boss then return _G.BossStatus or "Boss" end
 	if _G.Baller then return _G.BallerStatus or "Baller Style" end
 	if _G.Aura then return _G.AuraStatus or "Auto Haki" end
-	if _G.HakiReroll then return "Rerolling Haki Color" end
+	if _G.HakiReroll then return "Đang random màu Haki" end
 	if _G.FlameKatana then return _G.FlameStatus or "Flame Katana" end
 	if _G.RaceV2 then return _G.RaceV2Status or "Race V2" end
 	if _G.EvilNoob then return _G.EvilNoobStatus or "Evil Noob" end
 	if _G.ItemQuest then return _G.ItemQuestStatus or "Item Quest" end
-	if _G.Pumpkin and not _G.Raid then return _G.PumpkinStatus or "Pumpkin Event" end
+	if _G.Pumpkin and not _G.Raid then return _G.PumpkinStatus or "Sự kiện Pumpkin" end
 	if _G.Raid then
 		local ok, vis = pcall(function() return LocalPlayer.PlayerGui.RaidGui.RaidFrame.Visible end)
-		return (ok and vis) and "Đang tham gia Raid" or "Đang chờ Raid"
+		return (ok and vis) and "Đang Raid" or "Đang chờ Raid"
 	end
-	if _G.AutoFarm then return "Đang cày cấp" end
-	return "Đang chờ"
+	if _G.AutoFarm then return "Đang farm level" end
+	return "Chờ"
 end
 
 local function CreateStatusUI()
@@ -550,7 +544,7 @@ local function CreateStatusUI()
 		return f
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ---------- ตัวแผงหลัก ----------
 	local W, H = 500, 340
 	local main = frame(gui, 0, 0, W, H, C.bg1)
 	main.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -575,14 +569,14 @@ local function CreateStatusUI()
 		workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fit)
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ---------- หัวข้อ ----------
 	local logo = Instance.new("ImageLabel")
 	logo.BackgroundTransparency = 1; logo.Image = LOGO_ASSET
 	logo.Position = UDim2.fromOffset(18, 10); logo.Size = UDim2.fromOffset(30, 30)
 	logo.ScaleType = Enum.ScaleType.Fit; logo.Parent = main
 	local title = label(main, "", 16, C.white, 56, 12, 420, 26, Enum.Font.GothamBold)
 	title.RichText = true
-	title.Text = '<font color="rgb(150,160,255)">' .. HUB_NAME .. '</font>  <font color="rgb(120,132,168)">ACCOUNT STATS</font>'
+	title.Text = '<font color="rgb(150,160,255)">' .. HUB_NAME .. '</font>  <font color="rgb(120,132,168)">THỐNG KÊ TÀI KHOẢN</font>'
 
 	local div = frame(main, 18, 48, W - 36, 2, C.blue)
 	local dg = Instance.new("UIGradient")
@@ -593,7 +587,7 @@ local function CreateStatusUI()
 	dg.Parent = div
 	corner(div, 1)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ---------- Trái: thẻ thống kê ----------
 	local lvCard = card(main, 18, 60, 224, 84)
 	label(lvCard, "CẤP ĐỘ", 11, C.gray, 14, 8, 100, 14, Enum.Font.GothamMedium)
 	local levelV = label(lvCard, "-", 40, C.blue, 14, 24, 196, 52, Enum.Font.GothamBold)
@@ -602,7 +596,7 @@ local function CreateStatusUI()
 	lg.Color = ColorSequence.new(C.blue, C.violet); lg.Parent = levelV
 
 	local gemCard = card(main, 18, 152, 108, 56)
-	label(gemCard, "NGỌC", 11, C.gray, 12, 7, 90, 14, Enum.Font.GothamMedium)
+	label(gemCard, "GEM", 11, C.gray, 12, 7, 90, 14, Enum.Font.GothamMedium)
 	local gemV = label(gemCard, "-", 18, C.white, 12, 24, 90, 24, Enum.Font.GothamBold)
 	fitText(gemV, 18)
 
@@ -616,10 +610,10 @@ local function CreateStatusUI()
 	local raceV = label(raceCard, "-", 18, C.white, 14, 24, 196, 24, Enum.Font.GothamBold)
 	fitText(raceV, 18)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ---------- Phải: danh sách vật phẩm ----------
 	label(main, "VẬT PHẨM", 11, C.gray, 258, 60, 100, 14, Enum.Font.GothamMedium)
 	local itemsCard = card(main, 250, 78, 232, 192)
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- Danh sách cuộn được (kéo lên/xuống trong khung VẬT PHẨM)
 	local scroller = Instance.new("ScrollingFrame")
 	scroller.Name = "ItemsScroll"
 	scroller.BackgroundTransparency = 1; scroller.BorderSizePixel = 0
@@ -630,41 +624,96 @@ local function CreateStatusUI()
 	scroller.ScrollBarImageColor3 = C.violet
 	scroller.ScrollBarImageTransparency = 0.2
 	scroller.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
-	scroller.Active = true        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	scroller.Active = true        -- รับอินพุตเอง ไม่ให้ลากแผงหลักตอนเลื่อนรายการ
 	scroller.Parent = itemsCard
 	local rows = {}
 	for i, r in ipairs(UI_ROWS) do
 		local y = 4 + (i - 1) * 36
 		local row = frame(scroller, 8, y, 210, 32, C.row); corner(row, 8)
 
-		local halo = frame(row, 0, 0, 30, 30, C.green)       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		local halo = frame(row, 0, 0, 30, 30, C.green)       -- แสงเรืองรอบจุด
 		halo.AnchorPoint = Vector2.new(0.5, 0.5); halo.Position = UDim2.fromOffset(22, 16)
 		halo.BackgroundTransparency = 1; corner(halo, 15)
 
 		local dot = frame(row, 0, 0, 10, 10, C.off)
 		dot.AnchorPoint = Vector2.new(0.5, 0.5); dot.Position = UDim2.fromOffset(22, 16)
 		corner(dot, 5)
-		local ring = stroke(dot, C.green, 2, 1)               -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		local ring = stroke(dot, C.green, 2, 1)               -- วงแสงรอบจุด
 
 		label(row, r[2], 14, C.text, 42, 0, 160, 32, Enum.Font.GothamMedium)
 		rows[r[1]] = { dot = dot, halo = halo, ring = ring, done = false }
 	end
 	if #UI_ROWS == 0 then
-		label(itemsCard, "TỰ ĐỘNG MUA: TẮT", 13, C.gray, 14, 8, 200, 24)
+		label(itemsCard, "Tự mua: TẮT", 13, C.gray, 14, 8, 200, 24)
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ---------- Thanh trạng thái + nút Bật/Tắt Auto ----------
 	local bar = card(main, 18, 282, W - 36, 40)
-	label(bar, "TRẠNG THÁI", 11, C.gray, 14, 0, 60, 40, Enum.Font.GothamMedium)
-	frame(bar, 72, 12, 1, 16, C.line)
+	label(bar, "TT", 11, C.gray, 10, 0, 28, 40, Enum.Font.GothamMedium)
+	frame(bar, 40, 12, 1, 16, C.line)
 	local sHalo = frame(bar, 0, 0, 22, 22, C.green)
-	sHalo.AnchorPoint = Vector2.new(0.5, 0.5); sHalo.Position = UDim2.fromOffset(94, 20)
+	sHalo.AnchorPoint = Vector2.new(0.5, 0.5); sHalo.Position = UDim2.fromOffset(62, 20)
 	sHalo.BackgroundTransparency = 0.8; corner(sHalo, 11)
 	local sDot = frame(bar, 0, 0, 8, 8, C.green)
-	sDot.AnchorPoint = Vector2.new(0.5, 0.5); sDot.Position = UDim2.fromOffset(94, 20); corner(sDot, 4)
-	local statusV = label(bar, "...", 14, C.white, 114, 0, W - 36 - 126, 40, Enum.Font.GothamMedium)
+	sDot.AnchorPoint = Vector2.new(0.5, 0.5); sDot.Position = UDim2.fromOffset(62, 20); corner(sDot, 4)
+	local statusV = label(bar, "...", 13, C.white, 80, 0, W - 36 - 200, 40, Enum.Font.GothamMedium)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- Nút bật/tắt Auto (trên bảng)
+	local autoBtn = Instance.new("TextButton")
+	autoBtn.Name = "AutoToggle"
+	autoBtn.AutoButtonColor = false
+	autoBtn.BackgroundColor3 = C.green
+	autoBtn.BorderSizePixel = 0
+	autoBtn.Size = UDim2.fromOffset(90, 28)
+	autoBtn.Position = UDim2.fromOffset(W - 36 - 100, 6)
+	autoBtn.Font = Enum.Font.GothamBold
+	autoBtn.TextSize = 13
+	autoBtn.TextColor3 = C.white
+	autoBtn.Text = "AUTO: BẬT"
+	autoBtn.Parent = bar
+	corner(autoBtn, 8)
+	stroke(autoBtn, C.white, 1, 0.5)
+
+	local function UpdateAutoBtn()
+		if _G.XH_Auto then
+			autoBtn.Text = "AUTO: BẬT"
+			autoBtn.BackgroundColor3 = C.green
+		else
+			autoBtn.Text = "AUTO: TẮT"
+			autoBtn.BackgroundColor3 = Color3.fromRGB(220, 70, 70)
+		end
+	end
+	UpdateAutoBtn()
+
+	autoBtn.MouseButton1Click:Connect(function()
+		_G.XH_Auto = not _G.XH_Auto
+		UpdateAutoBtn()
+		if not _G.XH_Auto then
+			-- Tắt toàn bộ chế độ auto
+			_G.AutoFarm = false
+			_G.Raid = false
+			_G.GoRaid = false
+			_G.Pumpkin = false
+			_G.RaceV2 = false
+			_G.FlameKatana = false
+			_G.EvilNoob = false
+			_G.ItemQuest = false
+			_G.Boss = false
+			_G.Baller = false
+			_G.Aura = false
+			_G.HakiReroll = false
+			StartMagnet = false
+			HoverOrigin = nil
+			StatusOverride = "ĐÃ TẮT AUTO"
+			print("[XH HUB] Đã TẮT toàn bộ Auto")
+		else
+			StatusOverride = nil
+			_G.AutoFarm = CONFIG.AutoFarm
+			print("[XH HUB] Đã BẬT lại Auto")
+		end
+	end)
+
+	-- ---------- ปุ่มเปิด/ปิด (ลากได้) ----------
 	local toggle = Instance.new("TextButton")
 	toggle.Name = "ToggleUI"
 	toggle.Text = ""; toggle.AutoButtonColor = false
@@ -683,8 +732,8 @@ local function CreateStatusUI()
 	tLogo.Position = UDim2.fromScale(0.5, 0.5); tLogo.Size = UDim2.fromScale(0.7, 0.7)
 	tLogo.ScaleType = Enum.ScaleType.Fit; tLogo.Parent = toggle
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ลากแบบคำนวณจาก "ระยะที่นิ้วเลื่อน" (delta) ไม่ใช้ AbsolutePosition จึงไม่กระโดด
+	-- ย้ายตามนิ้วทันทีตั้งแต่พิกเซลแรก / แตะเฉยๆ (ขยับ <= 8px) ถือว่าเป็นการกด
 	local function makeDraggable(obj, uiScale, onTap, clamp)
 		local dragging, moved, dragStart, startPos = false, false, nil, nil
 		obj.InputBegan:Connect(function(input)
@@ -706,7 +755,7 @@ local function CreateStatusUI()
 				or input.UserInputType == Enum.UserInputType.Touch) then
 				local d = input.Position - dragStart
 				if d.Magnitude > 8 then moved = true end
-				local k = uiScale and uiScale.Scale or 1       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				local k = uiScale and uiScale.Scale or 1       -- UIScale คูณ offset อยู่ ต้องหารกลับ
 				local x = startPos.X.Offset + d.X / k
 				local y = startPos.Y.Offset + d.Y / k
 				if clamp then
@@ -723,7 +772,7 @@ local function CreateStatusUI()
 	makeDraggable(toggle, nil, function() main.Visible = not main.Visible end, true)
 	makeDraggable(main, scale, nil, false)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ---------- อัปเดตข้อมูล ----------
 	local function refresh(instant)
 		pcall(function()
 			local d = LocalPlayer.PlayerData
@@ -735,10 +784,10 @@ local function CreateStatusUI()
 		pcall(function()
 			local _, rv, txt = ReadRace()
 			if txt and txt ~= "" then raceV.Text = txt end
-			raceV.TextColor3 = (rv == 2) and C.green or C.white   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			raceV.TextColor3 = (rv == 2) and C.green or C.white   -- V2 -> เขียว
 		end)
 		for key, r in pairs(rows) do
-			if not Checklist[key] and r.done then      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			if not Checklist[key] and r.done then      -- แถวสถานะสด (Haki) ที่กลับเป็นปิด
 				r.done = false
 				r.dot.BackgroundColor3 = C.off
 				r.dot.Size = UDim2.fromOffset(10, 10)
@@ -767,7 +816,7 @@ local function CreateStatusUI()
 		end
 	end)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- แสงเรืองกะพริบเบาๆ ของจุดที่ซื้อเสร็จแล้ว + จุดสถานะ
 	task.spawn(function()
 		while task.wait(0.05) do
 			if not gui.Parent then break end
@@ -782,239 +831,9 @@ local function CreateStatusUI()
 	end)
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- ===================== XH HUB: Bảng điều khiển tính năng =====================
-local function CreateControlUI()
-    local Players = game:GetService("Players")
-    local UIS = game:GetService("UserInputService")
-    local LP = Players.LocalPlayer
-    local PG = LP:WaitForChild("PlayerGui")
-    local old = PG:FindFirstChild("XHHubControlGui")
-    if old then old:Destroy() end
-
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "XHHubControlGui"
-    gui.ResetOnSpawn = false
-    gui.IgnoreGuiInset = true
-    gui.DisplayOrder = 1001
-    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    gui.Parent = PG
-
-    local bg = Color3.fromRGB(16, 19, 32)
-    local panel = Instance.new("Frame")
-    panel.Name = "MainPanel"
-    panel.Size = UDim2.fromOffset(350, 390)
-    panel.Position = UDim2.new(0.5, -175, 0.5, -195)
-    panel.BackgroundColor3 = bg
-    panel.BorderSizePixel = 0
-    panel.Visible = true
-    panel.Parent = gui
-    Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 12)
-    local outline = Instance.new("UIStroke", panel)
-    outline.Color = Color3.fromRGB(115, 95, 255)
-    outline.Thickness = 1.5
-
-    local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -20, 0, 36)
-    title.Position = UDim2.fromOffset(12, 5)
-    title.BackgroundTransparency = 1
-    title.Text = "XH HUB | BẢNG ĐIỀU KHIỂN"
-    title.TextColor3 = Color3.fromRGB(240, 242, 255)
-    title.TextSize = 15
-    title.Font = Enum.Font.GothamBold
-    title.TextXAlignment = Enum.TextXAlignment.Left
-    title.Parent = panel
-
-    local tabBar = Instance.new("Frame")
-    tabBar.Position = UDim2.fromOffset(10, 44)
-    tabBar.Size = UDim2.new(1, -20, 0, 34)
-    tabBar.BackgroundTransparency = 1
-    tabBar.Parent = panel
-
-    local content = Instance.new("ScrollingFrame")
-    content.Name = "FeatureList"
-    content.Position = UDim2.fromOffset(10, 86)
-    content.Size = UDim2.new(1, -20, 1, -96)
-    content.BackgroundColor3 = Color3.fromRGB(22, 27, 44)
-    content.BorderSizePixel = 0
-    content.ScrollBarThickness = 4
-    content.ScrollBarImageColor3 = Color3.fromRGB(130, 110, 255)
-    content.CanvasSize = UDim2.fromOffset(0, 0)
-    content.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    content.Parent = panel
-    Instance.new("UICorner", content).CornerRadius = UDim.new(0, 8)
-    local pad = Instance.new("UIPadding", content)
-    pad.PaddingTop = UDim.new(0, 8); pad.PaddingLeft = UDim.new(0, 8); pad.PaddingRight = UDim.new(0, 8)
-    local list = Instance.new("UIListLayout", content)
-    list.Padding = UDim.new(0, 6)
-    list.SortOrder = Enum.SortOrder.LayoutOrder
-
-    local function makeButton(parent, text, size, position)
-        local b = Instance.new("TextButton")
-        b.Size = size; b.Position = position
-        b.BackgroundColor3 = Color3.fromRGB(43, 49, 75)
-        b.BorderSizePixel = 0; b.Text = text
-        b.TextColor3 = Color3.fromRGB(240, 242, 255)
-        b.TextSize = 12; b.Font = Enum.Font.GothamBold
-        b.AutoButtonColor = true; b.Parent = parent
-        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 7)
-        return b
-    end
-
-    local pages = { Main = {}, Features = {} }
-    local activePage = "Main"
-    local masterOn = true
-    local savedValues = {}
-    local featureDefs = {
-        {key="AutoFarm", label="Tự động nhận nhiệm vụ và đánh quái"},
-        {key="UseSelectedMonster", label="Đánh quái đã chọn (không nhận nhiệm vụ)"},
-        {key="AutoItemQuests", label="Tự làm nhiệm vụ lấy vật phẩm"},
-        {key="BringFruit", label="Tự nhặt trái cây"},
-        {key="AutoStore", label="Tự cất trái cây vào kho"},
-        {key="AutoRaid", label="Tự động Raid"},
-        {key="AutoStartRaid", label="Tự bắt đầu Raid"},
-        {key="AutoPumpkin", label="Tự làm sự kiện Pumpkin"},
-        {key="AutoRaceV2", label="Tự nâng cấp Race V2"},
-        {key="AutoBossWatch", label="Theo dõi / săn Boss"},
-        {key="AutoEvilNoob", label="Tự làm Evil Noob"},
-        {key="AutoFlameKatana", label="Tự lấy Flame Katana"},
-        {key="AutoBallerStyle", label="Tự lấy Baller Style"},
-        {key="AutoHaki", label="Tự lấy / bật Haki"},
-        {key="AutoBuy", label="Tự mua vật phẩm nâng cấp"},
-        {key="AutoStats", label="Tự cộng chỉ số"},
-        {key="AutoRedeem", label="Tự nhập mã quà"},
-        {key="AutoRerollRace", label="Tự đổi tộc"},
-        {key="AutoBuyDropX2", label="Tự mua Drop x2"},
-        {key="AutoBuyGemX2", label="Tự mua Gem x2"},
-        {key="AntiAFK", label="Chống AFK"},
-        {key="AntiLag", label="Giảm hiệu ứng để đỡ lag"},
-        {key="Highlight", label="Bật viền Highlight"},
-    }
-    local featureButtons = {}
-    local function setFeature(key, value)
-        CONFIG[key] = value
-        if key == "AutoFarm" then _G.AutoFarm = value end
-        if key == "UseSelectedMonster" and not value then _G.AutoFarm = CONFIG.AutoFarm and true or false end
-        local b = featureButtons[key]
-        if b then
-            b.Text = (featureDefs[1] and "") or ""
-            for _, def in ipairs(featureDefs) do
-                if def.key == key then b.Text = def.label .. (value and "  [BẬT]" or "  [TẮT]") break end
-            end
-            b.BackgroundColor3 = value and Color3.fromRGB(42, 100, 80) or Color3.fromRGB(43, 49, 75)
-        end
-    end
-
-    local function clearContent()
-        for _, child in ipairs(content:GetChildren()) do
-            if child:IsA("GuiObject") then child:Destroy() end
-        end
-        table.clear(featureButtons)
-    end
-
-    local monsterNames = {
-        "Floppa", "Golden Floppa", "Big Floppa", "Doge", "Cheems", "Walter Dog",
-        "Staring Fish", "Hamster", "Snow Tree", "The Rock", "Banana Cat", "Sus Face",
-        "Egg Dog", "Popcat", "Gorilla King", "Smiling Cat", "Killerfish", "Bingus",
-        "Obamid", "Floppy", "Creepy Head", "Scary Skull", "Pink Absorber", "Troll Face",
-        "Uncanny Cat", "Quandale Dingle", "Moai", "Red Sus", "Sus Duck", "Sigma Man",
-        "Dancing Cat", "Toothless Dragon", "Manly Nugget", "Huh Cat", "Mystical Tree",
-        "Old Man", "Nyan Cat", "Baller", "Slicer", "Rick Roller"
-    }
-    local monsterIndex = 1
-    for i, name in ipairs(monsterNames) do if name == CONFIG.SelectedMonster then monsterIndex = i break end end
-
-    local function addRow(text, callback, initial)
-        local b = makeButton(content, text, UDim2.new(1, -4, 0, 34), UDim2.new())
-        b.LayoutOrder = #content:GetChildren()
-        if initial then b.BackgroundColor3 = Color3.fromRGB(42, 100, 80) end
-        b.MouseButton1Click:Connect(function() callback(b) end)
-        return b
-    end
-
-    local function showPage(page)
-        activePage = page
-        clearContent()
-        if page == "Main" then
-            addRow("TẤT CẢ TÍNH NĂNG: " .. (masterOn and "BẬT" or "TẮT"), function(b)
-                masterOn = not masterOn
-                if not masterOn then
-                    for _, def in ipairs(featureDefs) do
-                        savedValues[def.key] = CONFIG[def.key]
-                        setFeature(def.key, false)
-                    end
-                    _G.AutoFarm = false
-                    _G.BringMonster = false
-                    _G.Raid = false; _G.Pumpkin = false; _G.RaceV2 = false
-                    _G.FlameKatana = false; _G.EvilNoob = false; _G.ItemQuest = false
-                    _G.Boss = false; _G.Baller = false; _G.Aura = false
-                else
-                    for _, def in ipairs(featureDefs) do
-                        local restore = savedValues[def.key]
-                        if restore == nil then restore = true end
-                        setFeature(def.key, restore)
-                    end
-                    _G.AutoFarm = CONFIG.AutoFarm and true or false
-                end
-                b.Text = "TẤT CẢ TÍNH NĂNG: " .. (masterOn and "BẬT" or "TẮT")
-                b.BackgroundColor3 = masterOn and Color3.fromRGB(42, 100, 80) or Color3.fromRGB(120, 50, 60)
-            end, masterOn)
-            addRow("Mở mục TÍNH NĂNG để bật/tắt từng chức năng", function() showPage("Features") end)
-            addRow("Trạng thái: " .. (CONFIG.AutoFarm and "Auto Farm đang bật" or "Auto Farm đang tắt"), function() showPage("Features") end)
-            addRow("Mục nhặt/cất trái: " .. ((CONFIG.BringFruit and CONFIG.AutoStore) and "đang bật" or "có thể chỉnh ở Tính năng"), function() showPage("Features") end)
-        else
-            for _, def in ipairs(featureDefs) do
-                local value = CONFIG[def.key] == true
-                local b = addRow(def.label .. (value and "  [BẬT]" or "  [TẮT]"), function(button)
-                    setFeature(def.key, not (CONFIG[def.key] == true))
-                    button.Text = def.label .. (CONFIG[def.key] and "  [BẬT]" or "  [TẮT]")
-                    if def.key == "AutoFarm" and not CONFIG.AutoFarm then _G.AutoFarm = false end
-                    if def.key == "AutoFarm" and CONFIG.AutoFarm and not CONFIG.UseSelectedMonster then _G.AutoFarm = true end
-                end, value)
-                featureButtons[def.key] = b
-            end
-            local selector = makeButton(content, "Quái mục tiêu: " .. tostring(CONFIG.SelectedMonster or "Floppa") .. "  ◀  ▶", UDim2.new(1, -4, 0, 36), UDim2.new())
-            selector.LayoutOrder = #content:GetChildren()
-            selector.MouseButton1Click:Connect(function()
-                monsterIndex = monsterIndex % #monsterNames + 1
-                CONFIG.SelectedMonster = monsterNames[monsterIndex]
-                selector.Text = "Quái mục tiêu: " .. CONFIG.SelectedMonster .. "  ◀  ▶"
-            end)
-            addRow("Lưu ý: bật 'Đánh quái đã chọn' để dùng mục tiêu này", function() CONFIG.UseSelectedMonster = true; setFeature("UseSelectedMonster", true); showPage("Features") end, CONFIG.UseSelectedMonster)
-        end
-    end
-
-    local mainTab = makeButton(tabBar, "MỤC CHÍNH", UDim2.new(0.49, 0, 1, 0), UDim2.new(0, 0, 0, 0))
-    local featTab = makeButton(tabBar, "TÍNH NĂNG", UDim2.new(0.49, 0, 1, 0), UDim2.new(0.51, 0, 0, 0))
-    mainTab.MouseButton1Click:Connect(function() showPage("Main") end)
-    featTab.MouseButton1Click:Connect(function() showPage("Features") end)
-
-    local floating = makeButton(gui, "XH", UDim2.fromOffset(48, 48), UDim2.new(0, 18, 0.35, 0))
-    floating.Name = "XHToggle"
-    floating.TextSize = 16
-    floating.MouseButton1Click:Connect(function() panel.Visible = not panel.Visible end)
-    local dragging, dragStart, startPos
-    floating.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true; dragStart = input.Position; startPos = floating.Position
-            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
-        end
-    end)
-    UIS.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
-            local delta = input.Position - dragStart
-            floating.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-    showPage("Main")
-end
-
-if CONFIG.ShowUI then
-    task.spawn(function() pcall(CreateControlUI) end)
-end
-
+-- รายการที่เคยซื้อแล้ว (จากไฟล์เซฟ) -> ให้เป็นสีเขียวตั้งแต่เปิดแผง ไม่ต้องรอระบบซื้อเริ่ม
 pcall(function()
-	local file = "XHHub_Purchased_" .. LocalPlayer.UserId .. ".json"
+	local file = "MemeSea_Purchased_" .. LocalPlayer.UserId .. ".json"
 	if isfile and readfile and isfile(file) then
 		local saved = game:GetService("HttpService"):JSONDecode(readfile(file))
 		for name in pairs(saved) do SetDone(name) end
@@ -1025,14 +844,14 @@ if CONFIG.ShowUI then
 	task.spawn(function() pcall(CreateStatusUI) end)
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-local REDEEM_FALLBACK = {   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== Redeem Code (ทำก่อนทุกอย่าง) =====================
+-- โค้ดนี้รันแบบ synchronous: ฟาร์ม / Bring / ซื้อของ จะยังไม่เริ่มจนกว่า Redeem จะเสร็จครบทุกโค้ด
+local REDEEM_FALLBACK = {   -- ใช้เมื่อดึงจาก RedeemURL ไม่ได้เลย
 	"100KFavorites", "100KLikes", "100MVisits", "100KActive",
 	"70KActive", "Update4", "10KLikes", "10KMembers",
 }
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ดึงรายการโค้ดจาก raw (1 บรรทัด/โค้ด หรือคั่นด้วย , ; เว้นวรรค / ตัดคอมเมนต์หลัง -- หรือ #)
 local function FetchRedeemCodes()
 	local url = CONFIG.RedeemURL
 	if type(url) ~= "string" or url == "" then return nil end
@@ -1066,7 +885,7 @@ local function FetchRedeemCodes()
 	return nil
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- โค้ดที่ Redeem แล้วจะไปโผล่ใน LocalPlayer.Code (เก็บทั้งชื่อลูกและค่าของลูก) -> ใช้เช็กว่าใส่ไปแล้ว/สำเร็จจริงไหม
 local function RedeemedSet()
 	local set = {}
 	pcall(function()
@@ -1089,35 +908,35 @@ if CONFIG.AutoRedeem then
 			:WaitForChild("MainEvents", 15):WaitForChild("Code", 15)
 	end)
 	if ok and codeRemote then
-		pcall(function() game:GetService("Players").LocalPlayer:WaitForChild("Code", 10) end)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-		StatusOverride = "Đang tải mã"
+		pcall(function() game:GetService("Players").LocalPlayer:WaitForChild("Code", 10) end)   -- รอโฟลเดอร์โค้ดโหลดก่อนเช็ก
+		StatusOverride = "Đang lấy danh sách code"
 		local codes = FetchRedeemCodes()
 		if codes then
-			print("[Redeem] Đã tải mã từ raw:", #codes, "โค้ด")
+			print("[Redeem] Lấy code từ raw được", #codes, "code")
 		else
 			codes = REDEEM_FALLBACK
-			warn("[Redeem] Không tải được mã từ RedeemURL -> dùng danh sách dự phòng")
+			warn("[Redeem] Không lấy được code từ RedeemURL -> dùng danh sách dự phòng")
 		end
 		for i, code in ipairs(codes) do
-			StatusOverride = string.format("Redeeming Codes (%d/%d)", i, #codes)
+			StatusOverride = string.format("Đang redeem code (%d/%d)", i, #codes)
 			if RedeemedSet()[code:lower()] then
-				print("[Redeem]", code, "đã nhập (có trong LocalPlayer.Code), bỏ qua")
+				print("[Redeem]", code, "ใส่แล้ว (มีใน LocalPlayer.Code) ข้าม")
 			else
 				local success, result = pcall(function()
-					return codeRemote:InvokeServer(code)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					return codeRemote:InvokeServer(code)   -- InvokeServer จะรอจนเซิร์ฟเวอร์ตอบกลับ
 				end)
-				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				-- ยืนยัน: ใส่สำเร็จจริงต้องไปโผล่ใน LocalPlayer.Code
 				local confirmed = false
 				local t0 = tick()
 				while tick() - t0 < 3 do
 					if RedeemedSet()[code:lower()] then confirmed = true break end
 					task.wait(0.2)
 				end
-				print("[Redeem]", code, success and "SENT" or "FAIL", confirmed and "CONFIRMED" or "không thấy trong LocalPlayer.Code (mã không hợp lệ/hết hạn/sai tên)", success and tostring(result) or "")
+				print("[Redeem]", code, success and "SENT" or "FAIL", confirmed and "CONFIRMED" or "ไม่พบใน LocalPlayer.Code (ใช้ไม่ได้/หมดอายุ/ชื่อไม่ตรง)", success and tostring(result) or "")
 				task.wait(0.5)
 			end
 		end
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- โค้ดของตัวเอง: เฉพาะกรณี LocalPlayer.Code เป็นค่าข้อความ (ถ้าเป็นโฟลเดอร์เก็บโค้ดที่ใส่แล้ว จะข้าม)
 		if CONFIG.RedeemOwnCode then
 			local own
 			pcall(function()
@@ -1126,22 +945,22 @@ if CONFIG.AutoRedeem then
 				elseif c and not c:IsA("Folder") then own = c:GetAttribute("Value") end
 			end)
 			if type(own) == "string" and own ~= "" and not RedeemedSet()[own:lower()] then
-				StatusOverride = "Đang nhập mã riêng"
+				StatusOverride = "Đang redeem code riêng"
 				local success, result = pcall(function() return codeRemote:InvokeServer(own) end)
 				print("[Redeem] own code", own, success and "OK" or "FAIL", success and tostring(result) or "")
 			end
 		end
 	else
-		warn("[Redeem] Không tìm thấy Remote Code, bỏ qua bước này")
+		warn("[Redeem] ไม่พบ Remote Code ข้ามขั้นตอนนี้")
 	end
 	StatusOverride = nil
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== เลือกโหมดเริ่มต้น (ก่อนเริ่มลูปฟาร์ม) =====================
+-- ถ้าเลเวล/Gem เข้าเงื่อนไข Raid ให้เริ่มในโหมด Raid เลย ไม่ปล่อยให้ Auto Farm Level วาร์ปไปฟาร์มก่อน
+-- ===== วิธีสำรองเช็คเผ่า V2 (เผื่อ GUI/ข้อความเกมบัค อ่าน V# ไม่ได้) =====
+-- เปิดสกิลเผ่า (RaceSkill) แล้วดู CooldownGui.Container.RaceAbility_Template.Cooldown.Size
+--   Size ขยับ = เผ่า V2 ทำงาน -> V2   |  ไม่เจอโฟลเดอร์ -> เปิดสกิลใหม่อีกรอบ  |  ยังไม่เจอ/Size นิ่ง -> ยังเป็น V1
 local RaceProbe = { busy = false, last = 0, ver = nil }
 
 local function RaceCooldownObj()
@@ -1158,7 +977,7 @@ local function FireRaceSkill()
 	end)
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===== สัญญาณที่ 2: เสียง Sound_Effect.Race (SoundId 1295448103) ดังตอนสกิลเผ่า V2 ทำงาน =====
 local RACE_SOUND_ID = "1295448103"
 
 local function IsRaceSound(snd)
@@ -1167,7 +986,7 @@ local function IsRaceSound(snd)
 	return snd.Name == "Race" and snd.Parent ~= nil and snd.Parent.Name == "Sound_Effect"
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- เริ่มดักเสียงก่อนกดสกิล: ซาวด์เดิมที่ถูก Play ใหม่ หรือซาวด์ที่ถูกสร้าง/โคลนมาแล้วเล่น -> hit
 local function NewRaceSoundWatcher()
 	local hit, conns = false, {}
 	local function hook(snd, fresh)
@@ -1194,7 +1013,7 @@ local function NewRaceSoundWatcher()
 	}
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ดูสัญญาณ V2 ภายใน sec วินาที: Cooldown.Size ขยับ หรือ ได้ยินเสียง Race  -> คืน true, ชื่อสัญญาณ / ไม่เจอ -> false
 local function WatchRaceV2(sec, sw)
 	local first
 	local t0 = tick()
@@ -1210,15 +1029,15 @@ local function WatchRaceV2(sec, sw)
 	return sw.hit(), sw.hit() and "Sound" or nil
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- คืน 2 (V2) / 1 (ยังไม่ได้ทำ V2) / nil (กำลังเช็คอยู่หรือเพิ่งเช็ค ให้ใช้ค่าเดิม)
 function ProbeRaceV2(force)
-	if RaceProbe.ver == 2 then return 2 end            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if RaceProbe.ver == 2 then return 2 end            -- เจอ V2 แล้วจำไว้ ไม่ต้องกดซ้ำ
 	if RaceProbe.busy then return RaceProbe.ver end
-	if not force and RaceProbe.ver ~= nil and tick() - RaceProbe.last < 600 then return RaceProbe.ver end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if not force and RaceProbe.ver ~= nil and tick() - RaceProbe.last < 600 then return RaceProbe.ver end   -- กันกดสกิลรัวๆ (ผล V1 จำไว้ 10 นาที / force=true ข้ามได้)
 	RaceProbe.busy = true
 	local result, how = 1, nil
 	local sw = NewRaceSoundWatcher()
-	for attempt = 1, 2 do                               -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	for attempt = 1, 2 do                               -- รอบ 1 เปิดเผ่า / ไม่เจอสัญญาณ -> เปิดใหม่ 1 รอบ
 		FireRaceSkill()
 		task.wait(0.3)
 		local moved, src = WatchRaceV2(2, sw)
@@ -1226,12 +1045,12 @@ function ProbeRaceV2(force)
 	end
 	sw.stop()
 	RaceProbe.ver, RaceProbe.last, RaceProbe.busy = result, tick(), false
-	print("[RaceProbe] Kiểm tra tộc ->", result == 2 and ("V2 (สัญญาณ: " .. tostring(how) .. ")") or "V1 (ไม่เจอ Cooldown ขยับ/เสียง Race)")
+	print("[RaceProbe] เช็คเผ่า ->", result == 2 and ("V2 (สัญญาณ: " .. tostring(how) .. ")") or "V1 (ไม่เจอ Cooldown ขยับ/เสียง Race)")
 	return result
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- อ่านเผ่า: ชื่อเผ่าจาก PlayerData.Race.Value  เวอร์ชัน (V#) จากข้อความใน GUI เหมือนเดิม
+-- คืนค่า: ชื่อเผ่า, เวอร์ชัน, ข้อความรวม เช่น "Human (V1)"
 function ReadRace()
 	local name
 	pcall(function()
@@ -1242,22 +1061,23 @@ function ReadRace()
 		local txt = game:GetService("Players").LocalPlayer.PlayerGui.GameGui.Menu.Main.Container.Profile.Frame.Container.RaceFrame.Value.Text
 		ver = tonumber(string.match(txt, "%(%s*[Vv](%d+)%s*%)"))
 	end)
-	if RaceProbe.ver == 2 then ver = 2 end                       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	if ver == nil and name ~= nil then ver = ProbeRaceV2() end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if RaceProbe.ver == 2 then ver = 2 end                       -- เช็ค Cooldown เจอ V2 แล้ว -> ใช้ V2 ตามนั้น (GUI อาจบัคค้างเป็น V1)
+	if ver == nil and name ~= nil then ver = ProbeRaceV2() end   -- GUI อ่านไม่ได้ -> ใช้วิธีเช็ค Cooldown แทน
 	if name == nil and ver == nil then return nil end
 	name = tostring(name or "?")
 	return name, ver, ver and string.format("%s (V%d)", name, ver) or name
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ฟาร์มเลเวลปกติเปิดได้ก็ต่อเมื่อไม่มีโหมดอื่นทำงานอยู่
 function FarmAllowed()
+	if not _G.XH_Auto then return false end
 	return not (_G.Raid or _G.RaceV2 or _G.FlameKatana or _G.EvilNoob or _G.ItemQuest or _G.Boss or _G.Baller or _G.Aura or _G.HakiReroll)
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===== Baller fighting style: มีเงินถึง BallerMoney -> ทำก่อนโหมดอื่นทั้งหมด =====
+-- ===== ตัวเช็กไอเทมกลาง (ทุกที่ที่เช็กว่า "ได้ของแล้ว" ใช้ตัวนี้) =====
+-- ต้องเป็น Tool จริงๆ ใน Backpack หรือในมือ และชื่อตรงเป๊ะ (ไม่สนตัวพิมพ์ใหญ่เล็ก/ช่องว่างหัวท้าย)
+-- เดิมใช้ FindFirstChild ชื่อเฉยๆ -> โฟลเดอร์/ออบเจกต์อื่นที่ชื่อซ้ำก็นับว่า "ได้ของ"
 function FindTool(name)
 	if not name then return nil end
 	local function NormName(x)
@@ -1278,7 +1098,7 @@ end
 
 function OwnsTool(name) return FindTool(name) ~= nil end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- รอให้ตัวละคร + Backpack โหลดครบก่อนเช็กของ (กันเช็กตอน Tool ยังไม่ถูกโหลดแล้วสรุปว่า "ไม่มี")
 function WaitToolsLoaded(maxSec)
 	local t0 = tick()
 	while tick() - t0 < (maxSec or 15) do
@@ -1293,7 +1113,7 @@ function WaitToolsLoaded(maxSec)
 	return false
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ไฟล์เซฟ = แค่คำใบ้ (อ่านค่า done จริง ไม่ใช่แค่ "มีไฟล์")
 function SavedFlag(path)
 	local ok, v = pcall(function()
 		if not (isfile and readfile and isfile(path)) then return false end
@@ -1308,12 +1128,13 @@ function BallerHave()
 	return (FindTool("Baller")) ~= nil
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Auto Haki: มี task ค้าง (buy/boss) และไม่ชนบอสอื่น/Baller -> โหมดอื่นหลีกทาง (task ว่าง = รอบอสอยู่ ทำอย่างอื่นได้)
 function AuraWanted()
+	if not _G.XH_Auto then return false end
 	return CONFIG.AutoHaki and _G.AuraTask ~= nil and not _G.AuraDone and not _G.Boss and not BallerWanted()
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ทำครบทุกอย่างแล้วไหม (Baller / Flame Katana / Yellow Blade / Pink Hammer / Banana / Purple Katana ตามที่เปิดใน CONFIG)
 function HakiAllDone()
 	if not CONFIG.HakiRerollWaitAll then return true end
 	if CONFIG.AutoBallerStyle and not _G.BallerDone then return false end
@@ -1327,8 +1148,9 @@ function HakiAllDone()
 	return true
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Auto สุ่มสีฮาคิ: ต้องมี Aura Master + ทำครบ + Gem พอ (ระหว่างสุ่มอยู่ = true ตลอด กันเรดแย่ง)
 function HakiRerollWanted()
+	if not _G.XH_Auto then return false end
 	if not CONFIG.AutoHakiReroll or _G.HakiRerollDone or _G.Boss then return false end
 	if not _G.AuraDone then return false end
 	if _G.HakiReroll then return true end
@@ -1338,6 +1160,7 @@ function HakiRerollWanted()
 end
 
 function BallerWanted()
+	if not _G.XH_Auto then return false end
 	if _G.Boss then return false end
 	if not CONFIG.AutoBallerStyle or _G.BallerDone then return false end
 	if BallerHave() then return false end
@@ -1347,6 +1170,7 @@ function BallerWanted()
 end
 
 function FlameWanted()
+	if not _G.XH_Auto then return false end
 	if _G.Boss then return false end
 	if not CONFIG.AutoFlameKatana or _G.FlameDone then return false end
 	if BallerWanted() or AuraWanted() then return false end
@@ -1355,39 +1179,41 @@ function FlameWanted()
 end
 
 function RaceV2Wanted()
+	if not _G.XH_Auto then return false end
 	if _G.Boss then return false end
 	if not CONFIG.AutoRaceV2 or _G.RaceV2Done then return false end
 	if BallerWanted() or AuraWanted() then return false end
-	if FlameWanted() then return false end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if FlameWanted() then return false end   -- Flame Katana มาก่อน
 	local ok, lv = pcall(function() return game:GetService("Players").LocalPlayer.PlayerData.Level.Value end)
 	if not ok or lv < CONFIG.RaceV2MinLevel then return false end
 	local _, ver = ReadRace()
 	if ver ~= 1 then return false end
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- GUI บอกว่า V1 (หรืออ่านไม่ได้) -> ยืนยันด้วยการเปิดสกิลเผ่า + ดู Cooldown.Size ก่อนไปทำเควส
+	-- เผื่อ GUI บัคค้างเป็น V1 ทั้งที่เป็น V2 แล้ว
 	local pv = ProbeRaceV2()
 	if pv == 2 then
 		_G.RaceV2Done = true
-		print("[RaceV2] Đã xác nhận tộc V2 qua hồi chiêu -> bỏ qua chế độ Race V2")
+		print("[RaceV2] ยืนยันจาก Cooldown เผ่าเป็น V2 แล้ว -> ข้ามโหมด Race V2")
 		return false
 	end
-	if pv == nil then return _G.RaceV2 == true end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if pv == nil then return _G.RaceV2 == true end   -- กำลังเช็คอยู่ -> คงสถานะเดิมไว้ก่อน
 	return true
 end
 
 function EvilNoobWanted()
+	if not _G.XH_Auto then return false end
 	if _G.Boss then return false end
 	if not CONFIG.AutoEvilNoob or _G.EvilNoobDone then return false end
-	if DropX2Needed and DropX2Needed() then return false end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	if _G.NoobRaidPhase then return false end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if DropX2Needed and DropX2Needed() then return false end   -- ยังไม่ได้ซื้อ Drop X2 -> ยังไม่ทำ Yellow Blade (ไปเรดหา Gem ก่อน)
+	if _G.NoobRaidPhase then return false end   -- พักทำดาบ ไปเรดจน Gem ถึง NoobRaidGems ก่อน
 	if BallerWanted() or AuraWanted() then return false end
 	local ok, lv = pcall(function() return game:GetService("Players").LocalPlayer.PlayerData.Level.Value end)
 	if not ok or lv < CONFIG.EvilNoobMinLevel then return false end
-	return not (FlameWanted() or RaceV2Wanted())   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	return not (FlameWanted() or RaceV2Wanted())   -- Flame Katana / Race V2 มาก่อน
 end
 
 -- ===== Item Quests (Pink Hammer / Banana / Purple Katana) =====
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ลำดับความสำคัญ: Flame Katana > Race V2 > Evil Noob > Item Quests > Raid / Pumpkin
 _G.ItemDone = _G.ItemDone or {}
 ITEM_INFO = {
 	PinkHammer   = { name = "Pink Hammer",   ui = "Weapon: Pink Hammer" },
@@ -1396,13 +1222,13 @@ ITEM_INFO = {
 }
 ITEM_ORDER = { "PinkHammer", "Banana", "PurpleKatana" }
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- มีไอเทมในกระเป๋า/ในมืออยู่แล้วไหม
 function ItemHave(name)
 	local c = LocalPlayer.Character
 	return (FindTool(name)) ~= nil
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- เอาออกจากคลังมาที่กระเป๋า (UpdateInventory "Weapon") แล้วรอดูว่าเข้ากระเป๋าไหม  คืน true = มีในกระเป๋า
 function ItemUnstore(name, timeout)
 	if ItemHave(name) then return true end
 	task.spawn(function()
@@ -1426,7 +1252,7 @@ function ItemWanted(key)
 		return lv >= CONFIG.PinkHammerMinLevel
 	elseif key == "Banana" then
 		if lv < CONFIG.BananaMinLevel then return false end
-		if _G.ItemQuest and _G.ItemQuestKey == "Banana" then return true end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		if _G.ItemQuest and _G.ItemQuestKey == "Banana" then return true end   -- เริ่มทำแล้ว ไม่ต้องเช็กเงินซ้ำ
 		local m = ReadMoney()
 		return m ~= nil and m >= CONFIG.BananaMinMoney
 	elseif key == "PurpleKatana" then
@@ -1435,11 +1261,12 @@ function ItemWanted(key)
 	return false
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- คืนชื่อ key ของไอเทมที่ควรทำตอนนี้ (nil = ไม่มี)  ทำอันที่ทำค้างอยู่ต่อก่อน
 function ItemQuestWanted()
+	if not _G.XH_Auto then return nil end
 	if not CONFIG.AutoItemQuests then return nil end
 	if FlameWanted() or RaceV2Wanted() or EvilNoobWanted() then return nil end
-	if _G.NoobRaidPhase then return nil end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if _G.NoobRaidPhase then return nil end   -- ช่วงไปเรดรอทำดาบ: ไม่แทรกเควสไอเทม
 	if _G.ItemQuest and _G.ItemQuestKey and ItemWanted(_G.ItemQuestKey) then return _G.ItemQuestKey end
 	for _, k in ipairs(ITEM_ORDER) do
 		if ItemWanted(k) then return k end
@@ -1447,8 +1274,8 @@ function ItemQuestWanted()
 	return nil
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===== Drop Item X2: ยังไม่ซื้อ -> เรดต่อจน Gem ถึง NoobRaidGems (50000) แล้วซื้อ ค่อยกลับไปใช้ RaidStopGems =====
+-- เช็กว่ามี Gamepass แล้วหรือยังด้วย MarketplaceService (เช็กในเธรดแยก ไม่หน่วงลูปอื่น)
 local function CheckDropX2Owned()
 	local ok, owned = pcall(function()
 		return game:GetService("MarketplaceService"):UserOwnsGamePassAsync(LocalPlayer.UserId, CONFIG.DropX2GamepassId)
@@ -1462,47 +1289,48 @@ function DropX2Needed()
 	return not (_G.DropX2Bought or _G.DropX2Owned)
 end
 
-if CONFIG.AutoBuyDropX2 and CONFIG.AutoRaid then CheckDropX2Owned() end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+if CONFIG.AutoBuyDropX2 and CONFIG.AutoRaid then CheckDropX2Owned() end   -- เช็กรอบแรกก่อนเลือกโหมดเริ่มต้น
 
 task.spawn(function()
 	while task.wait(1) do
 		if CONFIG.AutoBuyDropX2 and not _G.DropX2Owned then
 			CheckDropX2Owned()
-			task.wait(120)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			task.wait(120)   -- ยังไม่มี -> เช็กซ้ำทุก 2 นาที (เผื่อซื้อเอง)
 		else
 			return
 		end
 	end
 end)
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- บอกเหตุผลว่าทำไมตอนนี้ "ไม่เข้า/ออกจากโหมดเรด" (ไว้ดูใน console ว่าทำไมไปฟาร์มข้างนอก)
 function RaidWhyNot()
-	if _G.Boss then return "Đang có boss: " .. tostring(_G.BossTarget) end
-	if not CONFIG.AutoRaid then return "AutoRaid đang tắt" end
-	if FlameWanted() then return "Ưu tiên Flame Katana trước Raid" end
-	if RaceV2Wanted() then return "Ưu tiên Race V2 trước Raid (tộc vẫn được nhận diện là V1, đi làm nhiệm vụ Sogga)" end
-	if EvilNoobWanted() then return "Ưu tiên Evil Noob trước Raid" end
+	if _G.Boss then return "กำลังมีบอส: " .. tostring(_G.BossTarget) end
+	if not CONFIG.AutoRaid then return "AutoRaid ปิดอยู่" end
+	if FlameWanted() then return "Flame Katana มาก่อนเรด" end
+	if RaceV2Wanted() then return "Race V2 มาก่อนเรด (เผ่ายังถูกอ่านว่า V1 ไปทำเควส Sogga)" end
+	if EvilNoobWanted() then return "Evil Noob มาก่อนเรด" end
 	if not _G.Raid and ItemQuestWanted() then return "Item Quest มาก่อนเรด: " .. tostring(ItemQuestWanted()) end
 	local ok, msg = pcall(function()
 		local d = LocalPlayer.PlayerData
 		local stop = (_G.NoobRaidPhase or DropX2Needed()) and CONFIG.NoobRaidGems or CONFIG.RaidStopGems
 		if d.Level.Value < CONFIG.RaidMinLevel then
-			return string.format("Cấp độ %d chưa đạt %d", d.Level.Value, CONFIG.RaidMinLevel)
+			return string.format("เลเวล %d ยังไม่ถึง %d", d.Level.Value, CONFIG.RaidMinLevel)
 		end
 		if d.Gem.Value >= stop then
 			return string.format("Gem %d >= เกณฑ์หยุดเรด %d (ซื้อ X2แล้ว/มีแล้ว=%s)", d.Gem.Value, stop, tostring(not DropX2Needed()))
 		end
-		return "Đủ điều kiện Raid thông thường"
+		return "เข้าเงื่อนไขเรดปกติ"
 	end)
-	return ok and msg or "Không đọc được dữ liệu người chơi"
+	return ok and msg or "อ่านข้อมูลผู้เล่นไม่ได้"
 end
 
 function RaidWanted()
+	if not _G.XH_Auto then return false end
 	if _G.Boss then return false end
 	if not CONFIG.AutoRaid then return false end
 	if not _G.Raid and (BallerWanted() or AuraWanted() or HakiRerollWanted()) then return false end
-	if FlameWanted() or RaceV2Wanted() or EvilNoobWanted() then return false end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	if not _G.Raid and ItemQuestWanted() then return false end                      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if FlameWanted() or RaceV2Wanted() or EvilNoobWanted() then return false end   -- Flame Katana / Race V2 / Evil Noob มาก่อน
+	if not _G.Raid and ItemQuestWanted() then return false end                      -- Item Quests มาก่อน (ไม่ตัดเรดที่กำลังทำอยู่)
 	local ok, res = pcall(function()
 		local d = LocalPlayer.PlayerData
 		local stop = (_G.NoobRaidPhase or DropX2Needed()) and CONFIG.NoobRaidGems or CONFIG.RaidStopGems
@@ -1511,17 +1339,18 @@ function RaidWanted()
 	return ok and res or false
 end
 
-pcall(function()   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+pcall(function()   -- รอข้อมูลผู้เล่นโหลดก่อนตัดสินใจ
 	local d = LocalPlayer:WaitForChild("PlayerData", 10)
 	d:WaitForChild("Level", 5)
 	d:WaitForChild("Gem", 5)
 end)
 function PumpkinWanted()
+	if not _G.XH_Auto then return false end
 	if _G.Boss then return false end
 	if not CONFIG.AutoPumpkin then return false end
 	if BallerWanted() or AuraWanted() or HakiRerollWanted() then return false end
 	if FlameWanted() or RaceV2Wanted() or EvilNoobWanted() then return false end
-	if ItemQuestWanted() then return false end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if ItemQuestWanted() then return false end   -- Item Quests มาก่อน
 	local ok, res = pcall(function()
 		local lv = LocalPlayer.PlayerData.Level.Value
 		return lv >= CONFIG.PumpkinMinLevel and lv < CONFIG.PumpkinMaxLevel
@@ -1529,8 +1358,8 @@ function PumpkinWanted()
 	return ok and res or false
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-if CONFIG.AutoItemQuests or CONFIG.AutoEvilNoob then WaitToolsLoaded(15) end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ก่อนเริ่มทำ: เอาออกจากคลังมาเช็กก่อนทุกอัน ถ้ามีในกระเป๋าแล้ว = ทำเสร็จแล้ว (ไฟเขียวใน UI)
+if CONFIG.AutoItemQuests or CONFIG.AutoEvilNoob then WaitToolsLoaded(15) end   -- รอ Backpack โหลดก่อนเช็ก
 if CONFIG.AutoItemQuests then
 	for _, key in ipairs(ITEM_ORDER) do
 		local info = ITEM_INFO[key]
@@ -1545,35 +1374,35 @@ end
 if CONFIG.AutoEvilNoob and ItemUnstore("Yellow Blade", 4) then
 	_G.EvilNoobDone = true
 	SetDone("Weapon: Yellow Blade")
-	print("[EvilNoob] Đã có Yellow Blade, bỏ qua")
+	print("[EvilNoob] มี Yellow Blade แล้ว ข้าม")
 end
 
 if FlameWanted() then
 	_G.AutoFarm = false
 	_G.FlameKatana = true
-	print("[FlameKatana] Bắt đầu bằng chế độ Flame Katana")
+	print("[FlameKatana] เริ่มในโหมด Flame Katana ตั้งแต่ต้น")
 elseif RaceV2Wanted() then
 	_G.AutoFarm = false
 	_G.RaceV2 = true
-	print("[RaceV2] Bắt đầu bằng chế độ Race V2")
+	print("[RaceV2] เริ่มในโหมด Race V2 ตั้งแต่ต้น")
 elseif EvilNoobWanted() then
 	_G.AutoFarm = false
 	_G.EvilNoob = true
-	print("[EvilNoob] Bắt đầu bằng chế độ Evil Noob")
+	print("[EvilNoob] เริ่มในโหมด Evil Noob ตั้งแต่ต้น")
 elseif ItemQuestWanted() then
 	_G.AutoFarm = false
 	_G.ItemQuest = true
 	_G.ItemQuestKey = ItemQuestWanted()
-	print("[ItemQuest] Bắt đầu bằng chế độ nhiệm vụ vật phẩm:", _G.ItemQuestKey)
+	print("[ItemQuest] เริ่มในโหมด Item Quest ตั้งแต่ต้น:", _G.ItemQuestKey)
 elseif RaidWanted() then
 	_G.AutoFarm = false
 	_G.Raid = true
 	_G.GoRaid = true
-	print("[Raid] Bắt đầu bằng chế độ Raid")
+	print("[Raid] เริ่มในโหมด Raid ตั้งแต่ต้น")
 elseif PumpkinWanted() then
 	_G.AutoFarm = false
 	_G.Pumpkin = true
-	print("[Pumpkin] Bắt đầu bằng chế độ Giant Pumpkin")
+	print("[Pumpkin] เริ่มในโหมด Giant Pumpkin ตั้งแต่ต้น")
 end
 
 -- ===================== Quest table =====================
@@ -1716,26 +1545,26 @@ function CheckQuest()
 function TP(cf)
 	local hrp = LocalPlayer.Character.HumanoidRootPart
 	hrp.CFrame = cf
-	hrp.AssemblyLinearVelocity = Vector3.zero      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	hrp.AssemblyLinearVelocity = Vector3.zero      -- ล้างความเร็ว: วาร์ปทุกเฟรมแล้วความเร็วไม่สะสมจนดีดตัว
 	hrp.AssemblyAngularVelocity = Vector3.zero
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===== กันบัค: มอนที่กำลังตีเลือดไม่ลดติดต่อกัน StuckSeconds วินาที -> ฆ่าตัวตายรีตัวละคร =====
 local StuckMob, StuckHp, StuckSince, StuckLastCall, LastStuckReset = nil, 0, 0, 0, 0
 function CheckStuck(mob)
-	if not CONFIG.ResetIfHitStuck or InRaidNow() then StuckMob = nil return end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if not CONFIG.ResetIfHitStuck or InRaidNow() then StuckMob = nil return end   -- ในเรดไม่ฆ่าตัวตายรีตัวละคร
 	local hum = mob and mob:FindFirstChild("Humanoid")
 	local now = tick()
 	if not hum or hum.Health <= 0 then StuckMob = nil StuckLastCall = now return end
 	if StuckMob ~= mob or now - StuckLastCall > 1.5 or hum.Health < StuckHp then
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- มอนตัวใหม่ / เพิ่งกลับมาตี / เลือดลดลง -> เริ่มนับใหม่
 		StuckMob, StuckHp, StuckSince = mob, hum.Health, now
 	else
-		if hum.Health > StuckHp then StuckHp = hum.Health end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		if hum.Health > StuckHp then StuckHp = hum.Health end   -- มอนฟื้นเลือด ไม่รีเซ็ตเวลา
 		if now - StuckSince >= CONFIG.StuckSeconds and now - LastStuckReset > 10 then
 			LastStuckReset = now
 			StuckMob = nil
-			warn(string.format("[HitStuck] đánh %s nhưng máu không giảm trong %d giây -> hồi sinh nhân vật", mob.Name, CONFIG.StuckSeconds))
+			warn(string.format("[HitStuck] ตี %s แล้วเลือดไม่ลด %d วิ -> ฆ่าตัวตายรีตัวละคร", mob.Name, CONFIG.StuckSeconds))
 			local h = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
 			if h then h.Health = 0 end
 		end
@@ -1743,7 +1572,7 @@ function CheckStuck(mob)
 	StuckLastCall = now
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===== Bring Mob: เปลี่ยนโหมดทีไร ล้างเป้าหมายดึงมอนทิ้ง (กันค้างชื่อมอนจากโหมดก่อน เช่น Pink Absorber) =====
 task.spawn(function()
 	local last
 	while task.wait(0.2) do
@@ -1769,7 +1598,7 @@ function EquipWeapon(name)
 	end
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- platform ใต้เท้า + noclip ตอนฟาร์ม
 RunService.RenderStepped:Connect(function()
 	local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 	if (_G.AutoFarm or _G.Raid or _G.Pumpkin or _G.RaceV2 or _G.FlameKatana or _G.EvilNoob or _G.ItemQuest or _G.Boss) and hrp then
@@ -1794,13 +1623,13 @@ RunService.Stepped:Connect(function()
 	end
 end)
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ตั้งค่าอาวุธตาม ToolTip
 task.spawn(function()
 	local tip = { FightingStyle = "Fighting Style", Power = "Power", Weapon = "Weapon" }
 	while task.wait(0.5) do
 		pcall(function()
 			local want = tip[CONFIG.Weapon]
-			-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			-- ได้หมัด Baller แล้ว -> ใช้ Baller เป็นหมัดหลักทุกเลเวล (ไม่สนว่าจะมีสไตล์อื่นอยู่ด้วย)
 			if CONFIG.Weapon == "FightingStyle" and CONFIG.UseBallerWhenOwned ~= false and BallerHave() then
 				_G.SelectWeapon = "Baller"
 				return
@@ -1815,7 +1644,7 @@ task.spawn(function()
 	end
 end)
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ท่าทางฟาร์ม
 task.spawn(function()
 	while task.wait() do
 		local d = _G.DistanceMob
@@ -1829,22 +1658,22 @@ task.spawn(function()
 	end
 end)
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== ตามมอนแบบนิ่ง (ไม่หมุนตามมอน + วาร์ปทุกเฟรม) =====================
+-- เดิม: วาร์ปไป root.CFrame * MethodFarm ในลูป task.wait -> มอนหมุน/วิ่ง = ตัวละครหันก้มๆเงยๆ และตามไม่ทัน
+-- ใหม่: ใช้ตำแหน่งมอน + ออฟเซ็ตในโลก (ไม่หมุนตามมอน) ทิศคงที่ + วาร์ปซ้ำทุก Stepped/Heartbeat + เล็งล่วงหน้าตามความเร็วมอน
 local Follow = { root = nil, t = 0 }
 function Follow.CF(root)
 	local d = _G.DistanceMob or CONFIG.Distance
 	local p = root.Position
 	local vel = root.AssemblyLinearVelocity
 	local lead = CONFIG.FollowLead or 0.08
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- มอนกระเด็น/ความเร็วพุ่ง (เกิน 60) = ไม่ใช่การเดินปกติ -> ไม่เล็งล่วงหน้า (กันตัวละครพุ่งตาม)
 	if lead > 0 and vel.Magnitude < 60 then p = p + vel * lead end
 	local sm = CONFIG.FollowSmooth or 0
 	if _G.Raid and sm > 0 then
 		local now = tick()
 		if Follow.sroot ~= root or not Follow.sp or (Follow.sp - p).Magnitude > 20 then
-			Follow.sp = p                                   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			Follow.sp = p                                   -- เปลี่ยนเป้า/มอนวาร์ปไกล -> ตามทันที
 		else
 			Follow.sp = Follow.sp:Lerp(p, 1 - math.exp(-math.max(now - (Follow.st or now), 0) * sm))
 		end
@@ -1870,7 +1699,7 @@ end
 local function FollowStep()
 	local root = Follow.root
 	if not root or not root.Parent or tick() - Follow.t > 0.25 then return end
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ในเรด: มอนที่กำลังตีห้ามพุ่ง/กระเด็น ล็อกความเร็วให้นิ่ง
 	if _G.Raid and CONFIG.RaidFreezeMob ~= false then
 		pcall(function()
 			root.AssemblyLinearVelocity = Vector3.zero
@@ -1888,10 +1717,10 @@ end
 KeepConn(RunService.Stepped:Connect(FollowStep))
 KeepConn(RunService.Heartbeat:Connect(FollowStep))
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== Hover รอมอนเกิด =====================
 local HOVER_HEIGHT = 60
 local HoverOrigin = nil
-local LastHoverOrigin = nil   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local LastHoverOrigin = nil   -- จุดฐานของการลอยครั้งล่าสุด (กันลอยสูงขึ้นสะสม)
 
 local function HoverWait(travelCF)
 	local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -1901,8 +1730,8 @@ local function HoverWait(travelCF)
 			TP(travelCF)
 			return
 		end
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- ถ้าตอนนี้ยังลอยอยู่ที่จุดเดิม (อยู่สูงกว่าฐาน 60) ให้ใช้ฐานเดิม
+		-- ไม่ใช่ตำแหน่งปัจจุบัน ไม่งั้นจะบวกความสูงเพิ่มทุกครั้งที่ HoverOrigin ถูกรีเซ็ต
 		if LastHoverOrigin
 			and (hrp.Position - (LastHoverOrigin + Vector3.new(0, HOVER_HEIGHT, 0))).Magnitude < 25 then
 			HoverOrigin = LastHoverOrigin
@@ -1956,7 +1785,7 @@ local function NoCollideMob(mob)
 	end
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- มอนที่ถูกดึงมาแล้ว (ตัวที่ไม่ใช่เป้าหมาย) จะหมุนรอบจุดฟาร์ม
 local BringOrbit, BringCenter, BringRingN = {}, nil, 1
 
 local function RingOffset(angle)
@@ -1974,7 +1803,7 @@ local function TweenMob(root, dest, onDone)
 end
 
 local function BringEnemy()
-	if _G.Raid then return end                 -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if _G.Raid then return end                 -- โหมด Raid ไม่ต้อง Bring Mob
 	if not _G.BringMonster or not StartMagnet or not PosMon or not Mon then return end
 	local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
@@ -2002,9 +1831,9 @@ local function BringEnemy()
 	local groundY = GetBaseY(picked[1].m, picked[1].root)
 	local spot = Vector3.new(target.X, groundY, target.Z)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- จัดตำแหน่งมอนแต่ละตัวไม่ให้ซ้ำกัน:
+	-- ตัวใกล้สุด (เป้าหมายที่กำลังตี) อยู่ตรงกลาง ตัวอื่นกระจายเป็นวงรอบๆ ตามช่อง (slot)
+	-- ช่องถูกล็อกไว้ต่อมอนแต่ละตัว (ไม่สลับช่องไปมา มอนจะไม่วิ่งสลับที่กัน)
 	local limit = math.min(#picked, _G.MaxBringMobs)
 	local ringCount = math.max(1, _G.MaxBringMobs - 1)
 	local used = {}
@@ -2045,7 +1874,7 @@ local function BringEnemy()
 		root.AssemblyAngularVelocity = Vector3.zero
 
 		if i == 1 then
-			-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			-- เป้าหมายที่กำลังตี: อยู่กลางจุดฟาร์ม ไม่หมุน
 			if not root:GetAttribute("Tweening") then
 				if (root.Position - spot).Magnitude > 1.5 then
 					TweenMob(root, spot)
@@ -2054,8 +1883,8 @@ local function BringEnemy()
 				end
 			end
 		else
-			-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-			-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			-- ตัวอื่น: tween เข้าวง (ล่วงหน้า 0.5 วินาที ให้ถึงพอดีกับตำแหน่งที่หมุนไปถึง)
+			-- พอถึงแล้ว (BringArrived) ลูป Heartbeat ด้านล่างจะพาหมุนรอบต่อ
 			local slot = p.m:GetAttribute("BringSlot") or 1
 			local base = (slot - 1) * (2 * math.pi / ringCount)
 			BringOrbit[p.m] = { root = root, slot = slot }
@@ -2063,7 +1892,7 @@ local function BringEnemy()
 			if p.m:GetAttribute("BringArrived") then
 				local expected = spot + RingOffset(base + now * speed)
 				if (root.Position - expected).Magnitude > 10 then
-					p.m:SetAttribute("BringArrived", false)      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					p.m:SetAttribute("BringArrived", false)      -- หลุดวง/จุดเปลี่ยน -> ไปเข้าวงใหม่
 				end
 			elseif not root:GetAttribute("Tweening") then
 				local dest = spot + RingOffset(base + (now + 0.5) * speed)
@@ -2074,7 +1903,7 @@ local function BringEnemy()
 	end
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ปล่อยมอนที่ถูกดึงมาจากเป้าหมายก่อนหน้า: ส่งกลับจุดเกิดของมัน (ไม่ให้ติดมาหมุนรอบจุดฟาร์มใหม่)
 local function ReleaseMob(mob, root)
 	pcall(function()
 		mob:SetAttribute("BringArrived", false)
@@ -2087,9 +1916,9 @@ local function ReleaseMob(mob, root)
 	end)
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- หมุนมอนที่เข้าวงแล้วรอบจุดฟาร์มทุกเฟรม (หันหน้าเข้าหาศูนย์กลาง)
 RunService.Heartbeat:Connect(function()
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ชื่อมอนไม่ตรงกับเป้าหมายปัจจุบัน (เปลี่ยนมอน/เปลี่ยนโหมด) -> ปล่อยออกจากวง
 	for mob, st in pairs(BringOrbit) do
 		local root = st.root
 		if not mob.Parent or not root or not root.Parent then
@@ -2133,8 +1962,8 @@ local VirtualUser = game:GetService("VirtualUser")
 local VIM = game:GetService("VirtualInputManager")
 local RS = game:GetService("ReplicatedStorage")
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===== เลือกอาวุธตอนตี: ดาบดีสุดที่มี + สกิล Z/X (ดูคูลดาวจาก Skill_Container.Z/X.Cooldown.Size) =====
+-- Size ขยับ = กำลังคูลดาว / นิ่ง = พร้อมใช้   ถ้า Z และ X คูลดาวทั้งคู่ -> ถือดาบตีธรรมดาต่อ (ไม่สลับหมัด)
 local CdTrack = { Z = { size = nil, changed = 0 }, X = { size = nil, changed = 0 } }
 local SkillLastPress = { Z = 0, X = 0, C = 0, V = 0 }
 local SwordEquippedAt, SwordFistUntil = 0, 0
@@ -2150,14 +1979,14 @@ local function SkillCooling(key)
 	local ok, size = pcall(function()
 		return LocalPlayer.PlayerGui.Weapon.Skill_Container[key].Cooldown.Size
 	end)
-	if not ok then return true end            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if not ok then return true end            -- อ่านไม่ได้ = ถือว่าใช้สกิลไม่ได้ -> ใช้หมัด
 	local t = CdTrack[key]
 	if t.size ~= size then t.size = size; t.changed = tick() end
 	return tick() - t.changed < 0.3
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- เล็งสกิลไปที่มอนก่อนกด: หันกล้องมองมอน + ย้ายเมาส์ไปกลางจอ (ตำแหน่งมอน) ให้สกิลที่อิงเมาส์/กล้องโดนเป้า
+-- _G.SkillTarget = HumanoidRootPart ของมอนที่กำลังตี (ตั้งค่าก่อนเรียก CombatEquip)
 local function PressSkill(key)
 	if tick() - SkillLastPress[key] < 0.3 then return end
 	SkillLastPress[key] = tick()
@@ -2172,7 +2001,7 @@ local function PressSkill(key)
 			local vp = cam.ViewportSize
 			VIM:SendMouseMoveEvent(vp.X / 2, vp.Y / 2, game)
 		end)
-		task.wait(0.05)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		task.wait(0.05)   -- รอให้เมาส์/กล้องอัปเดตก่อนกด
 	end
 	VIM:SendKeyEvent(true, key, false, game)
 	task.wait(0.05)
@@ -2185,7 +2014,7 @@ local function AtMaxLevel()
 	return ok and lv and lv >= (CONFIG.MaxLevel or 2400)
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===== LvMax + ในเรด: วนสลับดาบหลายเล่มตามคูลดาวสกิล =====
 local SwordBlockedUntil, RotEquippedAt = {}, 0
 
 local function OwnedSwords()
@@ -2198,7 +2027,7 @@ local function OwnedSwords()
 	return list
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- อ่านแถบคูลดาว Z/X สองครั้งห่างกัน SwordCdSample วินาที: ขนาดขยับ/อ่านไม่ได้ = คูลดาว
 local function ReadCooling()
 	local function rd(key)
 		local ok, sz = pcall(function() return LocalPlayer.PlayerGui.Weapon.Skill_Container[key].Cooldown.Size end)
@@ -2220,7 +2049,7 @@ local function RotateSwords()
 	end
 	local now = tick()
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ยังไม่ถือดาบ -> หยิบเล่มแรกที่ไม่ถูกข้าม
 	if not held then
 		local pick = swords[1]
 		for _, n in ipairs(swords) do
@@ -2240,7 +2069,7 @@ local function RotateSwords()
 		return true
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ดาบนี้คูลดาวทั้งคู่ -> ข้ามไว้ แล้วสลับไปเล่มถัดไปที่พร้อม (ไม่มีเล่มอื่น = ถือเล่มเดิมตีธรรมดา)
 	SwordBlockedUntil[held] = tick() + (CONFIG.SwordRotateBlock or 1)
 	if #swords == 1 then return true end
 	local idx = 1
@@ -2260,8 +2089,8 @@ local function RotateSwords()
 	return true
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== สกิลหมัด Baller (Z/X/C/V) แบบกดปุ่ม =====================
+-- ถือ Baller + มอนในระยะ -> กดสกิลที่พร้อม (PressSkill: หันกล้อง/เมาส์ไปที่มอนแล้วกดปุ่ม เหมือนสกิลดาบเดิม)
 BallerState = { last = {}, cd = {}, busy = false }
 
 function HeldTool()
@@ -2274,17 +2103,17 @@ end
 
 function BallerSkillReady(key)
 	local st = BallerState
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- แถบคูลดาวของหมัด: PlayerGui.FightingStyle.Skill_Container[ปุ่ม].Cooldown
 	local ok, size = pcall(function()
 		return LocalPlayer.PlayerGui.FightingStyle.Skill_Container[key].Cooldown.Size
 	end)
 	if not ok then
-		return tick() - (st.last[key] or 0) >= (CONFIG.BallerSkillGap or 2.5)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		return tick() - (st.last[key] or 0) >= (CONFIG.BallerSkillGap or 2.5)   -- อ่านคูลดาวไม่ได้ -> จับเวลาเอง
 	end
 	local t = st.cd[key]
 	if not t then t = { size = nil, changed = 0 } st.cd[key] = t end
 	if t.size ~= size then t.size = size; t.changed = tick() end
-	if tick() - t.changed < 0.3 then return false end                        -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if tick() - t.changed < 0.3 then return false end                        -- Cooldown กำลังขยับ = ยังคูลดาว
 	return tick() - (st.last[key] or 0) >= 0.4
 end
 
@@ -2313,21 +2142,21 @@ end
 
 function CombatEquip()
 	local fist = _G.SelectWeapon
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- มี Baller แล้ว -> ใช้ Baller อย่างเดียวทุกเลเวล (รวมถึงเลเวลตัน ไม่สลับไปถือดาบ)
 	local useBaller = CONFIG.UseBallerWhenOwned ~= false and BallerHave()
 	local sword = CONFIG.UseSwordSkills and not useBaller and BestSword()
 	if not sword then
 		EquipWeapon(useBaller and "Baller" or fist)
-		BallerSkillTick()              -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		BallerSkillTick()              -- สกิล Baller (กดปุ่มแบบเดิม)
 		return
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- เลเวลสูงสุด + อยู่ในเรด: วนสลับดาบหลายเล่มตามคูลดาวสกิล
 	if CONFIG.SwordOnlyAtMax and CONFIG.SwordRotateInRaid and AtMaxLevel() and InRaidNow() then
 		if RotateSwords() then return end
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- เลเวลสูงสุด: ถือดาบอย่างเดียว ไม่สลับไปหมัดแม้สกิลคูลดาว (ตีธรรมดาด้วยดาบ)
 	if CONFIG.SwordOnlyAtMax and AtMaxLevel() then
 		local c = LocalPlayer.Character
 		if not (c and c:FindFirstChild(sword)) then
@@ -2347,7 +2176,7 @@ function CombatEquip()
 
 	local char = LocalPlayer.Character
 	if char and char:FindFirstChild(sword) then
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- ดาบอยู่ในมือ: รอ GUI คูลดาวอัปเดตหลังสลับ แล้วค่อยเช็ก
 		if tick() - SwordEquippedAt < 0.4 then
 			SkillCooling("Z"); SkillCooling("X")
 			return
@@ -2357,7 +2186,7 @@ function CombatEquip()
 			if not zCool then PressSkill("Z") end
 			if not xCool then PressSkill("X") end
 		else
-			SwordFistUntil = tick() + CONFIG.SwordRetrySeconds   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			SwordFistUntil = tick() + CONFIG.SwordRetrySeconds   -- คูลดาวทั้งคู่ -> สลับไปใช้หมัด
 			EquipWeapon(fist)
 		end
 	else
@@ -2371,25 +2200,25 @@ function CombatEquip()
 	end
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ดาบที่ซื้อแล้วแต่ยังอยู่ในคลัง (ไม่อยู่ในกระเป๋า) ต้องเอาออกมาก่อนถึงจะถือได้
+-- ไล่ตามลำดับ SwordPriority: อันไหนอยู่ในกระเป๋าแล้ว = หยุด (ไม่ต้องหาอันที่ด้อยกว่า) / ไม่อยู่ -> ลองเอาออกจากคลัง
 function EnsureBestSword()
 	local c = LocalPlayer.Character
 	for _, name in ipairs(CONFIG.SwordPriority) do
 		if FindTool(name) then return name end
 		if ItemUnstore(name, 1.5) then
-			print("[Sword] Đã lấy " .. name .. "  khỏi kho")
+			print("[Sword] เอา " .. name .. " ออกจากคลัง")
 			return name
 		end
 	end
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- LvMax: เอาดาบทุกเล่มใน SwordPriority ออกจากคลังมาไว้ในกระเป๋า (ไว้ใช้สลับในเรด)
 function EnsureAllSwords()
 	local c = LocalPlayer.Character
 	for _, name in ipairs(CONFIG.SwordPriority) do
 		if not (FindTool(name)) then
-			if ItemUnstore(name, 1.5) then print("[Sword] Đã lấy " .. name .. "  khỏi kho") end
+			if ItemUnstore(name, 1.5) then print("[Sword] เอา " .. name .. " ออกจากคลัง") end
 		end
 	end
 end
@@ -2404,7 +2233,7 @@ if CONFIG.UseSwordSkills then
 					pcall(EnsureBestSword)
 				end
 			end
-			task.wait(20)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			task.wait(20)   -- เช็กซ้ำเป็นระยะ เผื่อเพิ่งซื้อ/ได้ดาบที่ดีกว่าเพิ่ม
 		end
 	end)
 end
@@ -2417,34 +2246,25 @@ task.spawn(function()
 		if _G.AutoFarm and not _G.Raid then
 			while FruitBusy or ShopBusy or StoreBusy do task.wait(0.1) end
 			pcall(function()
-				if not _G.AutoFarm or _G.Raid then return end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-				local useSelected = CONFIG.UseSelectedMonster and type(CONFIG.SelectedMonster) == "string" and CONFIG.SelectedMonster ~= ""
-				if useSelected then
-					Mob = CONFIG.SelectedMonster
-					local selectedTemplate = RS:FindFirstChild("EnemyTemplate") and RS.EnemyTemplate:FindFirstChild(Mob)
-					if selectedTemplate and selectedTemplate:FindFirstChild("HumanoidRootPart") then
-						FrameQ = selectedTemplate.HumanoidRootPart.CFrame
-					end
-				else
-					CheckQuest()
-				end
+				if not _G.AutoFarm or _G.Raid then return end   -- โหมดเปลี่ยนระหว่างรอ -> ไม่วาร์ปไปฟาร์ม
+				CheckQuest()
 				local gui = LocalPlayer.PlayerGui.QuestGui.Holder.QuestSlot1
-				if not useSelected and not string.find(gui.Target.Text, Mob) then
+				if not string.find(gui.Target.Text, Mob) then
 					RS.OtherEvent.QuestEvents.Quest:FireServer("Abandon_Quest", { QuestSlot = "QuestSlot1" })
 				end
 
-				if not useSelected and gui.Visible == false then
+				if gui.Visible == false then
 					local hrp = LocalPlayer.Character.HumanoidRootPart
 					if (FrameQ.Position - hrp.Position).Magnitude > 3 then
-						TP(FrameQ)                                   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						TP(FrameQ)                                   -- ไปที่ NPC ครั้งเดียว ไม่วาร์ปซ้ำทุกเฟรม
 						task.wait(0.25)
-					elseif tick() - LastAccept > 0.6 then            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					elseif tick() - LastAccept > 0.6 then            -- กด E ทุก 0.6 วินาที (ไม่ใช่ทุกเฟรม)
 						LastAccept = tick()
 						AcceptTries = AcceptTries + 1
 						VIM:SendKeyEvent(true, "E", false, game)
 						task.wait(0.05)
 						VIM:SendKeyEvent(false, "E", false, game)
-						-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						-- กด E หลายครั้งแล้วยังไม่รับ -> ยิง ProximityPrompt ที่ "ใกล้ที่สุด" ตัวเดียว (สแกนครั้งเดียวต่อจุด)
 						if AcceptTries >= 4 and fireproximityprompt then
 							local key = tostring(FrameQ.Position)
 							if QuestPromptCache.key ~= key then
@@ -2468,13 +2288,13 @@ task.spawn(function()
 					end
 					return
 				else
-					AcceptTries = 0                                  -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					AcceptTries = 0                                  -- รับเควสแล้ว -> รีเซ็ตตัวนับ
 					if workspace.Monster:FindFirstChild(Mob) then
 						for _, v in ipairs(workspace.Monster:GetChildren()) do
 							if v.Name == Mob and v:FindFirstChild("Humanoid") and v:FindFirstChild("HumanoidRootPart") and v.Humanoid.Health > 0 then
 								repeat
 									task.wait()
-									while FruitBusy or ShopBusy or StoreBusy do task.wait(0.1) end -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+									while FruitBusy or ShopBusy or StoreBusy do task.wait(0.1) end -- หยุดฟาร์มชั่วคราวตอนไปเก็บผลไม้
 									if not _G.AutoFarm or _G.Raid then break end
 									_G.SkillTarget = v.HumanoidRootPart
 									CombatEquip()
@@ -2485,7 +2305,7 @@ task.spawn(function()
 									Mon = Mob
 									VirtualUser:CaptureController()
 									VirtualUser:Button1Down(Vector2.new(1280, 672), workspace.Camera.CFrame)
-								until not _G.AutoFarm or _G.Raid or not v.Parent or v.Humanoid.Health <= 0 or (not useSelected and gui.Visible == false)
+								until not _G.AutoFarm or _G.Raid or not v.Parent or v.Humanoid.Health <= 0 or gui.Visible == false
 								StartMagnet = false
 							end
 						end
@@ -2500,14 +2320,14 @@ task.spawn(function()
 	end
 end)
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- กำลังอยู่ในเรด (RaidGui ขึ้น) หรือกำลังรอ Start ที่จุดเข้าเรด -> ห้ามมีอะไรมาขัด (เก็บผลไม้/เก็บเข้าคลัง/ซื้อของ/ถอดดาบ/ซื้อ X2/รีตัว)
 function InRaidNow()
 	if _G.RaidJoining then return true end
 	local ok, v = pcall(function() return LocalPlayer.PlayerGui.RaidGui.RaidFrame.Visible end)
 	return ok and v == true
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ผลไม้ที่เก็บเข้าคลังไม่ได้ (คลังของผลนั้นเต็ม) -> จำชื่อไว้ ข้ามการเก็บ/เก็บจากพื้น ไม่ให้ค้างลูปหรือเสียเวลาวาร์ป
 local FullFruits = {}
 local function IsFruitFull(name)
 	local t = FullFruits[name]
@@ -2516,7 +2336,7 @@ local function IsFruitFull(name)
 	return true
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== Bring Fruit (เก็บผลไม้ที่ดรอป) =====================
 task.spawn(function()
 	while task.wait(0.3) do
 		if CONFIG.BringFruit and not ShopBusy and not StoreBusy and not InRaidNow() then
@@ -2542,7 +2362,7 @@ task.spawn(function()
 end)
 
 -- ===================== Auto Store Fruit =====================
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ลำดับ: หยุดฟาร์ม/Raid ไม่ให้ถือหมัด (StoreBusy) -> ถือผลไม้ -> เก็บเข้าคลัง -> ปล่อยให้ฟาร์มกลับมาถือหมัดเอง
 local function FruitTools()
 	local list = {}
 	for _, container in ipairs({ LocalPlayer.Backpack, LocalPlayer.Character }) do
@@ -2562,7 +2382,7 @@ local function StoreTool(tool)
 	local hum = char and char:FindFirstChildOfClass("Humanoid")
 	if not hum then return end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ถือผลไม้ แล้วรอจนผลไม้อยู่ในมือจริง
 	hum:EquipTool(tool)
 	for _ = 1, 15 do
 		if tool.Parent == char then break end
@@ -2570,7 +2390,7 @@ local function StoreTool(tool)
 	end
 	if tool.Parent ~= char then return end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ลองเก็บ 2 รอบ: ถ้าผลยังอยู่หลังเก็บทั้งสองรอบ = คลังของผลนี้เต็ม -> จำไว้ว่าเก็บไม่ได้
 	for attempt = 1, 2 do
 		if tool.Parent ~= char and tool.Parent ~= LocalPlayer.Backpack then return true end
 		if tool.Parent ~= char then hum:EquipTool(tool) task.wait(0.2) end
@@ -2578,7 +2398,7 @@ local function StoreTool(tool)
 			Action = "Store",
 			Tool = workspace.Character[Delta][tool.Name],
 		})
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- รอให้ผลไม้หายจากมือ/กระเป๋า = เก็บสำเร็จ (สูงสุด ~2 วินาที)
 		for _ = 1, 20 do
 			if tool.Parent ~= char and tool.Parent ~= LocalPlayer.Backpack then return true end
 			task.wait(0.1)
@@ -2586,8 +2406,8 @@ local function StoreTool(tool)
 	end
 	if tool.Parent == char or tool.Parent == LocalPlayer.Backpack then
 		FullFruits[tool.Name] = tick()
-		pcall(function() hum:UnequipTools() end)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-		warn(string.format("[Store] Không thể cất %s vào kho -> kho trái cây này đầy, bỏ qua %d giây", tool.Name, CONFIG.FruitFullRetrySeconds or 600))
+		pcall(function() hum:UnequipTools() end)   -- วางผลที่เก็บไม่ได้ลง ไม่ถือค้างมือ
+		warn(string.format("[Store] เก็บ %s เข้าคลังไม่ได้ -> คลังผลนี้เต็ม ข้ามไป %d วินาที", tool.Name, CONFIG.FruitFullRetrySeconds or 600))
 		return false
 	end
 	return true
@@ -2600,7 +2420,7 @@ task.spawn(function()
 				local fruits = FruitTools()
 				if #fruits == 0 then return end
 				StoreBusy = true
-				task.wait(0.4)                       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				task.wait(0.4)                       -- ให้ลูปฟาร์มหยุดแย่งถือหมัดก่อน
 				for _, tool in ipairs(fruits) do
 					if InRaidNow() then break end
 					if tool.Parent then StoreTool(tool) end
@@ -2611,16 +2431,16 @@ task.spawn(function()
 	end
 end)
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== Auto Buy (ซื้ออัตโนมัติตามเงิน) =====================
+-- เรียงตามลำดับความสำคัญ: เกณฑ์เงินสูงสุดก่อน
+-- แต่ละรายการซื้อ 1 ครั้งต่อการรันสคริปต์ (ลองใหม่ได้สูงสุด 3 ครั้งถ้าเงินไม่ลด)
+-- เซฟรายการที่ซื้อแล้วลงเครื่อง (ไฟล์ในโฟลเดอร์ workspace ของ executor แยกตามบัญชี)
+-- อยากซื้อใหม่ ให้ลบไฟล์นี้ หรือลบชื่อรายการออกจากไฟล์
 local HttpService = game:GetService("HttpService")
-local SAVE_FILE = "XHHub_Purchased_" .. LocalPlayer.UserId .. ".json"
+local SAVE_FILE = "MemeSea_Purchased_" .. LocalPlayer.UserId .. ".json"
 local CAN_SAVE = (writefile and readfile and isfile) and true or false
 if not CAN_SAVE then
-	warn("[Save] executor này không hỗ trợ writefile/readfile -> chỉ ghi nhớ trong phiên này")
+	warn("[Save] executor นี้ไม่รองรับ writefile/readfile -> จำได้แค่ในรอบนี้")
 end
 
 function LoadPurchased()
@@ -2634,7 +2454,7 @@ function LoadPurchased()
 	end
 	if type(data) ~= "table" then data = {} end
 	for name in pairs(data) do
-		print("[Save] Đã mua trước đó:", name)
+		print("[Save] เคยซื้อแล้ว:", name)
 		SetDone(name)
 	end
 	return data
@@ -2647,7 +2467,7 @@ function SavePurchased(done)
 	end)
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- หลังซื้อสำเร็จ: เอา Quest Scroll ออกจากคลัง -> ถือขึ้นมือ -> ใช้
 local function UseQuestScroll()
 	local OE = RS:WaitForChild("OtherEvent")
 	-- 1) Unstore
@@ -2655,9 +2475,9 @@ local function UseQuestScroll()
 		Action = "Unstore",
 		SelectedItem = "Quest Scroll",
 	})
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- 2) รอให้ไอเท็มเข้ามาใน Backpack แล้วถือขึ้นมือ
 	local tool
-	for _ = 1, 25 do                          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	for _ = 1, 25 do                          -- รอสูงสุด ~5 วินาที
 		tool = LocalPlayer.Character:FindFirstChild("Quest Scroll")
 		if tool then break end
 		if LocalPlayer.Backpack:FindFirstChild("Quest Scroll") then
@@ -2666,23 +2486,23 @@ local function UseQuestScroll()
 		task.wait(0.2)
 	end
 	if not tool then
-		warn("[QuestScroll] Không tìm thấy Quest Scroll sau khi lấy khỏi kho")
+		warn("[QuestScroll] ไม่พบ Quest Scroll หลัง Unstore")
 		return false
 	end
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- 3) ใช้
 	OE:WaitForChild("MainEvents"):WaitForChild("Modules"):FireServer("Quest_Scroll", {
 		Action = "Use",
 		Tool = tool,
 	})
-	print("[QuestScroll] Đã sử dụng")
+	print("[QuestScroll] ใช้แล้ว")
 	return true
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===== ตรวจว่าซื้อ/ใช้ Popcat (Upgrade Quest) แล้วหรือยัง จากช่องเควส =====
+-- QuestGui.Holder.QuestText = "Quest Tasks [x/y]"  y = จำนวนช่องเควสสูงสุด
+--   y >= 2 -> ซื้อและใช้แล้ว (เช่น [2/2] หรือ [1/2])
+--   y == 1 -> ยังไม่ได้ใช้: เอา Quest Scroll ออกมาใช้ แล้วเช็กใหม่
+--             ถ้าใช้แล้ว y ยังไม่เป็น 2 -> แปลว่ายังไม่ได้ซื้อ
 local function ReadQuestCap()
 	local ok, txt = pcall(function() return LocalPlayer.PlayerGui.QuestGui.Holder.QuestText.Text end)
 	if not ok or not txt then return nil end
@@ -2690,9 +2510,9 @@ local function ReadQuestCap()
 	if a and b then return tonumber(a), tonumber(b) end
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ไปรับเควส (ตามเลเวลปัจจุบัน) เพื่อให้ QuestText แสดงผล
 local function AcceptAnyQuest()
-	pcall(CheckQuest)                          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	pcall(CheckQuest)                          -- ตั้ง FrameQ / Mob ตามเลเวล
 	if not FrameQ then return false end
 	local function hasQuest()
 		local ok, vis = pcall(function() return LocalPlayer.PlayerGui.QuestGui.Holder.QuestSlot1.Visible end)
@@ -2710,29 +2530,29 @@ local function AcceptAnyQuest()
 	return hasQuest()
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- คืน true = ซื้อและใช้ Popcat แล้ว
 local function VerifyPopcat()
 	local _, cap = ReadQuestCap()
-	if not cap then                            -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	if not cap then                            -- ยังไม่มีข้อมูล -> ไปรับเควสก่อน
 		AcceptAnyQuest()
 		task.wait(0.5)
 		_, cap = ReadQuestCap()
 	end
 	if not cap then
-		print("[Popcat] Không đọc được ô nhiệm vụ -> chưa thể xác nhận")
+		print("[Popcat] อ่านช่องเควสไม่ได้ -> ยังยืนยันไม่ได้")
 		return false
 	end
 	if cap >= 2 then return true end
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- cap == 1: ลองเอา Quest Scroll ออกมาใช้ (ถ้าซื้อไว้แต่ยังไม่ได้ใช้)
 	pcall(UseQuestScroll)
 	task.wait(1)
 	_, cap = ReadQuestCap()
-	return cap ~= nil and cap >= 2             -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	return cap ~= nil and cap >= 2             -- ใช้แล้วยังไม่เป็น 2 = ยังไม่ได้ซื้อ
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- strict = true : มีตัวตรวจที่เชื่อถือได้ ตรวจไม่ผ่าน = ยังไม่ได้ซื้อ (ห้ามเดา)
+-- verify ของอาวุธ (Hanger/Doge) = ดูว่ามี Tool ชื่อนั้นในกระเป๋า/คลังจริง ถ้าชื่อ Tool ไม่ตรงกับชื่อที่ส่งซื้อ จะหาไม่เจอ
+--   (จึงไม่ strict) -> ถ้าเงินพอ + ซื้อ 2 รอบแล้วเงินไม่ลดทั้งสองรอบ ถึงจะถือว่า "น่าจะมีแล้ว" และเป็นแค่ชั่วคราวในรอบนี้ (ไม่เซฟลงไฟล์)
 local SHOP_LIST = {
 	{ name = "Upgrade Quest: Popcat", money = 1000000, pos = CFrame.new(417.228058, -3.556563, -1155.797607), args = { "Upgrade_Quest", "Popcat" }, afterBuy = UseQuestScroll, verify = VerifyPopcat, strict = true },
 	{ name = "Ability: Giga Chad",    money = 100000,  pos = CFrame.new(-3062.522217, -77.401924, -2064.764648), args = { "Ability_Teacher", "Giga Chad" } },
@@ -2741,12 +2561,12 @@ local SHOP_LIST = {
 }
 
 local function GetMoney()
-	return ReadMoney() or 0      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	return ReadMoney() or 0      -- อ่านจาก PlayerGui.MainGui.CurrencyFrame_Mobile.Money.Text
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- คืน true = ซื้อสำเร็จ (เงินลดจริง อ่านค่าได้ทั้งก่อน/หลัง + ยืนยันซ้ำ)
+-- คืน false, n = ไม่เห็นเงินลด  n = จำนวนรอบที่ "เช็กสะอาด" (เงินพอ + อ่านเงินได้ + ยืนที่จุดขาย แต่เงินไม่ลด)
+-- เดิม GetMoney() คืน 0 เมื่ออ่าน GUI ไม่ได้ -> นับเป็น "เงินลด" แล้วเซฟว่าซื้อแล้วมั่วๆ
 local function BuyItem(item)
 	local remote = RS:WaitForChild("OtherEvent"):WaitForChild("MainEvents"):WaitForChild("Modules")
 	local cleanTries = 0
@@ -2755,16 +2575,16 @@ local function BuyItem(item)
 		if not before then task.wait(0.5) before = ReadMoney() end
 		if before then
 			TP(item.pos)
-			task.wait(0.6)                      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			task.wait(0.6)                      -- รอให้เซิร์ฟเวอร์รับตำแหน่ง
 			remote:FireServer(unpack(item.args))
 			local sawRead = false
-			for _ = 1, 10 do                    -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			for _ = 1, 10 do                    -- รอดูว่าเงินลดไหม (สูงสุด ~2 วินาที เผื่อ GUI อัปเดตช้า)
 				task.wait(0.2)
-				local now = ReadMoney()         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				local now = ReadMoney()         -- nil = อ่านไม่ได้ ไม่นับว่าเงินลด
 				if now then
 					sawRead = true
 					if now < before then
-						task.wait(0.6)          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						task.wait(0.6)          -- ยืนยันซ้ำ กัน GUI กระตุกชั่วคราว
 						local again = ReadMoney()
 						if again and again < before then return true end
 					end
@@ -2777,12 +2597,12 @@ local function BuyItem(item)
 end
 
 task.spawn(function()
-	local done = LoadPurchased()              -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	local tried = {}                          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	pcall(WaitToolsLoaded, 15)                -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	print("[Shop] Số tiền script đọc được (CurrencyFrame_Mobile.Money):", GetMoney())
+	local done = LoadPurchased()              -- ซื้อสำเร็จแล้ว (เซฟลงไฟล์)
+	local tried = {}                          -- ลองแล้วในรอบนี้ (ไม่เซฟลงไฟล์)
+	pcall(WaitToolsLoaded, 15)                -- รอ Backpack โหลดก่อนตรวจของ
+	print("[Shop] เงินที่สคริปต์อ่านได้ (CurrencyFrame_Mobile.Money):", GetMoney())
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ตรวจสถานะรายการที่มีตัวตรวจ (Popcat) ตั้งแต่เริ่ม โดยไม่ต้องรอเงินถึง
 	if CONFIG.AutoBuy then
 		for _, item in ipairs(SHOP_LIST) do
 			if item.verify and not done[item.name] then
@@ -2795,7 +2615,7 @@ task.spawn(function()
 					done[item.name] = true
 					SetDone(item.name)
 					SavePurchased(done)
-					print("[Shop] ตรวจพบว่าซื้อและĐã sử dụng:", item.name)
+					print("[Shop] ตรวจพบว่าซื้อและใช้แล้ว:", item.name)
 				end
 			end
 		end
@@ -2808,10 +2628,10 @@ task.spawn(function()
 					CurrentShopItem = item.name
 					ShopBusy = true
 					pcall(function()
-						-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						-- รอให้การเก็บผลไม้ที่กำลังทำอยู่เสร็จก่อน
 						while FruitBusy or StoreBusy do task.wait(0.1) end
 						local bought, cleanTries = BuyItem(item)
-						-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						-- เงินลดจริง = ซื้อสำเร็จ / เงินไม่ลด = ต้องมีหลักฐานว่ามีของจริง (ตัวตรวจ) ไม่เดาแล้ว
 						local owned, inferred = bought, false
 						if not bought then
 							if item.verify then
@@ -2819,28 +2639,28 @@ task.spawn(function()
 								owned = ok and r == true
 							end
 							if not owned and not item.strict and (cleanTries or 0) >= 2 then
-								owned, inferred = true, true   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+								owned, inferred = true, true   -- เงินพอ + อ่านเงินได้ + ซื้อ 2 รอบเงินไม่ลดเลย = น่าจะมีอยู่แล้ว (ชั่วคราว)
 							end
 						end
 						if owned then
 							SetDone(item.name)
 							if inferred then
-								-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+								-- ไม่มีหลักฐานตรงๆ: ไฟเขียวเฉพาะรอบนี้ ไม่เซฟลงไฟล์ (รอบหน้าตรวจใหม่)
 								print("[Shop] ยืนยันตรงๆ ไม่ได้ (เงินไม่ลด 2 รอบทั้งที่เงินพอ) -> ถือว่ามีแล้วเฉพาะรอบนี้ ไม่เซฟ:", item.name)
 							else
 								done[item.name] = true
-								SavePurchased(done)           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+								SavePurchased(done)           -- เซฟเฉพาะที่ยืนยันแล้ว
 								if bought then
 									if item.afterBuy then item.afterBuy() end
 								else
-									print("[Shop] Đã xác nhận đang sở hữu vật phẩm:", item.name)
+									print("[Shop] ตรวจพบว่ามีของจริง:", item.name)
 								end
 							end
 						else
-							print("[Shop] Chưa mua/chưa thể xác nhận (đã kiểm tra):", item.name)
+							print("[Shop] ยังไม่ได้ซื้อ/ยืนยันไม่ได้ (ตรวจแล้ว):", item.name)
 						end
 					end)
-					tried[item.name] = true           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					tried[item.name] = true           -- กันวนซ้ำในรอบนี้ (ถ้าซื้อไม่สำเร็จจะไม่ถูกเซฟลงไฟล์)
 					ShopBusy = false
 				end
 			end
@@ -2849,8 +2669,8 @@ task.spawn(function()
 end)
 
 -- ===================== Auto Stats =====================
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- 1) อ่านแต้มสกิลจาก GUI  2) ถ้ายังมีแต้ม และ Melee < 2400 -> อัพ Melee ทีละ 1
+-- 3) ถ้า Melee ตัน (>= 2400) -> อัพ Defense และ Sword สลับกันทีละ 1
 local MELEE_CAP = 2400
 
 local function ReadNumber(textObj)
@@ -2877,12 +2697,12 @@ task.spawn(function()
 			pcall(function()
 				local pointObj, meleeObj = StatsGui()
 				local points = ReadNumber(pointObj)
-				if not points or points <= 0 then return end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if not points or points <= 0 then return end   -- ไม่มีแต้ม
 
 				local melee = ReadNumber(meleeObj)
 				if melee and melee < MELEE_CAP then
 					UpgradeStat("MeleeLevel")
-				elseif melee and melee >= MELEE_CAP then       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				elseif melee and melee >= MELEE_CAP then       -- Melee ตันแล้ว
 					UpgradeStat(nextIsDefense and "DefenseLevel" or "SwordLevel")
 					nextIsDefense = not nextIsDefense
 				end
@@ -2891,9 +2711,9 @@ task.spawn(function()
 	end
 end)
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== Auto Reset เมื่อหมัด/อาวุธฟาร์มหาย (เกมบัค) =====================
+-- ถ้าไม่พบ Tool ที่ ToolTip ตรงกับ CONFIG.Weapon ทั้งใน Backpack และในมือ ติดต่อกัน 3 วินาที
+-- ขณะที่ Auto Farm ทำงาน -> ทำให้ตัวละครตาย (รีสปอว์น) เพื่อให้เกมโหลดหมัดกลับมา
 local TOOLTIP_OF = { FightingStyle = "Fighting Style", Power = "Power", Weapon = "Weapon" }
 local spawnTime = tick()
 local lastReset = 0
@@ -2918,7 +2738,7 @@ task.spawn(function()
 			pcall(function()
 				local char = LocalPlayer.Character
 				local hum = char and char:FindFirstChildOfClass("Humanoid")
-				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				-- ตายอยู่ / เพิ่งเกิดใหม่ (รอให้ของโหลด) / เพิ่งรีไป -> ยังไม่เช็ก
 				if not hum or hum.Health <= 0
 					or tick() - spawnTime < 8
 					or tick() - lastReset < 15 then
@@ -2930,7 +2750,7 @@ task.spawn(function()
 				else
 					missing = missing + 1
 					if missing >= 3 then
-						warn("[AutoReset] Vũ khí/đòn đánh dùng để farm bị mất -> hồi sinh nhân vật")
+						warn("[AutoReset] หมัด/อาวุธฟาร์มหาย -> รีตัวละคร")
 						hum.Health = 0
 						lastReset = tick()
 						missing = 0
@@ -2942,8 +2762,8 @@ task.spawn(function()
 end)
 
 -- ===================== Auto Raid =====================
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- เลเวล >= RaidMinLevel และ Gem < RaidStopGems -> เข้าโหมด Raid (ปิด Auto Farm Level ชั่วคราว)
+-- Gem >= RaidStopGems -> ออกจากโหมด Raid แล้วกลับไปฟาร์มเลเวลตามปกติ
 local RAID_JOIN_POS = CFrame.new(2749.188232421875, -57.323822021484375, -4525.55419921875)
 local RaidMode = (_G.Raid == true)
 local LastRaidWhy = nil
@@ -2953,8 +2773,8 @@ local function RaidGuiVisible()
 	return ok and v or false
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ตัวคุมโหมด
+-- เข้าโหมดทันทีเมื่อเข้าเงื่อนไข / ออกเมื่อไม่เข้าเงื่อนไขติดกัน 3 วินาที และ "ไม่ออกกลางเรด"
 task.spawn(function()
 	local offCount = 0
 	while task.wait(1) do
@@ -2965,7 +2785,7 @@ task.spawn(function()
 					LastRaidWhy = nil
 					if not RaidMode then
 						RaidMode = true
-						print("[Raid] Vào chế độ Raid")
+						print("[Raid] เข้าโหมด Raid")
 						_G.AutoFarm = false
 						_G.Raid = true
 						_G.GoRaid = true
@@ -2976,11 +2796,11 @@ task.spawn(function()
 					local why = RaidWhyNot()
 					if why ~= LastRaidWhy then
 						LastRaidWhy = why
-						print("[Raid] Hiện không Raid vì:", why)
+						print("[Raid] ตอนนี้ไม่เรด เพราะ:", why)
 					end
 					if RaidMode and offCount >= 3 and not RaidGuiVisible() then
 						RaidMode = false
-						print("[Raid] Thoát chế độ Raid -> quay lại farm cấp")
+						print("[Raid] ออกจากโหมด Raid -> กลับไปฟาร์มเลเวล")
 						_G.Raid = false
 						_G.GoRaid = false
 						StartMagnet = false
@@ -2994,29 +2814,29 @@ task.spawn(function()
 	end
 end)
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ซื้อ Drop Item X2 เมื่อ Gem ถึง NoobRaidGems (ไม่ต้องรอช่วงพักทำดาบ) ถ้ายังไม่มี -> หลังซื้อจะกลับไปใช้ RaidStopGems
 task.spawn(function()
 	local tries = 0
 	while task.wait(2) do
 		pcall(function()
-			if InRaidNow() then return end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			if InRaidNow() then return end   -- ซื้อหลังเรดจบ
 			if not DropX2Needed() then return end
 			local gem = LocalPlayer.PlayerData.Gem.Value
 			if gem < CONFIG.NoobRaidGems then return end
-			if tries >= 3 then _G.DropX2Bought = true warn("[Raid] Mua Drop X2 thất bại 3 lần, hủy -> dùng RaidStopGems") return end
+			if tries >= 3 then _G.DropX2Bought = true warn("[Raid] ซื้อ Drop X2 ไม่สำเร็จ 3 ครั้ง ยกเลิก -> ใช้ RaidStopGems") return end
 			tries = tries + 1
-			print("[Raid] Gem ถึง", CONFIG.NoobRaidGems, "-> Mua Drop Item X2 (lần", tries, ")")
+			print("[Raid] Gem ถึง", CONFIG.NoobRaidGems, "-> ซื้อ Drop Item X2 (ครั้งที่", tries, ")")
 			pcall(function()
 				RS:WaitForChild("OtherEvent"):WaitForChild("BuyEvents"):WaitForChild("BuyProduct")
 					:FireServer({ Action = "Buy_Gamepass", GamepassId = CONFIG.DropX2GamepassId })
 			end)
 			task.wait(3)
-			if CheckDropX2Owned() then print("[Raid] Mua Drop X2 thành công") end
+			if CheckDropX2Owned() then print("[Raid] ซื้อ Drop X2 สำเร็จ") end
 		end)
 	end
 end)
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ซื้อ Gem x2 เมื่อ Gem ถึง GemX2Gems (ครั้งเดียว)
 task.spawn(function()
 	if not CONFIG.AutoBuyGemX2 then return end
 	local MPS = game:GetService("MarketplaceService")
@@ -3027,9 +2847,9 @@ task.spawn(function()
 			if MPS:UserOwnsGamePassAsync(LocalPlayer.UserId, CONFIG.GemX2GamepassId) then done = true return end
 			if InRaidNow() then return end
 			if LocalPlayer.PlayerData.Gem.Value < CONFIG.GemX2Gems then return end
-			if tries >= 3 then done = true warn("[GemX2] Mua thất bại 3 lần, đã hủy") return end
+			if tries >= 3 then done = true warn("[GemX2] ซื้อไม่สำเร็จ 3 ครั้ง ยกเลิก") return end
 			tries = tries + 1
-			print("[GemX2] Gem ถึง", CONFIG.GemX2Gems, "-> Mua Gem x2 (lần", tries, ")")
+			print("[GemX2] Gem ถึง", CONFIG.GemX2Gems, "-> ซื้อ Gem x2 (ครั้งที่", tries, ")")
 			RS:WaitForChild("OtherEvent"):WaitForChild("BuyEvents"):WaitForChild("BuyProduct")
 				:FireServer({ Action = "Buy_Gamepass", GamepassId = CONFIG.GemX2GamepassId })
 			task.wait(3)
@@ -3038,9 +2858,9 @@ task.spawn(function()
 	end
 end)
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Auto Join Raid: ยังไม่มีเรด -> ไปรอที่จุดเข้าเรด แล้วส่ง Start หลัง Join เสร็จ
+-- "Join เสร็จ" = ยืนอยู่ที่จุดเข้าเรดต่อเนื่อง >= 2 วินาที และเรดยังไม่เริ่ม -> ยิง StartRaid ("Start")
+-- ซ้ำทุก 5 วินาทีจนกว่าเรดจะเริ่ม (RaidFrame ขึ้น)
 task.spawn(function()
 	local atSince, lastStart = nil, 0
 	while task.wait(0.2) do
@@ -3054,7 +2874,7 @@ task.spawn(function()
 					local hrp = LocalPlayer.Character.HumanoidRootPart
 					near = (hrp.Position - RAID_JOIN_POS.Position).Magnitude <= 25
 				end)
-				_G.RaidJoining = near   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				_G.RaidJoining = near   -- ยืนที่จุดเข้าเรดรอ Start -> ล็อกไม่ให้อะไรดึงตัวไป
 				if near then
 					atSince = atSince or tick()
 					if CONFIG.AutoStartRaid and tick() - atSince >= (CONFIG.RaidStartDelay or 3) and tick() - lastStart >= (CONFIG.RaidStartRetry or 1) then
@@ -3064,7 +2884,7 @@ task.spawn(function()
 								:WaitForChild("MiscEvents", 5):WaitForChild("StartRaid", 5)
 								:FireServer("Start")
 						end)
-						print("[Raid] Đã gửi Start")
+						print("[Raid] ส่ง Start")
 					end
 				else
 					atSince = nil
@@ -3080,11 +2900,11 @@ task.spawn(function()
 	end
 end)
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== โหมดเอาตัวรอดใน Raid =====================
+-- 1) เลือกเป้าหมายอย่างฉลาด: ใกล้ก่อน + มอนที่เลือดเหลือน้อยก่อน (ฆ่าเร็ว = โดนตีน้อยลง)
+-- 2) ถ้ามอนรุมเยอะ (>= 5 ตัวในระยะ 40) -> ยืนห่างขึ้นเล็กน้อย
+-- 3) เลือดต่ำกว่า RaidRetreatHp -> ถอยขึ้นที่สูง (พ้นระยะมอน) รอฟื้นถึง RaidResumeHp แล้วกลับไปสู้
+--    (รอสูงสุด 20 วินาที กันค้าง แล้วพัก 10 วินาทีก่อนถอยได้อีก)
 local function MyHum()
 	local c = LocalPlayer.Character
 	return c and c:FindFirstChildOfClass("Humanoid")
@@ -3106,11 +2926,11 @@ local function RetreatUntilHealed()
 	local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
 	StartMagnet = false
-	local center = hrp.Position + Vector3.new(0, 120, 0)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local center = hrp.Position + Vector3.new(0, 120, 0)   -- ศูนย์กลางวงโคจร กำหนดครั้งเดียว (ไม่บวกสะสม)
 	local radius, speed = CONFIG.RaidOrbitRadius, CONFIG.RaidOrbitSpeed
 	local angle = 0
 	local t0 = tick()
-	print("[RaidSurvive] Máu thấp -> lùi lên cao và chạy vòng để né kỹ năng")
+	print("[RaidSurvive] เลือดต่ำ -> ถอยขึ้นที่สูงและวิ่งวนหลบสกิล")
 	while (_G.Raid or _G.Pumpkin or _G.RaceV2 or _G.FlameKatana or _G.EvilNoob or _G.ItemQuest or _G.Boss) and tick() - t0 < 20 do
 		local dt = RunService.Heartbeat:Wait()
 		local h = MyHum()
@@ -3118,7 +2938,7 @@ local function RetreatUntilHealed()
 		if not h or not root or h.Health <= 0 then break end
 		if h.Health / h.MaxHealth >= CONFIG.RaidResumeHp then break end
 		angle = angle + speed * dt
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- วนเป็นวงกลมในแนวราบ รัศมี radius รอบจุดศูนย์กลางที่สูง 120
 		local pos = center + Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
 		root.CFrame = CFrame.new(pos)
 		root.AssemblyLinearVelocity = Vector3.zero
@@ -3127,7 +2947,7 @@ local function RetreatUntilHealed()
 	NoRetreatUntil = tick() + 10
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- จำมอนทุกตัวที่มีอยู่ "ก่อนเรดเริ่ม" (ตอน RaidGui ยังไม่ขึ้น) -> ตอนเรดเริ่มมอนพวกนี้คือมอนข้างนอก ไม่ใช่มอนเรด
 local RaidKnownMobs = setmetatable({}, { __mode = "k" })
 task.spawn(function()
 	while task.wait(0.2) do
@@ -3150,10 +2970,10 @@ local function PickRaidTarget()
 		local hum, root = m:FindFirstChild("Humanoid"), m:FindFirstChild("HumanoidRootPart")
 		if hum and root and hum.Health > 0 and not (onlyNew and RaidKnownMobs[m]) then
 			local d = (myRoot.Position - root.Position).Magnitude
-			if d <= (CONFIG.RaidTargetRange or 1000) then   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			if d <= (CONFIG.RaidTargetRange or 1000) then   -- เลือกเฉพาะมอนในระยะ RaidTargetRange
 				if d <= 40 then near = near + 1 end
 				local hpRatio = hum.MaxHealth > 0 and hum.Health / hum.MaxHealth or 1
-				local score = d + hpRatio * 8           -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				local score = d + hpRatio * 8           -- ต่ำ = ดี (ใกล้ก่อน ไม่ข้ามไปมอนไกลเพราะเลือดเหลือน้อย -> กันพุ่งข้ามแมป)
 				if not bestScore or score < bestScore then
 					best, bestHum, bestRoot, bestScore = m, hum, root, score
 				end
@@ -3165,13 +2985,13 @@ end
 
 local LastRaidTargetPrint
 local RaidGuiSince = nil
-local RaidNav = { arena = nil, fixed = false, last = 0, warned = false }   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+local RaidNav = { arena = nil, fixed = false, last = 0, warned = false }   -- arena = Vector3 ตำแหน่งเรด (จำตอน Join เรดครั้งแรก หรืออ่านจาก CONFIG.RaidArenaPos) (รวมเป็นตารางเดียว กันตัวแปร local เกินลิมิต)
 if type(CONFIG.RaidArenaPos) == "table" and #CONFIG.RaidArenaPos >= 3 then
 	RaidNav.arena = Vector3.new(CONFIG.RaidArenaPos[1], CONFIG.RaidArenaPos[2], CONFIG.RaidArenaPos[3])
 	RaidNav.fixed = true
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- หาจุดเรดจาก workspace.Raids: เอาออบเจกต์ที่ชื่อมีคำว่า "Raid" (ชั้นแรกก่อน ไม่เจอค่อยหาลึกลงไป) เลือกอันที่ใกล้ตัวที่สุด
 local function RaidObjPos(o)
 	if o:IsA("BasePart") then return o.Position end
 	if o:IsA("Model") then
@@ -3199,12 +3019,12 @@ function RaidNav.FindInFolder()
 	return pick(folder:GetChildren()) or pick(folder:GetDescendants())
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- เรดเริ่มแล้ว: จำ/ตรวจตำแหน่งเรด ถ้าตัวละครอยู่ไกลจากจุดเรดเกิน RaidReturnDistance -> เทเลพอตกลับ
 function RaidNav.Ensure(sinceJoin)
 	if CONFIG.RaidReturn == false then return end
 	local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 	if not hrp or IsDead() then return end
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ลำดับแรก: หาจาก workspace.Raids (ชื่อมีคำว่า Raid) -> วาร์ปไปเลย
 	if not RaidNav.fixed then
 		local fp = RaidNav.FindInFolder()
 		if fp then
@@ -3220,7 +3040,7 @@ function RaidNav.Ensure(sinceJoin)
 		end
 	end
 	if not RaidNav.arena then
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- ยังไม่รู้จุดเรด: ตัวละครถูกเกมย้ายออกจากจุดเข้าเรดแล้ว = ตำแหน่งนี้คือจุดเรด
 		local fromJoin = (hrp.Position - RAID_JOIN_POS.Position).Magnitude
 		if fromJoin > 150 and sinceJoin >= 0.5 then
 			RaidNav.arena = hrp.Position
@@ -3240,7 +3060,7 @@ function RaidNav.Ensure(sinceJoin)
 	end
 end
 local RaidNoMobSince, RaidFoundMob = nil, false
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- Auto Raid: เรดเริ่มแล้ว -> ตีมอนแบบเอาตัวรอด / ไม่มีมอนก็ลอยรอเวฟถัดไป
 task.spawn(function()
 	while task.wait() do
 		if _G.Raid then
@@ -3256,14 +3076,14 @@ task.spawn(function()
 				end
 				if IsDead() then RaidNoMobSince = nil return end
 
-				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				-- เพิ่ง Join เรด -> รอ RaidFarmDelay วินาทีก่อน (ลอยรอ ไม่ตี) ให้เรด/มอนโหลดครบก่อน
 				if not RaidGuiSince then
 					RaidGuiSince = tick()
 					RaidNoMobSince, RaidFoundMob = nil, false
 					StartMagnet = false
 					print("[Raid] เข้าเรดแล้ว รอ", CONFIG.RaidFarmDelay or 11, "วินาทีก่อนเริ่มฟาร์ม")
 				end
-				RaidNav.Ensure(tick() - RaidGuiSince)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				RaidNav.Ensure(tick() - RaidGuiSince)   -- Join แล้วแต่ไม่ได้อยู่ตำแหน่งเรด -> เทเลพอตไปเรด
 				if tick() - RaidGuiSince < (CONFIG.RaidFarmDelay or 11) then
 					HoverWait()
 					return
@@ -3271,7 +3091,7 @@ task.spawn(function()
 
 				local mob, hum, root, near = PickRaidTarget()
 				if not mob then
-					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					-- รอครบแล้วยังไม่เจอมอนเรดเลย (ยังไม่เคยตีสักตัว) -> เรดบัค ฆ่าตัวตายรีตัวละคร
 					local limit = CONFIG.RaidNoMobResetSeconds or 0
 					if limit > 0 and not RaidFoundMob then
 						RaidNoMobSince = RaidNoMobSince or tick()
@@ -3283,12 +3103,12 @@ task.spawn(function()
 							return
 						end
 					end
-					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					-- เพิ่งตีตัวก่อนหน้าจบ: ยืนรอที่เดิมสักพัก (มอนตัวใหม่มักเกิดต่อทันที) ไม่ลอยขึ้นๆลงๆ
 					if RaidFoundMob and tick() - (RaidNav.lastKill or 0) < (CONFIG.RaidGapHold or 1.5) then
 						StartMagnet = false
 						return
 					end
-					HoverWait()                          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					HoverWait()                          -- ไม่มีมอน: ลอยรอเวฟถัดไป
 					return
 				end
 				RaidFoundMob, RaidNoMobSince = true, nil
@@ -3298,7 +3118,7 @@ task.spawn(function()
 					print(string.format("[Raid] เป้าหมายเรด: %s (%.0f, %.0f, %.0f)", mob.Name, root.Position.X, root.Position.Y, root.Position.Z))
 				end
 
-				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				-- มอนรุมเยอะ -> ยืนห่างขึ้นเล็กน้อย
 				if CONFIG.RaidSmart and near >= 5 and (CONFIG.RaidCrowdDistance or 0) > 0 then
 					_G.DistanceMob = math.max(CONFIG.Distance, CONFIG.RaidCrowdDistance)
 				else
@@ -3331,11 +3151,11 @@ task.spawn(function()
 	end
 end)
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== Giant Pumpkin Event (เลเวล PumpkinMinLevel..PumpkinMaxLevel-1) =====================
+-- วนลูป: ไม่มี Giant Pumpkin -> ไปจุดเสก กด E รัวๆ
+--        มี Giant Pumpkin เกิด -> ไปรับเควส แล้วฟาร์มมัน
+--        เสกครบเวลาแล้วไม่เกิด -> ไปจุด Scary Skull ฆ่า PumpkinSkullKills ตัว แล้วกลับไปเสก
+-- ถึงเลเวล PumpkinMaxLevel -> กลับไปฟาร์มเลเวลปกติ
 local PUMPKIN_SUMMON_POS = CFrame.new(-1180.260742, -87.373695, 1463.069946)
 local PUMPKIN_QUEST_POS  = CFrame.new(-1162.951660, -92.914436, 1462.343750)
 local SKULL_POS          = CFrame.new(-1489.832764, -92.846230, 1277.917725)
@@ -3365,7 +3185,7 @@ local function PressE()
 	VIM:SendKeyEvent(false, "E", false, game)
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ProximityPrompt ใกล้จุดที่กำหนด (เก็บครั้งเดียวต่อรอบ กันสแกน workspace ซ้ำๆ)
 local function CollectPrompts(cf, range)
 	local list = {}
 	if not fireproximityprompt then return list end
@@ -3380,8 +3200,8 @@ local function CollectPrompts(cf, range)
 	return list
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ---------- เช็กสปอว์นมอน (อิงวิธี Enemy_Location ที่ใช้ทดสอบแล้ว) ----------
+-- workspace.Location.Enemy_Location = พาร์ตจุดเกิด ชื่อพาร์ต = ชื่อมอน
 local function SpawnLocation(name)
 	local ok, part = pcall(function()
 		return workspace.Location.Enemy_Location:FindFirstChild(name)
@@ -3389,7 +3209,7 @@ local function SpawnLocation(name)
 	if ok and part and part:IsA("BasePart") then return part.CFrame end
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- สถานะสปอว์นของมอนชื่อ name: จำนวนที่ยังมีชีวิต + ระยะใกล้สุดจากจุดเกิด
 local function SpawnInfo(name)
 	local loc = SpawnLocation(name)
 	local count, nearest = 0, math.huge
@@ -3411,7 +3231,7 @@ local function SpawnInfo(name)
 	return count, nearest
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- รายงานทุกจุดเกิด (เหมือนสคริปต์ทดสอบ) พิมพ์ในคอนโซล + คัดลอกลงคลิปบอร์ด
 local function PrintSpawnReport()
 	local ok, folder = pcall(function() return workspace.Location.Enemy_Location end)
 	if not ok or not folder then warn("ไม่พบ Enemy_Location") return end
@@ -3447,14 +3267,14 @@ local function MaybeRetreat()
 	end
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- เสก: คืน true ถ้า Giant Pumpkin เกิดแล้ว
 local function SummonPumpkin()
 	_G.PumpkinStatus = "Summoning Giant Pumpkin"
 	StartMagnet = false
 	TP(PUMPKIN_SUMMON_POS)
 	task.wait(0.4)
 	local prompts = CollectPrompts(PUMPKIN_SUMMON_POS, 25)
-	for _ = 1, CONFIG.SummonPresses do         -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	for _ = 1, CONFIG.SummonPresses do         -- กด E แค่ SummonPresses รอบ
 		if not PumpkinActive() then return false end
 		WaitBusy()
 		if IsDead() then return false end
@@ -3464,7 +3284,7 @@ local function SummonPumpkin()
 		for _, pr in ipairs(prompts) do pcall(fireproximityprompt, pr) end
 		task.wait(0.25)
 	end
-	local t1 = tick()                          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local t1 = tick()                          -- เช็กทันที (รอเกิดไม่เกิน 2 วิ)
 	while PumpkinActive() and tick() - t1 < 2 do
 		if FindAlive("Giant Pumpkin") then return true end
 		task.wait(0.2)
@@ -3472,7 +3292,7 @@ local function SummonPumpkin()
 	return FindAlive("Giant Pumpkin") ~= nil
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- รับเควส (ถ้ายังไม่มีเควส Pumpkin) แล้วฟาร์ม Giant Pumpkin
 local function FightPumpkin()
 	local mob, hum, root = FindAlive("Giant Pumpkin")
 	if not mob then return end
@@ -3490,7 +3310,7 @@ local function FightPumpkin()
 			if slot.Visible then
 				if string.find(string.lower(slot.Target.Text), "pumpkin") then
 					needQuest = false
-				else   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				else   -- เควสอื่นค้างอยู่ -> ยกเลิกก่อน
 					RS.OtherEvent.QuestEvents.Quest:FireServer("Abandon_Quest", { QuestSlot = "QuestSlot1" })
 				end
 			end
@@ -3514,7 +3334,7 @@ local function FightPumpkin()
 	until not PumpkinActive() or not mob.Parent or hum.Health <= 0
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ฟาร์ม Scary Skull ให้ครบ PumpkinSkullKills ตัว (หรือหยุดถ้า Giant Pumpkin เกิดขึ้นมา)
 local function FarmSkulls()
 	_G.PumpkinStatus = "Farming Scary Skull"
 	TP(SKULL_POS)
@@ -3522,7 +3342,7 @@ local function FarmSkulls()
 	while PumpkinActive() and kills < CONFIG.PumpkinSkullKills do
 		WaitBusy()
 		if IsDead() then break end
-		if FindAlive("Giant Pumpkin") then break end          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		if FindAlive("Giant Pumpkin") then break end          -- เกิดแล้ว -> ไปสู้
 		_G.PumpkinStatus = string.format("Farming Scary Skull (%d/%d)", kills, CONFIG.PumpkinSkullKills)
 		local mob, hum, root = FindAlive("Scary Skull")
 		if mob then
@@ -3543,18 +3363,18 @@ local function FarmSkulls()
 				print("[Pumpkin] Scary Skull", kills, "/", CONFIG.PumpkinSkullKills)
 			end
 		else
-			-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			-- รอมอนเกิด: ช่วงแรกรอที่จุดฟาร์ม ถ้าไม่เจอนานให้ไปยืนที่จุดเกิดจริง (Enemy_Location) กระตุ้นการเกิด
 			local waitCF = (idle > 20 and SpawnLocation("Scary Skull")) or SKULL_POS
 			pcall(TP, waitCF)
 			task.wait(0.3)
 			idle = idle + 1
-			if idle > 60 then break end                       -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			if idle > 60 then break end                       -- ~18 วินาทีไม่เจอมอน -> กลับไปเสกใหม่
 		end
 	end
 	StartMagnet = false
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ลูปหลัก
 task.spawn(function()
 	while task.wait(0.3) do
 		if PumpkinActive() then
@@ -3564,7 +3384,7 @@ task.spawn(function()
 				if FindAlive("Giant Pumpkin") then
 					FightPumpkin()
 				elseif not SummonPumpkin() then
-					if PumpkinActive() and not IsDead() then FarmSkulls() end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					if PumpkinActive() and not IsDead() then FarmSkulls() end   -- เสกไม่ออก -> ฟาร์มสกัลแล้ววนกลับไปเสก
 				end
 			end)
 		else
@@ -3573,7 +3393,7 @@ task.spawn(function()
 	end
 end)
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ตัวคุมโหมด Pumpkin: เข้าเมื่อเลเวลอยู่ในช่วง / ออกเมื่อพ้นช่วงติดกัน 2 วินาที (กลับไปฟาร์มเลเวลปกติ)
 task.spawn(function()
 	local offCount = 0
 	while task.wait(1) do
@@ -3607,9 +3427,9 @@ if CONFIG.DebugSpawn then
 end
 
 -- ===================== Auto Race V2 =====================
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- เลเวล RaceV2MinLevel+ และเผ่ายังเป็น (V1):
+--   วาร์ปไปรับเควส -> ฟาร์ม Sogga จนจบเควส -> เอา Awakening Orb ออกจากคลัง -> ถือ -> ใช้
+-- ได้ Orb แล้วเช็กเผ่าซ้ำ ถ้าเป็น V2 -> เสร็จ กลับไปโหมดปกติ
 do
 	local RACE_QUEST_POS = CFrame.new(-2621.948486, -77.402916, -2003.441772)
 	local RACE_MOB = "Sogga"
@@ -3626,7 +3446,7 @@ do
 
 	local function RaceActive() return _G.RaceV2 and not _G.Raid end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ไปรับเควส: เควสนี้รับได้แค่ 1 ใน 2 ภารกิจ ถ้าได้ภารกิจที่ไม่ใช่ Sogga -> ยกเลิกแล้วคุยใหม่
 	local function TakeQuest()
 		_G.RaceV2Status = "Race V2: Quest"
 		StartMagnet = false
@@ -3650,7 +3470,7 @@ do
 		return HasSoggaQuest()
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ฟาร์ม Sogga จนเควสหาย (Visible = false) หรือออกจากโหมด
 	local function FarmSogga()
 		local idle = 0
 		while RaceActive() and HasSoggaQuest() do
@@ -3671,7 +3491,7 @@ do
 				until not RaceActive() or not mob.Parent or hum.Health <= 0 or not HasSoggaQuest()
 				StartMagnet = false
 			else
-				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				-- รอมอนเกิด: ไปยืนที่จุดเกิดจริง (Enemy_Location) ถ้ามี
 				pcall(TP, SpawnLocation(RACE_MOB) or RACE_QUEST_POS)
 				task.wait(0.3)
 				idle = idle + 1
@@ -3685,7 +3505,7 @@ do
 		return FindTool("Awakening Orb")
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- เอา Orb ออกจากคลัง -> ถือ -> ใช้
 	local function UseOrb()
 		_G.RaceV2Status = "Race V2: Using Awakening Orb"
 		if not FindOrb() then
@@ -3715,7 +3535,7 @@ do
 		return c and c:FindFirstChild("Awakening Orb") ~= nil
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- เก็บ Orb กลับเข้าคลัง (ถือขึ้นมือก่อน แล้วยิง Store) ลองสูงสุด 3 ครั้ง
 	local function StoreOrb()
 		_G.RaceV2Status = "Race V2: Storing Awakening Orb"
 		for _ = 1, 3 do
@@ -3737,7 +3557,7 @@ do
 		return false
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ===== รายชื่อเผ่าที่อัพ V2 ไม่ได้ (จำไว้ในไฟล์ ไม่ต้องลอง Orb ซ้ำ) =====
 	local NA_FILE = "MemeSea_RaceV2NA_" .. LocalPlayer.UserId .. ".txt"
 	local NA = {}
 	pcall(function()
@@ -3754,9 +3574,9 @@ do
 		end
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ===== รีเผ่า (Watermelon Man) =====
 	local WM_NAME = "Watermelon Man"
-	local WATERMELON_POS = nil   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local WATERMELON_POS = nil   -- ถ้าหา NPC อัตโนมัติไม่เจอ ใส่พิกัดเองที่นี่ เช่น CFrame.new(x, y, z)
 	local wmWarned = false
 
 	local function InstCF(inst)
@@ -3807,7 +3627,7 @@ do
 		if after and after ~= before then
 			noChange = 0
 			print("[RaceV2] รีเผ่า:", before, "->", after)
-			task.wait(1.5)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			task.wait(1.5)   -- รอ GUI อัปเดตเวอร์ชัน (V#)
 		else
 			noChange = noChange + 1
 			if noChange >= 3 then
@@ -3817,7 +3637,7 @@ do
 		end
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ใช้ Orb: คืน "v2" | "na" (Orb ไม่หาย เผ่านี้อัพไม่ได้ เก็บกลับแล้ว) | "none" (ไม่มี Orb) | "unknown"
 	local function TryOrb()
 		if not UseOrb() then return "none" end
 		local t0 = tick()
@@ -3826,12 +3646,12 @@ do
 			StoreOrb()
 			return "na"
 		end
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- Orb หายไป = ใช้สำเร็จ รอ GUI อัปเดตแล้วเช็กเผ่า
 		for i = 1, 10 do
 			task.wait(0.5)
 			local _, ver = ReadRace()
 			if ver and ver >= 2 then return "v2" end
-			if i == 4 or i == 8 then   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			if i == 4 or i == 8 then   -- GUI ยังไม่อัปเดต -> เช็คด้วย Cooldown อีกทาง
 				if ProbeRaceV2(true) == 2 then return "v2" end
 			end
 		end
@@ -3848,13 +3668,13 @@ do
 					local rn = ReadRace()
 					if not rn then task.wait(1) return end
 
-					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					-- เผ่านี้รู้อยู่แล้วว่าอัพไม่ได้ -> รีเผ่า
 					if NA[rn] then
 						if CONFIG.AutoRerollRace then Reroll() else _G.RaceV2Done = true end
 						return
 					end
 
-					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					-- เช็กครั้งเดียวว่า Orb ค้างอยู่ในคลังไหม (เช่น เก็บไว้ตั้งแต่รอบก่อน)
 					if not orbOwned and not probed and not FindOrb() then
 						probed = true
 						_G.RaceV2Status = "Race V2: Checking Orb"
@@ -3867,7 +3687,7 @@ do
 					end
 					if FindOrb() then orbOwned = true end
 
-					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					-- มี Orb -> ใช้
 					if orbOwned then
 						local r = TryOrb()
 						if r == "v2" then
@@ -3878,20 +3698,20 @@ do
 							warn("[RaceV2] Orb ไม่หายหลังใช้ -> เผ่า " .. tostring(rn) .. " อัพไม่ได้ เก็บ Orb กลับคลังแล้ว")
 							if not CONFIG.AutoRerollRace then _G.RaceV2Done = true end
 						elseif r == "none" then
-							orbOwned = false          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+							orbOwned = false          -- ไม่มี Orb จริง -> กลับไปทำเควส
 						else
-							_G.RaceV2Done = true      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+							_G.RaceV2Done = true      -- Orb หายแต่เผ่ายังไม่เป็น V2 ภายใน 5 วินาที สถานะไม่ชัด หยุดกันวนมั่ว
 							warn("[RaceV2] Orb หายแต่ยังไม่เห็นเผ่าเป็น V2 หยุดโหมดนี้ (เช็กเผ่าเองอีกที)")
 						end
 						return
 					end
 
-					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					-- ยังไม่มี Orb -> ทำเควส Sogga
 					if not HasSoggaQuest() then
 						if not TakeQuest() then task.wait(3) return end
 					end
 					FarmSogga()
-					-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					-- เควสจบ (ช่องเควสหาย) -> Orb เข้าคลัง -> รอบถัดไปจะ Unstore + ใช้
 					if RaceActive() and not HasSoggaQuest() then
 						_G.RaceV2Status = "Race V2: Quest Complete"
 						orbOwned = true
@@ -3902,7 +3722,7 @@ do
 		end
 	end)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ตัวคุมโหมด: เข้าเมื่อเข้าเงื่อนไข (ไม่แทรกกลางเรด) / ออกเมื่อไม่เข้าเงื่อนไขติดกัน 2 วินาที
 	task.spawn(function()
 		local offCount = 0
 		while task.wait(1) do
@@ -3935,15 +3755,15 @@ do
 end
 
 -- ===================== Flame Katana =====================
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- เลเวล FlameKatanaMinLevel+ :
+--   1) มี Flame Katana ในกระเป๋าแล้ว -> จบ / ไม่มี -> Unstore ออกจากคลัง
+--   2) ยังไม่ได้ -> ไปซื้อที่จุดขาย (จุดเดิมของ Cheems)
+--   3) ซื้อแล้วยังไม่ได้ -> ไปตี Walter Dog 1 ตัว แล้ววนกลับไปข้อ 1 จนกว่าจะได้ดาบ
 do
 	local KATANA = "Flame Katana"
 	local UI_KEY = "Weapon: Flame Katana"
 	local SELLER_POS = CFrame.new(111.174164, -3.414658, -1575.120850)
-	local BUY_ARGS = { "Weapon_Seller", "Cheems" }   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local BUY_ARGS = { "Weapon_Seller", "Cheems" }   -- ใช้ args เดิมของจุดขายนี้ ถ้า remote ซื้อดาบจริงต่างจากนี้ให้แก้ตรงนี้
 	local DOG = "Walter Dog"
 	local DOG_FALLBACK = CFrame.new(10.436995506286621, -37.043067932128906, -1034.9451904296875)
 
@@ -3954,7 +3774,7 @@ do
 		return (FindTool(KATANA)) ~= nil
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- กดเอาออกจากคลัง แล้วรอให้ดาบเข้ากระเป๋า
 	local function Unstore()
 		pcall(function()
 			RS:WaitForChild("OtherEvent"):WaitForChild("ItemEvents"):WaitForChild("UpdateInventory")
@@ -3965,7 +3785,7 @@ do
 		return HaveKatana()
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ตี Walter Dog 1 ตัว (ไม่เจอ/ไม่ตายภายใน 150 วินาที ก็คืน false แล้วให้วนรอบใหม่)
 	local function KillWalterDog()
 		local t0 = tick()
 		while FlameActive() and tick() - t0 < 150 do
@@ -4015,7 +3835,7 @@ do
 		if Unstore() then return true end
 		if not FlameActive() then return false end
 
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- ซื้อแล้วแต่ยังไม่ได้ดาบ -> ไปตี Walter Dog ก่อน แล้ววนใหม่
 		KillWalterDog()
 		return false
 	end
@@ -4044,12 +3864,12 @@ do
 		end
 	end)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ตัวคุมโหมด: เข้าเมื่อเข้าเงื่อนไข (ไม่แทรกกลางเรด) / ออกเมื่อไม่เข้าเงื่อนไขติดกัน 2 วินาที
 	task.spawn(function()
 		local offCount = 0
 		while task.wait(1) do
 			pcall(function()
-				if HaveKatana() then SetDone(UI_KEY) end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if HaveKatana() then SetDone(UI_KEY) end   -- มีดาบอยู่แล้ว -> ไฟเขียวใน UI
 				if FlameWanted() then
 					offCount = 0
 					if not _G.FlameKatana and not _G.Raid and not RaidGuiVisible() then
@@ -4078,8 +3898,8 @@ do
 	end)
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== Baller Fighting Style (เงินถึง BallerMoney) =====================
+-- ซื้อหมัด Baller -> เช็กกระเป๋า -> ไม่มี = ยังไม่ได้ซื้อ -> ไปฟาร์มมอน Baller BallerKills ตัว -> กลับไปซื้อใหม่ วนจนได้
 do
 	local BUY_POS  = CFrame.new(1713.286987, -76.123375, -4726.944336)
 	local FARM_POS = CFrame.new(1306.447998, -54.330990, -4598.696289)
@@ -4096,7 +3916,7 @@ do
 		if save and writefile then pcall(writefile, SAVE_NAME, "{\"done\":true}") end
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- เคยซื้อแล้ว (จากไฟล์เซฟ) -> ไฟเขียวชั่วคราว แล้วตรวจจริงด้านล่าง (ไม่เจอหมัดจริง = ยกเลิก)
 	local fromFile = false
 	pcall(function()
 		if SavedFlag(SAVE_NAME) then fromFile = true MarkDone(false) print("[Baller] ไฟล์เซฟบอกว่าซื้อแล้ว -> กำลังตรวจของจริง") end
@@ -4111,7 +3931,7 @@ do
 				if BallerHave() then MarkDone(true) print("[Baller] ตรวจแล้วมีหมัด Baller จริง") return end
 				task.wait(0.5)
 			end
-			-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			-- 30 วิหลังตัวละครโหลดแล้วยังไม่มีหมัดจริง -> ไฟล์เซฟไม่ตรงความจริง
 			_G.BallerDone = false
 			SetLive(UI_KEY, false)
 			if writefile then pcall(writefile, SAVE_NAME, '{"done":false}') end
@@ -4119,7 +3939,7 @@ do
 		end)
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ซื้อ แล้วเช็กว่ามี Baller ในกระเป๋า/ในมือไหม (มี = ซื้อสำเร็จ / ไม่มี = ยังไม่ได้ซื้อ)
 	local function TryBuy()
 		_G.BallerStatus = "Baller: Buying"
 		StartMagnet = false
@@ -4134,7 +3954,7 @@ do
 		return BallerHave()
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ฟาร์ม Baller ให้ครบ CONFIG.BallerKills ตัว (หมดเวลา 240 วิ ก็กลับไปซื้อใหม่)
 	local function FarmBallers()
 		local kills, t0 = 0, tick()
 		while BallerActive() and kills < CONFIG.BallerKills and tick() - t0 < 240 do
@@ -4191,7 +4011,7 @@ do
 		end
 	end)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ตัวคุมโหมด: เข้าเมื่อเงินถึงเกณฑ์ (ไม่แทรกกลางเรด) / ออกเมื่อไม่เข้าเงื่อนไขติดกัน 2 วินาที
 	task.spawn(function()
 		local offCount = 0
 		while task.wait(1) do
@@ -4226,8 +4046,8 @@ do
 end
 
 -- ===================== Auto Haki (Aura Master) =====================
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- เงินถึง AuraMoney -> วาปซื้อ Aura Master -> เปิดฮาคิ -> เช็ก Character.AuraColor_Folder (มีของข้างใน = เปิดได้ / ว่าง = ยังไม่ได้ซื้อ)
+-- ซื้อไม่ได้ = ต้องรอบอส MeMe เกิด: ระหว่างรอทำอย่างอื่น (ฟาร์มปกติ) พอบอสเกิดค่อยไปตี แล้วกลับมาซื้อซ้ำ วนจนกว่าจะได้
 do
 	local BUY_POS  = CFrame.new(6961.393066, 30.827995, 4922.719238)
 	local BUY_ARGS = { "Ability_Teacher", "Aura Master" }
@@ -4242,7 +4062,7 @@ do
 		return ok and r or nil
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ฮาคิเปิดอยู่ = มีโฟลเดอร์ย่อยใน AuraColor_Folder
 	local function AuraOn()
 		local f = AuraFolder()
 		return f ~= nil and #f:GetChildren() > 0
@@ -4262,7 +4082,7 @@ do
 		if save and writefile then pcall(writefile, SAVE_NAME, "{\"done\":true}") end
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- บอสที่ต้องตี: ชื่อ AuraBossName (หรือ Meme Beast) ที่ยังมีชีวิตใน workspace.Monster
 	local function BossFind()
 		local folder = workspace:FindFirstChild("Monster")
 		if not folder then return end
@@ -4278,7 +4098,7 @@ do
 
 	pcall(function()
 		if SavedFlag(SAVE_NAME) then
-			_G.AuraFromFile = true   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			_G.AuraFromFile = true   -- คำใบ้จากไฟล์ ยังไม่ยืนยัน -> ตัวเช็กตอนเริ่มด้านล่างจะตรวจจริง
 			MarkDone(false)
 			print("[Haki] ไฟล์เซฟบอกว่าซื้อ Aura Master แล้ว -> กำลังตรวจของจริง")
 		end
@@ -4286,11 +4106,11 @@ do
 
 	local function AuraActive() return _G.Aura and not _G.Raid and _G.AuraTask ~= nil end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ซื้อ + เปิดฮาคิ แล้วเช็กโฟลเดอร์ (true = เปิดได้แล้ว)
 	local function TryBuyAura()
 		_G.AuraStatus = "Haki: Buying"
 		StartMagnet = false
-		if AuraOn() then return true end                 -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		if AuraOn() then return true end                 -- เปิดอยู่แล้ว ไม่ต้องสลับซ้ำ
 		TP(BUY_POS)
 		task.wait(0.6)
 		pcall(function()
@@ -4310,7 +4130,7 @@ do
 			WaitBusy()
 			if IsDead() then task.wait(1) else
 				local mob, hum, root = BossFind()
-				if not mob then return true end          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if not mob then return true end          -- บอสหายไป (ตายแล้ว)
 				_G.AuraStatus = "Haki: Boss " .. mob.Name
 				repeat
 					task.wait()
@@ -4333,7 +4153,7 @@ do
 					WaitBusy()
 					if IsDead() then return end
 					if _G.AuraTask == "buy" then
-						-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						-- ครั้งแรกต้องมีเงินพอก่อน (เช่น เพิ่งซื้อ Baller ไป เงินอาจลดลง)
 						if not _G.AuraNeedBoss and (ReadMoney() or 0) < CONFIG.AuraMoney then
 							_G.AuraTask = nil
 							return
@@ -4351,7 +4171,7 @@ do
 						print("[Haki] ซื้อไม่ได้ -> รอบอส " .. tostring(CONFIG.AuraBossName) .. " เกิด (ระหว่างนี้ทำอย่างอื่น)")
 					elseif _G.AuraTask == "boss" then
 						if FightBoss() and not IsDead() then
-							_G.AuraTask = "buy"          -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+							_G.AuraTask = "buy"          -- ตีบอสจบ -> กลับไปซื้อซ้ำ
 						elseif not BossFind() then
 							_G.AuraTask = nil
 						end
@@ -4361,7 +4181,7 @@ do
 		end
 	end)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ตัวคุมโหมด + ตัวตัดสินใจว่าตอนนี้ควรทำอะไร
 	task.spawn(function()
 		local offCount, wasAlive = 0, false
 		while task.wait(1) do
@@ -4372,7 +4192,7 @@ do
 						print("[Haki] ฮาคิเปิดอยู่แล้ว (AuraColor_Folder มีของ)")
 					else
 						local alive = BossFind() ~= nil
-						-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						-- บอสที่รออยู่ตาย (ใครตีก็ตาม) -> ไปซื้อซ้ำ
 						if _G.AuraNeedBoss and wasAlive and not alive and _G.AuraTask == nil then
 							_G.AuraTask = "buy"
 						end
@@ -4416,16 +4236,16 @@ do
 		end
 	end)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ตอนเริ่มสคริป (ก่อนทำอย่างอื่นของ Auto Haki): เช็กฮาคิทันที เผื่อผู้เล่นซื้อไปแล้ว
+	--   1) โฟลเดอร์ AuraColor_Folder มีของข้างใน = เปิดอยู่/ซื้อแล้ว
+	--   2) ว่าง -> ลองเปิดฮาคิ 1 ครั้งแล้วเช็กโฟลเดอร์ใหม่ (มีของ = ซื้อไว้แล้วแต่ยังไม่ได้เปิด / ว่าง = ยังไม่ได้ซื้อ)
+	-- ระหว่างเช็กยังไม่ให้ตัวคุมโหมดสั่งซื้อ (AuraProbed) จะได้ไม่วาปไปซื้อซ้ำทั้งที่ซื้อไว้แล้ว
 	_G.AuraProbed = false
 	task.spawn(function()
 		pcall(function()
 			if not CONFIG.AutoHaki or (_G.AuraDone and not _G.AuraFromFile) then return end
 			local t0 = tick()
-			-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			-- รอตัวละครโหลด + โฟลเดอร์ฮาคิโผล่ (สูงสุด 15 วิ)
 			while tick() - t0 < 15 do
 				local c = LocalPlayer.Character
 				if c and c:FindFirstChild("Humanoid") and c:FindFirstChild("HumanoidRootPart") and AuraFolder() then break end
@@ -4436,7 +4256,7 @@ do
 				print("[Haki] เช็กตอนเริ่ม: ฮาคิเปิดอยู่แล้ว -> มี Aura Master")
 				return
 			end
-			for _ = 1, 2 do   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			for _ = 1, 2 do   -- ลอง 2 รอบ กันพลาดเพราะสกิลยังไม่พร้อม/ตัวละครเพิ่งเกิด
 				EnableAura()
 				local t1 = tick()
 				while not AuraOn() and tick() - t1 < 3 do task.wait(0.2) end
@@ -4449,7 +4269,7 @@ do
 				print("[Haki] เช็กตอนเริ่ม: เปิดฮาคิได้ -> ซื้อ Aura Master ไว้แล้ว")
 			else
 				print("[Haki] เช็กตอนเริ่ม: ฮาคิเปิดไม่ได้ -> ยังไม่ได้ซื้อ")
-				if _G.AuraFromFile then   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if _G.AuraFromFile then   -- ไฟล์เซฟบอกว่าซื้อแล้ว แต่เปิดฮาคิไม่ได้จริง -> ยกเลิกสถานะ
 					_G.AuraFromFile = false
 					_G.AuraDone = false
 					SetLive(UI_KEY, false)
@@ -4461,7 +4281,7 @@ do
 		_G.AuraProbed = true
 	end)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ตอนเริ่มสคริป: เช็กเผ่า V2 ทันที (GUI บอก V1/อ่านไม่ได้ -> เช็กจาก Cooldown) เจอ V2 = UI ขึ้น V2 + ข้ามโหมด Race V2
 	task.spawn(function()
 		pcall(function()
 			local t0 = tick()
@@ -4482,7 +4302,7 @@ do
 		end)
 	end)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ซื้อแล้ว: ฮาคิหลุด (ตาย/รีสปอว์น) -> เปิดใหม่
 	task.spawn(function()
 		while task.wait(5) do
 			pcall(function()
@@ -4495,9 +4315,9 @@ do
 end
 
 -- ===================== Auto Haki Color Reroll =====================
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ทำ Baller / Flame Katana / Yellow Blade / Pink Hammer / Banana / Purple Katana ครบ + มี Aura Master แล้ว
+--   -> วาร์ปไป HAKI_POS -> ยิง Reroll_Color ซ้ำ ๆ จน Gem หมด (จับจาก Gem ที่ไม่ลดหลังสุ่ม) -> โชว์สีที่ได้ในแผง HAKI REROLL
+-- สีอ่านจาก workspace.Character.<ชื่อเรา>.AuraColor_Folder.LeftHand_AuraColor
 do
 	local HAKI_POS = CFrame.new(5149.385742, -83.470528, -1390.509277)
 
@@ -4514,7 +4334,7 @@ do
 		return ok and r or nil
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- อ่านสีจากออบเจกต์ใดก็ได้ (Color3Value / BasePart / ParticleEmitter / Light ฯลฯ)
 	local function ColorOf(o)
 		local ok, v = pcall(function() return o.Color end)
 		if ok then
@@ -4537,7 +4357,7 @@ do
 		end
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ชื่อสีภาษาอังกฤษที่ใกล้ที่สุด
 	local PALETTE = {
 		{ "Red", 255, 0, 0 }, { "Dark Red", 139, 0, 0 }, { "Crimson", 220, 20, 60 }, { "Maroon", 110, 0, 20 },
 		{ "Orange", 255, 140, 0 }, { "Peach", 255, 180, 130 }, { "Gold", 255, 200, 0 }, { "Yellow", 255, 255, 0 },
@@ -4562,7 +4382,7 @@ do
 		return string.format("#%02X%02X%02X", math.floor(c3.R * 255 + 0.5), math.floor(c3.G * 255 + 0.5), math.floor(c3.B * 255 + 0.5))
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ---------- แผง HAKI REROLL ----------
 	local UI
 	local function BuildUI()
 		if UI then return UI end
@@ -4574,7 +4394,7 @@ do
 			green = Color3.fromRGB(70, 235, 130),
 		}
 		local gui = Instance.new("ScreenGui")
-		gui.Name = "SeiHubHakiUI"; gui.ResetOnSpawn = false; gui.IgnoreGuiInset = true
+		gui.Name = "XHHubHakiUI"; gui.ResetOnSpawn = false; gui.IgnoreGuiInset = true
 		gui.DisplayOrder = 998; gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 		pcall(function() if syn and syn.protect_gui then syn.protect_gui(gui) end end)
 		local parented = false
@@ -4613,7 +4433,7 @@ do
 		fit()
 		if workspace.CurrentCamera then workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fit) end
 
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- ลากย้ายแผงได้
 		do
 			local dragging, dragStart, startPos = false, nil, nil
 			main.InputBegan:Connect(function(input)
@@ -4632,24 +4452,24 @@ do
 			end)
 		end
 
-		label(main, "HAKI COLOR REROLL", 14, C.white, 14, 10, 222, 22, Enum.Font.GothamBold)
+		label(main, "RANDOM MÀU HAKI", 14, C.white, 14, 10, 222, 22, Enum.Font.GothamBold)
 		local div = frame(main, 14, 36, W - 28, 2, C.blue)
 		local dg = Instance.new("UIGradient"); dg.Color = ColorSequence.new(C.blue, C.violet); dg.Parent = div
 
 		local gemCard = frame(main, 14, 46, 108, 46, C.card); corner(gemCard, 8)
-		label(gemCard, "GEM LEFT", 10, C.gray, 10, 4, 90, 14, Enum.Font.GothamMedium)
+		label(gemCard, "GEM CÒN", 10, C.gray, 10, 4, 90, 14, Enum.Font.GothamMedium)
 		local gemV = label(gemCard, "-", 17, C.white, 10, 20, 90, 22, Enum.Font.GothamBold)
 		local rollCard = frame(main, 128, 46, 108, 46, C.card); corner(rollCard, 8)
-		label(rollCard, "REROLLS", 10, C.gray, 10, 4, 90, 14, Enum.Font.GothamMedium)
+		label(rollCard, "SỐ LẦN", 10, C.gray, 10, 4, 90, 14, Enum.Font.GothamMedium)
 		local rollV = label(rollCard, "0", 17, C.green, 10, 20, 90, 22, Enum.Font.GothamBold)
 
 		local curCard = frame(main, 14, 100, W - 28, 46, C.card); corner(curCard, 8)
-		label(curCard, "CURRENT", 10, C.gray, 10, 4, 90, 14, Enum.Font.GothamMedium)
+		label(curCard, "HIỆN TẠI", 10, C.gray, 10, 4, 90, 14, Enum.Font.GothamMedium)
 		local curSw = frame(curCard, 10, 20, 20, 20, C.off or Color3.fromRGB(58, 66, 94)); corner(curSw, 6)
 		stroke(curSw, C.white, 1, 0.6)
 		local curV = label(curCard, "-", 15, C.white, 38, 18, 190, 24, Enum.Font.GothamBold)
 
-		label(main, "COLORS OBTAINED", 10, C.gray, 16, 152, 160, 14, Enum.Font.GothamMedium)
+		label(main, "MÀU ĐÃ CÓ", 10, C.gray, 16, 152, 160, 14, Enum.Font.GothamMedium)
 		local listCard = frame(main, 14, 168, W - 28, 124, C.card); corner(listCard, 8)
 		local scroller = Instance.new("ScrollingFrame")
 		scroller.BackgroundTransparency = 1; scroller.BorderSizePixel = 0
@@ -4659,7 +4479,7 @@ do
 		scroller.ScrollingDirection = Enum.ScrollingDirection.Y; scroller.Parent = listCard
 
 		local bar = frame(main, 14, 300, W - 28, 28, C.card); corner(bar, 8)
-		local statusV = label(bar, "Waiting...", 12, C.white, 10, 0, W - 48, 28, Enum.Font.GothamMedium)
+		local statusV = label(bar, "Đang chờ...", 12, C.white, 10, 0, W - 48, 28, Enum.Font.GothamMedium)
 
 		local order, byKey = {}, {}
 		local api = { rolls = 0 }
@@ -4708,7 +4528,7 @@ do
 		return api
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ---------- ลูปสุ่ม ----------
 	local runId = 0
 	local function EnsureAuraOn()
 		local f = AuraFolder()
@@ -4723,12 +4543,12 @@ do
 		local ui = BuildUI()
 		local rolls, fails, cost = 0, 0, _G.HakiRerollCost
 		local exhausted = false
-		ui.setStatus("Going to Halved Sorcerer")
+		ui.setStatus("Đang đến Halved Sorcerer")
 		while _G.HakiReroll and myId == runId do
 			if _G.Raid or _G.Boss then break end
 			WaitBusy()
 			if IsDead() then
-				ui.setStatus("Waiting to respawn")
+				ui.setStatus("Đang chờ hồi sinh")
 				task.wait(1)
 			else
 				pcall(function()
@@ -4741,12 +4561,12 @@ do
 					break
 				end
 				EnsureAuraOn()
-				ui.setStatus("Rerolling Haki color...")
+				ui.setStatus("Đang random màu Haki...")
 				pcall(function()
 					RS:WaitForChild("OtherEvent"):WaitForChild("MainEvents"):WaitForChild("Modules")
 						:FireServer("Reroll_Color", CONFIG.HakiRerollNPC or "Halved Sorcerer")
 				end)
-				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				-- Gem ลด = สุ่มสำเร็จ (รอสูงสุด 3 วิ)
 				local t0, spent = tick(), false
 				while tick() - t0 < 3 do
 					local g1 = GemNow()
@@ -4762,7 +4582,7 @@ do
 					fails = 0
 					rolls = rolls + 1
 					_G.HakiRerollTotal = (_G.HakiRerollTotal or 0) + 1
-					task.wait(0.4)   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					task.wait(0.4)   -- ให้สีอัปเดตก่อนอ่าน
 					local c3 = ReadAuraColor()
 					ui.add(c3)
 					ui.setGem(GemNow())
@@ -4777,20 +4597,20 @@ do
 		if exhausted then
 			if (_G.HakiRerollTotal or 0) > 0 and not CONFIG.HakiRerollRepeat then
 				_G.HakiRerollDone = true
-				ui.setStatus("Done - out of Gems")
+				ui.setStatus("Xong - hết Gem")
 			else
 				_G.HakiRerollNeedGem = math.max(CONFIG.HakiRerollMinGems or 1, cost or ((GemNow() or 0) + 50))
-				ui.setStatus("Out of Gems - waiting for more")
+				ui.setStatus("Hết Gem - đang chờ thêm")
 			end
 			print("[HakiReroll] Gem หมดแล้ว สุ่มรอบนี้ไป", rolls, "ครั้ง")
-			_G.HakiReroll = false      -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			_G.HakiReroll = false      -- ออกจากโหมด -> เรด/ฟาร์มกลับมาทำต่อ
 			StartMagnet = false
 			HoverOrigin = nil
 			if FarmAllowed() then _G.AutoFarm = CONFIG.AutoFarm end
 		end
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ตัวคุมโหมด
 	task.spawn(function()
 		local offCount = 0
 		while task.wait(1) do
@@ -4827,10 +4647,10 @@ do
 	end)
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== Evil Noob (เลเวล EvilNoobMinLevel+) =====================
+-- วาร์ปไปจุด Evil Noob หามอน -> เจอ: รับเควสแล้วฟาร์ม / ไม่เจอ: ไปเสก (กด E รัวๆ) แล้ววาร์ปกลับมาเช็ก
+-- ยังไม่เกิด -> ไปฟาร์ม Moai แล้วกลับไปเสก วนจนกว่าจะเกิด -> ฟาร์มจนเควสเสร็จ
+-- เสร็จแล้วเช็ก Yellow Blade: Unstore แล้วถือขึ้นมือ  มีในกระเป๋า = จบ
 do
 	local NOOB = "Evil Noob"
 	local MOAI = "Moai"
@@ -4842,7 +4662,7 @@ do
 
 	local function Active() return _G.EvilNoob and not _G.Raid and not _G.NoobRaidPhase end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- เช็กสปอว์นจาก workspace.Location.Enemy_Location (พาร์ตชื่อ = ชื่อมอน) + มอนที่มีชีวิตใน workspace.Monster
 	local function NoobSpawned()
 		local count = SpawnInfo(NOOB)
 		return count > 0 or FindAlive(NOOB) ~= nil
@@ -4863,7 +4683,7 @@ do
 		return (FindTool(BLADE)) ~= nil
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- เอา Yellow Blade ออกจากคลัง แล้วถือขึ้นมือ
 	local function GetBlade()
 		if not HaveBlade() then
 			pcall(function()
@@ -4916,12 +4736,12 @@ do
 		until not Active() or not mob.Parent or hum.Health <= 0
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- วาร์ปไปจุด Evil Noob แล้วรอดูว่าเกิดไหม
 	local function CheckNoob(seconds)
 		seconds = seconds or CONFIG.NoobCheckSeconds
 		local t0 = tick()
 		while Active() and tick() - t0 < seconds do
-			pcall(TP, NOOB_POS)               -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			pcall(TP, NOOB_POS)               -- ยืนที่จุดเกิดตลอด ให้เกมโหลดมอนมาให้เห็น
 			if NoobSpawned() then return true end
 			task.wait(0.2)
 		end
@@ -4935,7 +4755,7 @@ do
 		while Active() and kills < CONFIG.MoaiKills do
 			WaitBusy()
 			if IsDead() then
-				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				-- ตาย/โดนรีจาก HitStuck: รอเกิดใหม่แล้วกลับมาฟาร์ม Moai ต่อ (เก็บจำนวน kills ไว้ ไม่ไปเสกก่อน)
 				StartMagnet = false
 				local td = tick()
 				while Active() and IsDead() and tick() - td < 15 do task.wait(0.3) end
@@ -4944,7 +4764,7 @@ do
 				idle = 0
 				continue
 			end
-			if NoobSpawned() then break end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			if NoobSpawned() then break end   -- Evil Noob เกิดแล้ว -> ออกไปสู้
 			local mob, hum, root = FindAlive(MOAI)
 			if mob then
 				idle = 0
@@ -4957,10 +4777,10 @@ do
 					PosMon = root.CFrame
 					Mon = MOAI
 					AttackStep(root)
-				until not Active() or not mob.Parent or hum.Health <= 0 or NoobSpawned()   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				until not Active() or not mob.Parent or hum.Health <= 0 or NoobSpawned()   -- Evil Noob เกิด = หยุดทันที
 				StartMagnet = false
 				if NoobSpawned() then break end
-				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				-- นับว่าตายเมื่อเลือด <= 0 หรือโมเดลหายไป (บางทีโมเดลหายก่อนเลือดอัปเดต -> เดิมไม่นับ เลยไม่ไปเสกสักที)
 				if (hum.Health <= 0 or not mob.Parent) and not IsDead() and Active() then
 					kills = kills + 1
 					print("[EvilNoob] Moai", kills, "/", CONFIG.MoaiKills)
@@ -4969,13 +4789,13 @@ do
 				pcall(TP, SpawnLocation(MOAI) or MOAI_POS)
 				task.wait(0.3)
 				idle = idle + 1
-				if idle > 150 then break end  -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if idle > 150 then break end  -- ~45 วินาทีไม่เจอ Moai เลย -> กลับไปเสกใหม่
 			end
 		end
 		StartMagnet = false
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- เสก: กด E รัวๆ -> วาร์ปไปเช็ก -> ยังไม่เกิดไปฟาร์ม Moai -> กลับมาเสก คืน true เมื่อ Evil Noob เกิด
 	local function SummonNoob()
 		for round = 1, CONFIG.EvilNoobSummonRounds do
 			if not Active() then return false end
@@ -4983,13 +4803,13 @@ do
 			if IsDead() then
 				task.wait(1)
 			else
-				if round > 1 and CheckNoob(2) then return true end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if round > 1 and CheckNoob(2) then return true end   -- เกิดแล้ว -> ไปฟาร์มเลย ไม่เสกซ้ำ
 				_G.EvilNoobStatus = string.format("Evil Noob: Summoning (%d)", round)
 				StartMagnet = false
 				TP(SUMMON_POS)
 				task.wait(0.4)
 				local prompts = CollectPrompts(SUMMON_POS, 25)
-				for _ = 1, CONFIG.SummonPresses do   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				for _ = 1, CONFIG.SummonPresses do   -- กด E แค่ SummonPresses รอบ แล้วไปเช็กเลย
 					if not Active() then break end
 					WaitBusy()
 					if IsDead() then break end
@@ -5009,29 +4829,29 @@ do
 		return NoobSpawned()
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- คืน true = ได้ Yellow Blade แล้ว
 	local function Cycle()
 		_G.EvilNoobStatus = "Evil Noob: Checking sword"
 		if HaveBlade() or GetBlade() then return true end
 		if not Active() then return false end
 
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- 1) หามอน
 		_G.EvilNoobStatus = "Evil Noob: Searching"
 		if not CheckNoob(3) then
 			if not SummonNoob() then return false end
 		end
 
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- 2) รับเควส
 		if not HasNoobQuest() then
 			if not TakeQuest() then return false end
 		end
 
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- 3) ฟาร์มจนเควสเสร็จ (มอนตายแล้วเควสยังอยู่ -> เสกใหม่)
 		local guard = 0
 		while Active() and HasNoobQuest() and guard < 20 do
 			guard = guard + 1
 			local mob, hum, root = FindAlive(NOOB)
-			if not mob and CheckNoob(4) then mob, hum, root = FindAlive(NOOB) end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+			if not mob and CheckNoob(4) then mob, hum, root = FindAlive(NOOB) end   -- ไปดูจุดเกิดก่อน อย่าเพิ่งเสกซ้ำ
 			if mob then
 				FightNoob(mob, hum, root)
 			else
@@ -5040,7 +4860,7 @@ do
 		end
 		if not Active() then return false end
 
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- 4) เควสเสร็จ -> เช็ก/ถือ Yellow Blade
 		_G.EvilNoobStatus = "Evil Noob: Checking sword"
 		task.wait(1)
 		return HaveBlade() or GetBlade()
@@ -5058,7 +4878,7 @@ do
 						_G.EvilNoobDone = true
 						SetDone("Weapon: Yellow Blade")
 						print("[EvilNoob] ได้ Yellow Blade แล้ว")
-					elseif Active() then   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+					elseif Active() then   -- นับเฉพาะรอบที่ทำจนจบ (ไม่ใช่ถูกโหมดอื่นแทรก)
 						cycles = cycles + 1
 						if CONFIG.EvilNoobMaxCycles > 0 and cycles >= CONFIG.EvilNoobMaxCycles then
 							cycles = 0
@@ -5073,7 +4893,7 @@ do
 		end
 	end)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ช่วงพักไปเรด: Gem ถึง NoobRaidGems -> ซื้อ Drop Item X2 (ครั้งเดียว) -> กลับมาทำดาบ
 	task.spawn(function()
 		while task.wait(1) do
 			pcall(function()
@@ -5097,12 +4917,12 @@ do
 		end
 	end)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ตัวคุมโหมด
 	task.spawn(function()
 		local offCount = 0
 		while task.wait(1) do
 			pcall(function()
-				if HaveBlade() then SetDone("Weapon: Yellow Blade") end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if HaveBlade() then SetDone("Weapon: Yellow Blade") end   -- มีดาบอยู่แล้ว -> ไฟเขียวใน UI
 				if EvilNoobWanted() then
 					offCount = 0
 					if not _G.EvilNoob and not _G.Raid and not RaidGuiVisible() then
@@ -5132,10 +4952,10 @@ do
 end
 
 -- ===================== Item Quests (Pink Hammer / Banana / Purple Katana) =====================
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ก่อนทำทุกอัน: เอาออกจากคลัง (UpdateInventory) มาเช็กก่อน ถ้ามีในกระเป๋า = เสร็จ
+--  Pink Hammer  (เลเวล 1350+)      : ฟาร์ม Pink Absorber จนมี Pink Hammer
+--  Banana       (เลเวล 800+ เงิน 350000+): ซื้อ Smiling Cat -> ไม่ได้ ไปฟาร์ม Gorilla King 1 ตัว แล้วกลับไปซื้อ วนจนกว่าจะได้
+--  Purple Katana (เลเวล 1700+)     : หา Lord Sus -> เจอ: รับเควสแล้วสู้ / ไม่เจอ: ไปเสก (กด E) -> ยังไม่เกิดไปฟาร์ม Sus Duck 9 ตัว แล้วกลับไปเสก
 do
 	local RS_ = game:GetService("ReplicatedStorage")
 
@@ -5154,11 +4974,11 @@ do
 	local DUCK_POS      = CFrame.new(1529.334229, -51.696487, 2317.537109)
 
 	local function Active() return _G.ItemQuest and not _G.Raid end
-	local function KeyActive(key) return Active() and _G.ItemQuestKey == key and not _G.ItemDone[key] end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	local function KeyActive(key) return Active() and _G.ItemQuestKey == key and not _G.ItemDone[key] end   -- ได้ไอเทมแล้ว = ทุกลูปหยุดทันที
 	local function Status(txt) _G.ItemQuestStatus = txt end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- สู้มอน 1 ตัวจนตาย  abortFn (ถ้ามี) เช็กทุก 0.5 วินาที คืน true = หยุดสู้ (เช่น ได้ไอเทมแล้ว / Lord Sus เกิดแล้ว)
+	-- คืน true เมื่อมอนตาย
 	local function FightOne(key, mob, hum, root, bring, abortFn)
 		local nextCheck = 0
 		repeat
@@ -5183,7 +5003,7 @@ do
 		return hum.Health <= 0
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ตีมอน 1 ตัว (ไม่เจอ/ไม่ตายภายใน 150 วินาที คืน false ให้วนรอบใหม่)
 	local function KillOne(key, mobName, waitPos, label)
 		local t0 = tick()
 		while KeyActive(key) and tick() - t0 < 150 do
@@ -5258,7 +5078,7 @@ do
 		if ItemUnstore(item, 3) then return true end
 		if not KeyActive("Banana") then return false end
 
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- ซื้อไม่ได้ -> ไปฟาร์ม Gorilla King 1 ตัว แล้วกลับไปซื้อใหม่
 		pcall(TP, GORILLA_POS)
 		task.wait(0.4)
 		KillOne("Banana", GORILLA, GORILLA_POS, "Banana")
@@ -5304,7 +5124,7 @@ do
 		return HasLordQuest()
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ฟาร์ม Sus Duck ให้ครบ SusDuckKills ตัว  เช็ก Lord Sus ตลอด (เกิดเมื่อไหร่หยุดทันที)  คืน true = Lord Sus เกิดแล้ว
 	local function FarmDucks()
 		pcall(TP, DUCK_POS)
 		local kills, idle = 0, 0
@@ -5324,14 +5144,14 @@ do
 				pcall(TP, SpawnLocation(DUCK) or DUCK_POS)
 				task.wait(0.3)
 				idle = idle + 1
-				if idle > 60 then break end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				if idle > 60 then break end   -- ~18 วินาทีไม่เจอ Sus Duck -> กลับไปเสกใหม่
 			end
 		end
 		StartMagnet = false
 		return LordSpawned()
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- เสก Lord Sus: กด E รัวๆ -> ไปเช็ก -> ยังไม่เกิดไปฟาร์ม Sus Duck -> กลับมาเสก  คืน true เมื่อ Lord Sus เกิด
 	local function SummonLord()
 		for round = 1, CONFIG.LordSusSummonRounds do
 			if not KeyActive("PurpleKatana") then return false end
@@ -5344,7 +5164,7 @@ do
 				pcall(TP, LORD_SUMMON)
 				task.wait(0.4)
 				local prompts = CollectPrompts(LORD_SUMMON, 25)
-				for _ = 1, CONFIG.SummonPresses do   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				for _ = 1, CONFIG.SummonPresses do   -- กด E แค่ SummonPresses รอบ แล้วไปเช็กเลย
 					if not KeyActive("PurpleKatana") then break end
 					WaitBusy()
 					if IsDead() then break end
@@ -5377,7 +5197,7 @@ do
 		if ItemUnstore(item, 2) then return true end
 		if not KeyActive("PurpleKatana") then return false end
 
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- 1) หา Lord Sus
 		if not LordSpawned() then
 			Status("Purple Katana: Searching Lord Sus")
 			StartMagnet = false
@@ -5388,10 +5208,10 @@ do
 			end
 		end
 
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- 2) รับเควส (ถ้าเควสไม่ขึ้นก็ยังสู้ต่อ)
 		if not HasLordQuest() then TakeLordQuest() end
 
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- 3) สู้จนตาย (ตายแล้วเควสยังอยู่ -> เสกใหม่)
 		local abort = function() return ItemHave(item) end
 		local guard = 0
 		while KeyActive("PurpleKatana") and guard < 20 do
@@ -5414,7 +5234,7 @@ do
 		end
 		if not KeyActive("PurpleKatana") then return false end
 
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- 4) เช็ก/ถือ Purple Katana
 		Status("Purple Katana: Checking bag")
 		task.wait(1)
 		return ItemUnstore(item, 3)
@@ -5422,7 +5242,7 @@ do
 
 	local CYCLES = { PinkHammer = PinkCycle, Banana = BananaCycle, PurpleKatana = PurpleCycle }
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ตัวเช็กไอเทมถี่ๆ (ทุก 0.2 วินาที): มีในกระเป๋า/ในมือเมื่อไหร่ = เสร็จทันที ทุกลูปในโหมดนี้หยุด แล้วไปทำอย่างอื่นต่อ
 	task.spawn(function()
 		while task.wait(0.2) do
 			if CONFIG.AutoItemQuests then
@@ -5438,7 +5258,7 @@ do
 		end
 	end)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ลูปหลัก
 	task.spawn(function()
 		local cycles = {}
 		while task.wait(0.3) do
@@ -5451,7 +5271,7 @@ do
 					local n = (cycles[key] or 0) + 1
 					local cap = CONFIG.ItemQuestMaxCycles or 0
 					if cap > 0 and n > cap then
-						_G.ItemDone[key] = true   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						_G.ItemDone[key] = true   -- ยอมแพ้ (ไม่ขึ้นไฟเขียว)
 						warn("[ItemQuest] " .. key .. " ครบ " .. cap .. " รอบแล้วยังไม่ได้ หยุดอันนี้")
 						return
 					end
@@ -5462,20 +5282,20 @@ do
 						StartMagnet = false
 						print("[ItemQuest] ได้ " .. ITEM_INFO[key].name .. " แล้ว")
 					elseif KeyActive(key) then
-						cycles[key] = n   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						cycles[key] = n   -- นับเฉพาะรอบที่ทำจนจบ (ไม่ใช่ถูกโหมดอื่นแทรก)
 					end
 				end)
 			end
 		end
 	end)
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ตัวคุมโหมด: เข้าเมื่อเข้าเงื่อนไข (ไม่แทรกกลางเรด) / ออกเมื่อไม่เข้าเงื่อนไขติดกัน 2 วินาที
 	task.spawn(function()
 		local offCount = 0
 		while task.wait(1) do
 			pcall(function()
 				if not CONFIG.AutoItemQuests then return end
-				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				-- มีไอเทมในกระเป๋าแล้ว (ได้มาด้วยวิธีอื่น) -> ถือว่าเสร็จ ไฟเขียวใน UI
 				for key, info in pairs(ITEM_INFO) do
 					if not _G.ItemDone[key] and ItemHave(info.name) then
 						_G.ItemDone[key] = true
@@ -5499,7 +5319,7 @@ do
 							print("[ItemQuest] เข้าโหมด Item Quest:", want)
 						end
 					elseif _G.ItemQuestKey ~= want then
-						_G.ItemQuestKey = want   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+						_G.ItemQuestKey = want   -- อันก่อนหน้าเสร็จแล้ว -> ไปอันถัดไป
 						StartMagnet = false
 						print("[ItemQuest] ไปทำอันถัดไป:", want)
 					end
@@ -5520,26 +5340,26 @@ do
 	end)
 end
 
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
--- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+-- ===================== Boss Watch (Meme Beast 1500+ / Giant Pumpkin 1100+ / Evil Noob 2000+ ถ้ายังไม่มี Yellow Blade) =====================
+-- เช็กตลอด: บอสเกิด -> หยุดโหมดอื่นทั้งหมด วาร์ปไปฟาร์มทันที (Giant Pumpkin รับเควสก่อน) จบแล้วโหมดเดิมกลับมาเอง
+-- ไม่แทรกตอนกำลังสู้ในเรด (RaidGui ขึ้นอยู่) / ช่วงโหมด Pumpkin เดิมทำงานอยู่ (เลเวล 1100-1199) ให้โหมดนั้นจัดการเอง
 do
 	local function Level()
 		local ok, lv = pcall(function() return LocalPlayer.PlayerData.Level.Value end)
 		return ok and lv or nil
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- เกิดแล้ว = มีมอนชื่อนี้ที่ Health > 0 (นับแบบเดียวกับรายงาน Enemy_Location: SpawnInfo) หรือเจอใน workspace.Monster
+	-- คืน: เกิดไหม, ระยะใกล้สุดจากพาร์ตจุดเกิดใน workspace.Location.Enemy_Location
 	local function Spawned(name)
 		local count, nearest = SpawnInfo(name)
 		return (count > 0 or FindAlive(name) ~= nil), nearest
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- Evil Noob (Yellow Blade): ยังไม่มีดาบ + บอสเกิดอยู่ -> true, ระยะ  (ใช้ทั้งตอนเลือกบอสและตอนแย่งจากฟักทอง)
 	local function NoobBossReady()
 		if not CONFIG.AutoBossWatch then return false end
-		if DropX2Needed and DropX2Needed() then return false end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		if DropX2Needed and DropX2Needed() then return false end   -- ยังไม่ซื้อ Drop X2 -> ไม่ไปตี Evil Noob
 		local lv = Level()
 		if not lv then return false end
 		if CONFIG.AutoEvilNoob and not _G.EvilNoobDone and not _G.NoobRaidPhase and lv >= CONFIG.EvilNoobMinLevel then
@@ -5553,7 +5373,7 @@ do
 		return false
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ลำดับความสำคัญบอส: Meme Beast > Evil Noob > Giant Pumpkin (เกิดพร้อมกัน Noob มาก่อนฟักทอง)
 	local function FindBoss()
 		if not CONFIG.AutoBossWatch then return end
 		local lv = Level()
@@ -5599,7 +5419,7 @@ do
 		end
 	end
 
-	-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+	-- ตอนเริ่ม: เช็กว่ามีพาร์ตจุดเกิดของมอนที่ใช้อยู่ใน Enemy_Location จริงไหม (ชื่อไม่ตรง = ตัวเช็กจะอาศัย workspace.Monster อย่างเดียว)
 	task.spawn(function()
 		task.wait(3)
 		for _, n in ipairs({ "Meme Beast", "Giant Pumpkin", "Evil Noob", "Moai" }) do
@@ -5643,12 +5463,12 @@ do
 	local function RunBoss(name)
 		_G.BossStatus = "Boss: " .. name
 		StartMagnet = false
-		-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		-- รอให้โหมดอื่นปล่อยตัวละคร (ตัวคุมโหมดแต่ละอันจะออกเองภายในไม่กี่วินาที)
 		local t0 = tick()
 		while (_G.Raid or _G.RaceV2 or _G.FlameKatana or _G.EvilNoob or _G.ItemQuest or _G.Pumpkin or _G.Baller or _G.Aura or _G.HakiReroll) and tick() - t0 < 6 do
 			task.wait(0.2)
 		end
-		if _G.Raid then return end   -- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+		if _G.Raid then return end   -- เรดยังไม่ยอมออก (เช่น เรดเริ่มแล้ว) -> ไม่แย่ง
 
 		if name == "Giant Pumpkin" then PumpkinQuest() end
 		if name == "Evil Noob" then NoobQuest() end
@@ -5665,7 +5485,7 @@ do
 				task.wait()
 				WaitBusy()
 				if IsDead() then break end
-				-- Ghi chú cấu hình (đã Việt hóa tên và giao diện)
+				-- กำลังตีฟักทองอยู่แล้ว Evil Noob เกิด -> ทิ้งฟักทองไปทำ Noob ก่อน
 				if name == "Giant Pumpkin" and NoobBossReady() then
 					preempted = true
 					print("[Boss] Evil Noob เกิด -> ทิ้ง Giant Pumpkin ไปตี Evil Noob ก่อน")
@@ -5703,17 +5523,17 @@ do
 	end)
 end
 
-end -- __XHHubMain
+end -- __MemeSeaMain
 
 do
 	local attempts = 0
-	while MY_GEN == _G.__XHHubGen and attempts < 5 do
-		local ok, err = xpcall(__XHHubMain, debug.traceback)
+	while MY_GEN == _G.__MemeSeaGen and attempts < 5 do
+		local ok, err = xpcall(__MemeSeaMain, debug.traceback)
 		if ok then break end
 		attempts = attempts + 1
 		warn(string.format("[Recover] สคริปต์หลัก Error (รอบ %d/5) -> รันใหม่ใน 3 วิ\n%s", attempts, tostring(err)))
-		for _, th in ipairs(_G.__XHHubThreads) do if _cancel then pcall(_cancel, th) end end
-		_G.__XHHubThreads = {}
+		for _, th in ipairs(_G.__MemeSeaThreads) do if _cancel then pcall(_cancel, th) end end
+		_G.__MemeSeaThreads = {}
 		_wait(3)
 	end
 end
