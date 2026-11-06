@@ -1,5 +1,5 @@
 -- ==========================================
--- H HUB - AUTOFARM & EXPERIMENTAL (FULL + ANTIBAN)
+-- H HUB - RNG FIGHTS AUTOFARM, MULTI-TARGET AUTO ROLL & ANTIBAN
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -11,6 +11,7 @@ local UserInputService = game:GetService("UserInputService")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local Lighting = game:GetService("Lighting")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local player = Players.LocalPlayer
 if not player then return end
@@ -65,21 +66,28 @@ local fixLagEnabled = false
 local hideMapOthersEnabled = false
 local muteAllSoundsEnabled = false
 
--- Trạng thái Antiban & Server Hop mới
+-- Trạng thái Antiban & Server Hop & Auto Roll
 local autoServerHopEnabled = false
 local adminDetectorEnabled = true
+local autoRollEnabled = false
 
--- Spectate & Camera View State
-local spectating = false
-local spectateIndex = 1
-local spectateConnection = nil
-local currentCameraMode = "Default"
-local cameraViewConnection = nil
+-- Danh sách toàn bộ 36+ sức mạnh RNG Fights chuẩn game
+local allRngAttacks = {
+    "Punch", "Slap", "Laser", "Shockwave", "Rage", "Get Out", "Streak",
+    "Rapid Fire", "Phase", "Nope", "Party", "Rock", "UltraPunch", "Orbital Strike",
+    "Nani", "Bounty", "Randomized", "Ultra Instinct", "Cloned", "Cyborg", "Time God",
+    "360-NoScope", "Divinity", "SuperCharged", "Supernova", "Gravity", "Hacker",
+    "D E A T H", "Singularity", "Eternal", "E R R O R", "Present", "Ghost",
+    "Reverse", "Hellfire", "Reaper", "Nuke"
+}
+
+-- Bảng lưu danh sách các sức mạnh được chọn để dừng khi roll trúng
+local selectedAttacksMap = {}
 
 -- Cấu hình mặc định
 local tpSpeed = 0.15
 local walkSpeed = 35
-local jumpPower = 75
+local jumpPower = 25
 local flySpeed = 100
 local customGravity = 196.2
 local coinName = "Coin"
@@ -103,35 +111,34 @@ local GLOBAL_FONT = Enum.Font.GothamBold
 
 local translations = {
     EN = {
-        title = "H HUB - AutoFarm",
-        tabMain = "Main", tabEsp = "Players/ESP", tabMisc = "Settings", tabFixLag = "Fix Lag", tabExperimental = "Experimental",
+        title = "H HUB - RNG Fights",
+        tabMain = "Main", tabRoll = "Auto Roll", tabEsp = "ESP", tabMisc = "Settings", tabFixLag = "Fix Lag", tabExperimental = "Exp",
         tpSpd = "TP Speed (s):", walkSpd = "Walk Speed:", flySpd = "Fly Speed:",
         jumpSpd = "Jump Power:", gravSpd = "Gravity:", freezeRng = "Freeze Range:",
-        clickDelayLabel = "Click Delay (s):", targetBtn = "Target: ", allTarget = "All",
         tpBtn = "Auto TP Coins", walkBtn = "Custom Speed", jumpBtn = "Custom Jump",
         flyBtn = "Fly Mode", gravBtn = "Custom Gravity", noclipBtn = "Noclip Pass-Wall",
         invisBtn = "Invisibility", infJumpBtn = "Infinite Jump", freezeBtn = "Auto Freeze Ray",
-        autoEquipBtn = "Equip Items (Run Once)", godBtn = "⚡ Open God Mode Panel",
+        autoEquipBtn = "Equip Items", godBtn = "⚡ God Mode Panel",
         espBtn = "ESP Wallhack", fpsBtn = "Display FPS",
-        autoPressRadiusLabel = "Click Button Range:", autoPressDelayLabel = "Click Button Delay (s):",
-        autoPressBtn = "Auto Click Buttons", fixLagBtn = "Ultra Fix Lag (Max FPS)",
-        hideMapBtn = "Hide Map & Players", muteSoundsBtn = "Mute Game Sounds",
-        espColorLabel = "ESP Highlight Color:", boardColorLabel = "Board Background Color:",
+        autoPressRadiusLabel = "Click Button Range:", autoPressDelayLabel = "Click Delay (s):",
+        autoPressBtn = "Auto Click Buttons", fixLagBtn = "Ultra Fix Lag",
+        hideMapBtn = "Hide Map & Players", muteSoundsBtn = "Mute Sounds",
+        espColorLabel = "ESP Color:", boardColorLabel = "Board Background Color:",
         themeLabel = "UI Button Color:", textLabel = "UI Text Color:", langLabel = "Language:",
-        rejoinBtn = "Rejoin Server", serverHopBtn = "Server Hop", on = "ON", off = "OFF",
+        rejoinBtn = "Rejoin", serverHopBtn = "Server Hop", on = "ON", off = "OFF",
         specBtnToggle = "👁️ Spectate Mode", cameraViewLabel = "Camera View Angle:",
-        autoHopBtn = "Auto Server Hop (20m)", adminDetectBtn = "Anti-Admin Detector"
+        autoHopBtn = "Auto Server Hop (20m)", adminDetectBtn = "Anti-Admin Detector",
+        autoRollBtn = "Auto Roll (Stop on Match)", rollOnceBtn = "Roll 1 Time", rollTargetLabel = "Selected: "
     },
     VI = {
-        title = "H HUB - AutoFarm",
-        tabMain = "Chính", tabEsp = "Người chơi/ESP", tabMisc = "Cài đặt", tabFixLag = "Fix Lag", tabExperimental = "Thử nghiệm",
+        title = "H HUB - RNG Fights",
+        tabMain = "Chính", tabRoll = "Quay Sức Mạnh", tabEsp = "Người chơi/ESP", tabMisc = "Cài đặt", tabFixLag = "Fix Lag", tabExperimental = "Thử nghiệm",
         tpSpd = "Tốc độ TP (giây):", walkSpd = "Tốc độ Đi bộ:", flySpd = "Tốc độ Bay:",
         jumpSpd = "Độ Cao Nhảy:", gravSpd = "Trọng Lực Game:", freezeRng = "Khoảng cách Freeze:",
-        clickDelayLabel = "Tốc độ Click (giây):", targetBtn = "Mục tiêu: ", allTarget = "Tất cả",
         tpBtn = "Auto TP Nhặt Xu", walkBtn = "Chỉnh Tốc Độ Đi", jumpBtn = "Chỉnh Độ Nhảy",
         flyBtn = "Chế Độ Bay", gravBtn = "Trọng Lực Tùy Chỉnh", noclipBtn = "Đi Xuyên Tường (Noclip)",
         invisBtn = "Tàng Hình Nhìn Thấy", infJumpBtn = "Nhảy Vô Hạn",
-        freezeBtn = "Tự Động Freeze Ray", autoEquipBtn = "Trang Bị Đồ (Nhấn 1 Lần)",
+        freezeBtn = "Tự Động Freeze Ray", autoEquipBtn = "Trang Bị Đồ",
         godBtn = "⚡ Bảng God Mode (Bất Tử)", espBtn = "ESP Nhìn Xuyên Tường",
         fpsBtn = "Hiển Thị FPS", autoPressRadiusLabel = "Bán kính Click Nút:",
         autoPressDelayLabel = "Tốc độ Click Nút (s):", autoPressBtn = "Auto Click Nút",
@@ -141,9 +148,101 @@ local translations = {
         textLabel = "Màu Chữ Giao Diện:", langLabel = "Ngôn ngữ / Language:",
         rejoinBtn = "Vào Lại Server", serverHopBtn = "Đổi Server Khác", on = "BẬT", off = "TẮT",
         specBtnToggle = "👁️ Chế Độ Spectate", cameraViewLabel = "Chỉnh Góc Nhìn Camera:",
-        autoHopBtn = "Tự Động Đổi Server (20p)", adminDetectBtn = "Phát Hiện Admin (Antiban)"
+        autoHopBtn = "Tự Động Đổi Server (20p)", adminDetectBtn = "Phát Hiện Admin (Antiban)",
+        autoRollBtn = "Auto Roll (Dừng Khi Trúng)", rollOnceBtn = "Quay 1 Lần", rollTargetLabel = "Đã chọn: "
     }
 }
+
+-- ==========================================
+-- HỆ THỐNG CẢNH BÁO AN TOÀN (ANTIBAN - TỐC ĐỘ >50 / NHẢY >30)
+-- ==========================================
+
+local banWarningPopup = Instance.new("Frame")
+banWarningPopup.Size = UDim2.fromOffset(340, 150)
+banWarningPopup.Position = UDim2.new(0.5, -170, 0.35, -75)
+banWarningPopup.BackgroundColor3 = Color3.fromRGB(25, 20, 25)
+banWarningPopup.BorderSizePixel = 0
+banWarningPopup.Visible = false
+banWarningPopup.ZIndex = 99999
+banWarningPopup.Parent = screenGui
+Instance.new("UICorner", banWarningPopup).CornerRadius = UDim.new(0, 10)
+local bwStroke = Instance.new("UIStroke"); bwStroke.Color = Color3.fromRGB(255, 50, 50); bwStroke.Thickness = 2; bwStroke.Parent = banWarningPopup
+
+local bwTitle = Instance.new("TextLabel")
+bwTitle.Size = UDim2.new(1, 0, 0, 35)
+bwTitle.BackgroundTransparency = 1
+bwTitle.Text = "⚠️ CẢNH BÁO: BẠN CÓ THỂ BỊ BAN"
+bwTitle.TextColor3 = Color3.fromRGB(255, 60, 60)
+bwTitle.Font = GLOBAL_FONT
+bwTitle.TextSize = 13
+bwTitle.Parent = banWarningPopup
+
+local bwDesc = Instance.new("TextLabel")
+bwDesc.Size = UDim2.new(1, -20, 0, 55)
+bwDesc.Position = UDim2.new(0, 10, 0, 35)
+bwDesc.BackgroundTransparency = 1
+bwDesc.Text = "Thông số vượt ngưỡng an toàn! Bạn có thể bị ban khỏi game."
+bwDesc.TextColor3 = Color3.fromRGB(255, 255, 255)
+bwDesc.Font = GLOBAL_FONT
+bwDesc.TextSize = 11
+bwDesc.TextWrapped = true
+bwDesc.Parent = banWarningPopup
+
+local bwBtnConfirm = Instance.new("TextButton")
+bwBtnConfirm.Size = UDim2.new(0, 145, 0, 30)
+bwBtnConfirm.Position = UDim2.new(0, 15, 1, -40)
+bwBtnConfirm.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+bwBtnConfirm.Text = "Bật luôn"
+bwBtnConfirm.TextColor3 = Color3.fromRGB(255, 255, 255)
+bwBtnConfirm.Font = GLOBAL_FONT
+bwBtnConfirm.TextSize = 12
+bwBtnConfirm.Parent = banWarningPopup
+Instance.new("UICorner", bwBtnConfirm).CornerRadius = UDim.new(0, 6)
+
+local bwBtnCancel = Instance.new("TextButton")
+bwBtnCancel.Size = UDim2.new(0, 145, 0, 30)
+bwBtnCancel.Position = UDim2.new(1, -160, 1, -40)
+bwBtnCancel.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+bwBtnCancel.Text = "Thôi (Tắt)"
+bwBtnCancel.TextColor3 = Color3.fromRGB(255, 255, 255)
+bwBtnCancel.Font = GLOBAL_FONT
+bwBtnCancel.TextSize = 12
+bwBtnCancel.Parent = banWarningPopup
+Instance.new("UICorner", bwBtnCancel).CornerRadius = UDim.new(0, 6)
+
+local pendingActionCallback = nil
+local pendingCancelCallback = nil
+
+bwBtnConfirm.MouseButton1Click:Connect(function()
+    banWarningPopup.Visible = false
+    if pendingActionCallback then
+        pendingActionCallback(true)
+        pendingActionCallback = nil
+        pendingCancelCallback = nil
+    end
+end)
+
+bwBtnCancel.MouseButton1Click:Connect(function()
+    banWarningPopup.Visible = false
+    if pendingCancelCallback then
+        pendingCancelCallback()
+    end
+    pendingActionCallback = nil
+    pendingCancelCallback = nil
+end)
+
+local function checkSafetyThreshold(typeStr, value, applyCallback, cancelCallback)
+    if (typeStr == "walk" and value > 50) or (typeStr == "jump" and value > 30) then
+        banWarningPopup.Visible = true
+        bwDesc.Text = "Cảnh báo: " .. (typeStr == "walk" and "Tốc độ đi (" .. value .. " > 50)" or "Độ cao nhảy (" .. value .. " > 30)") .. ". Bạn có thể bị ban!"
+        pendingActionCallback = applyCallback
+        pendingCancelCallback = cancelCallback
+        return false
+    else
+        applyCallback(true)
+        return true
+    end
+end
 
 -- ==========================================
 -- HỆ THỐNG SERVER HOP & ANTIBAN THÔNG MINH
@@ -156,19 +255,16 @@ local function serverHopFiltered()
         local ok, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(url)) end)
         if ok and result and result.data then
             for _, server in ipairs(result.data) do
-                -- Lọc server khác JobId hiện tại và có từ 5 người trở lên
                 if server.id ~= game.JobId and server.playing >= 5 and server.playing < server.maxPlayers then
                     pcall(function() TeleportService:TeleportToPlaceInstance(placeId, server.id, player) end)
                     return
                 end
             end
         end
-        -- Nếu không tìm thấy server >= 5 người, fallback về server bất kỳ
         pcall(function() TeleportService:Teleport(placeId, player) end)
     end)
 end
 
--- Tạo bảng Popup Thông Báo Antiban / Server Hop
 local alertPopup = Instance.new("Frame")
 alertPopup.Size = UDim2.fromOffset(320, 140)
 alertPopup.Position = UDim2.new(0.5, -160, 0.3, -70)
@@ -252,10 +348,8 @@ local function showAlertPopup(titleTextStr, descTextStr, actionCallback, countdo
     end
 end
 
--- 1. Luồng tự động đổi server mỗi 20 phút (30 giây cuối hiện bảng)
 task.spawn(function()
     while true do
-        -- Đợi 19 phút rưỡi (1170 giây)
         task.wait(1170)
         if autoServerHopEnabled then
             showAlertPopup(
@@ -270,17 +364,11 @@ task.spawn(function()
     end
 end)
 
--- 2. Luồng phát hiện Admin / Developer game RNG Fight
 local function isAdminOrDev(p)
     if not p then return false end
-    -- Kiểm tra Group Role, Game Creator hoặc tên/ID đặc biệt
-    local success, isMember = pcall(function() return p:IsInGroup(12000000) end) -- Thay thế hoặc mở rộng nếu game có group riêng
+    local success, isMember = pcall(function() return p:IsInGroup(12000000) end)
     if success and isMember then return true end
-
-    -- Check quyền đặc biệt hoặc CreatorId của game
     if p.UserId == game.CreatorId then return true end
-    
-    -- Check các danh xưng Admin phổ biến trong tên hoặc huy hiệu
     local nameLower = p.Name:lower()
     local displayLower = p.DisplayName:lower()
     if nameLower:find("admin") or nameLower:find("owner") or nameLower:find("developer") or
@@ -310,26 +398,100 @@ task.spawn(function()
 end)
 
 -- ==========================================
--- LOGIC HỆ THỐNG KHÁC
+-- LOGIC AUTO ROLL ĐA MỤC TIÊU (CHUẨN GAME RNG FIGHTS)
+-- ==========================================
+
+-- Hàm kiểm tra xem người chơi hiện tại đang cầm/sở hữu chiêu nằm trong danh sách chọn chưa
+local function hasSelectedAttack()
+    local countSelected = 0
+    for _, v in pairs(selectedAttacksMap) do
+        if v then countSelected += 1 end
+    end
+    -- Nếu người chơi không tích chọn sức mạnh cụ thể nào thì cứ roll liên tục không dừng
+    if countSelected == 0 then return false end
+
+    local function checkContainer(container)
+        if not container then return false end
+        for _, item in ipairs(container:GetChildren()) do
+            local itemName = item.Name
+            for targetName, isSelected in pairs(selectedAttacksMap) do
+                if isSelected and (itemName == targetName or itemName:lower():find(targetName:lower(), 1, true)) then
+                    return true
+                end
+            end
+        end
+        return false
+    end
+
+    -- Quét trong Backpack, Character và các thuộc tính dữ liệu (leaderstats/AttackValue)
+    if checkContainer(player:FindFirstChild("Backpack")) then return true end
+    if checkContainer(player.Character) then return true end
+    
+    local currentAtkVal = player:FindFirstChild("Attack") or player:FindFirstChild("CurrentAttack") or (player:FindFirstChild("Data") and player.Data:FindFirstChild("Attack"))
+    if currentAtkVal and currentAtkVal:IsA("StringValue") then
+        for targetName, isSelected in pairs(selectedAttacksMap) do
+            if isSelected and currentAtkVal.Value == targetName then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
+-- Hàm gọi Remote chuẩn xác từ lệnh bạn cung cấp
+local function fireGenerateAttackRandom()
+    pcall(function()
+        local args = { "Random" }
+        ReplicatedStorage:WaitForChild("EventsFolder"):WaitForChild("GenerateAttack"):FireServer(unpack(args))
+    end)
+end
+
+local autoRollTask = nil
+local autoRollRefreshUI = nil
+
+local function toggleAutoRoll(state)
+    autoRollEnabled = state
+    if autoRollRefreshUI then autoRollRefreshUI(state) end
+
+    if state then
+        if not autoRollTask then
+            autoRollTask = task.spawn(function()
+                while autoRollEnabled do
+                    -- Kiểm tra xem đã quay trúng 1 trong các sức mạnh đã chọn chưa
+                    if hasSelectedAttack() then
+                        autoRollEnabled = false
+                        if autoRollRefreshUI then autoRollRefreshUI(false) end
+                        break
+                    end
+
+                    -- Gửi lệnh roll chuẩn xác
+                    fireGenerateAttackRandom()
+                    task.wait(0.45) -- Tốc độ quay tối ưu để server kịp trả chiêu vào Backpack
+                end
+                autoRollTask = nil
+            end)
+        end
+    else
+        if autoRollTask then
+            task.cancel(autoRollTask)
+            autoRollTask = nil
+        end
+    end
+end
+
+-- ==========================================
+-- CÁC TÍNH NĂNG PHỤ TRỢ KHÁC
 -- ==========================================
 
 local function setBackpackVisible(visible)
     pcall(function() StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, visible) end)
 end
 
-local allEquipItems = {
-    "PieThrow","SmallPotion","GiantPotion","GhostPotion","Healing","GravityPotion",
-    "Bloxiade","ClownBomb","Slate","WindPotion","IcePotion","Caltrops","SlowDownGun",
-    "GravityGun","GravityDisruptor","FreezeRay","Bomb","Jetpack","DecoyDeploy",
-    "AprilShowers","Balloon","MarchingDrum","Trumpet","Trowel","TeapotLauncher",
-    "BunchOfBalloons","BangGun","EpicJuice","EpicSauce","Ball","Torch","Cake",
-    "MoneyBag","IceCreamCone","Teddy","Witch","Watermelon","Taco","Bloxy","Pizza","Coco"
-}
-
+local allEquipItems = {"PieThrow","SmallPotion","GiantPotion","GhostPotion","Healing","GravityPotion","Bloxiade","ClownBomb"}
 local function equipItemsOnce()
     task.spawn(function()
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local equipEvent = ReplicatedStorage:WaitForChild("Equip", 5)
+        local equipEvent = ReplicatedStorage:FindFirstChild("Equip")
         if not equipEvent then return end
         for _, item in ipairs(allEquipItems) do
             pcall(function() equipEvent:FireServer("UNEQUIP", item) end)
@@ -342,6 +504,10 @@ local function equipItemsOnce()
         end
     end)
 end
+
+local hiddenObjects = {}
+local mutedSounds = {}
+local fixLagChildConnection, fixLagTask, hideMapConnection, muteSoundsConnection
 
 local function applyMuteToSound(sound)
     if not muteAllSoundsEnabled then return end
@@ -396,9 +562,6 @@ local function applyHideToObject(v)
     end)
 end
 
-local hiddenObjects = {}
-local mutedSounds = {}
-
 local function toggleHideMapAndOthers(state)
     hideMapOthersEnabled = state
     if state then
@@ -449,7 +612,6 @@ local function optimizePartExtreme(v)
     end)
 end
 
-local fixLagChildConnection, fixLagTask, hideMapConnection, muteSoundsConnection
 local function toggleFixLag(state)
     fixLagEnabled = state
     if state then
@@ -850,8 +1012,8 @@ end
 
 local frame = Instance.new("Frame")
 frame.Name = "MainFrame"
-frame.Size = UDim2.fromOffset(390, 320)
-frame.Position = UDim2.new(0.5, -195, 0.5, -160)
+frame.Size = UDim2.fromOffset(410, 340)
+frame.Position = UDim2.new(0.5, -205, 0.5, -170)
 frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 frame.BorderSizePixel = 0
 frame.Active = true
@@ -928,7 +1090,7 @@ container.ZIndex = 15
 container.Parent = frame
 
 local tabs = {}
-local tabNames = {"Main", "ESP", "FixLag", "Misc", "Experimental"}
+local tabNames = {"Main", "Roll", "ESP", "FixLag", "Misc", "Experimental"}
 for _, name in ipairs(tabNames) do
     local scroll = Instance.new("ScrollingFrame")
     scroll.Name = name .. "Tab"
@@ -937,7 +1099,7 @@ for _, name in ipairs(tabNames) do
     scroll.BorderSizePixel = 0
     scroll.ScrollBarThickness = 4
     scroll.CanvasSize = UDim2.new()
-    scroll.Visible = false
+    scroll.Visible = (name == "Main")
     scroll.ZIndex = 16
     scroll.Parent = container
 
@@ -987,136 +1149,429 @@ local function applyTextColor(color)
     for _, txt in ipairs(textElements) do if txt and txt.Parent then txt.TextColor3 = color end end
 end
 
-local function createToggleRow(parent, labelKey, stateBool, callback)
+-- Hàm tạo nút rời ngoài màn hình khi bấm dấu [+]
+local function createFloatingFeatureShortcut(labelKey, stateGetter, callback)
+    local floatBtn = Instance.new("TextButton")
+    floatBtn.Size = UDim2.fromOffset(125, 32)
+    floatBtn.Position = UDim2.new(0.02, 0, 0.55 + math.random() * 0.25, 0)
+    floatBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+    floatBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    floatBtn.Font = GLOBAL_FONT
+    floatBtn.TextSize = 10
+    floatBtn.Text = labelKey
+    floatBtn.Visible = false
+    floatBtn.Active = true
+    floatBtn.Draggable = true
+    floatBtn.ZIndex = 500
+    floatBtn.Parent = screenGui
+    Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(0, 6)
+    local fs = Instance.new("UIStroke"); fs.Color = Color3.fromRGB(80, 80, 255); fs.Parent = floatBtn
+
+    floatBtn.MouseButton1Click:Connect(function()
+        local newState = not stateGetter()
+        callback(newState)
+    end)
+    return floatBtn
+end
+
+local function createToggleRow(parent, labelKey, stateBool, callback, hasPlus)
     local row = Instance.new("Frame"); row.Size = UDim2.new(1, 0, 0, 32); row.BackgroundTransparency = 1; row.Parent = parent
-    local btn = Instance.new("TextButton"); btn.Size = UDim2.fromScale(1, 1)
+    
+    local btnWidth = hasPlus and UDim2.new(1, -36, 1, 0) or UDim2.fromScale(1, 1)
+    local btn = Instance.new("TextButton"); btn.Size = btnWidth
     btn.BackgroundColor3 = currentThemeColor; btn.TextColor3 = currentTextColor
     btn.Font = GLOBAL_FONT; btn.TextSize = 11; btn.Parent = row
     table.insert(themeButtons, btn); table.insert(textElements, btn)
     local cr = Instance.new("UICorner"); cr.CornerRadius = UDim.new(0, 6); cr.Parent = btn
-    local function refresh()
+
+    local floatWidget = nil
+    local function setVisualState(newState)
+        stateBool = newState
         local t = translations[currentLang]
-        btn.Text = (t[labelKey] or labelKey) .. (stateBool and " [" .. t.on .. "]" or " [" .. t.off .. "]")
+        local txt = (t[labelKey] or labelKey) .. (stateBool and " [" .. t.on .. "]" or " [" .. t.off .. "]")
+        btn.Text = txt
+        if floatWidget then
+            floatWidget.Text = t[labelKey] or labelKey
+            floatWidget.BackgroundColor3 = stateBool and Color3.fromRGB(45, 160, 85) or Color3.fromRGB(30, 30, 45)
+        end
         btn:SetAttribute("IsOnState", stateBool)
         updateButtonVisual(btn, stateBool)
     end
+
+    if hasPlus then
+        local plusBtn = Instance.new("TextButton")
+        plusBtn.Size = UDim2.fromOffset(30, 32)
+        plusBtn.Position = UDim2.new(1, -30, 0, 0)
+        plusBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 80)
+        plusBtn.Text = "+"
+        plusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        plusBtn.Font = GLOBAL_FONT
+        plusBtn.TextSize = 14
+        plusBtn.Parent = row
+        Instance.new("UICorner", plusBtn).CornerRadius = UDim.new(0, 6)
+
+        floatWidget = createFloatingFeatureShortcut(labelKey, function() return stateBool end, function(newState)
+            callback(newState, setVisualState)
+        end)
+
+        plusBtn.MouseButton1Click:Connect(function()
+            floatWidget.Visible = not floatWidget.Visible
+        end)
+    end
+
     btn.MouseButton1Click:Connect(function()
-        stateBool = not stateBool; refresh(); callback(stateBool)
+        local targetState = not stateBool
+        callback(targetState, setVisualState)
     end)
-    refresh()
-    return btn, refresh
+
+    setVisualState(stateBool)
+    return btn, function() setVisualState(stateBool) end, setVisualState
 end
 
-local function createButtonRow(parent, labelKey, callback)
+local function createButtonRow(parent, labelKey, callback, hasPlus)
     local row = Instance.new("Frame"); row.Size = UDim2.new(1, 0, 0, 32); row.BackgroundTransparency = 1; row.Parent = parent
-    local btn = Instance.new("TextButton"); btn.Size = UDim2.fromScale(1, 1)
+    local btnWidth = hasPlus and UDim2.new(1, -36, 1, 0) or UDim2.fromScale(1, 1)
+    local btn = Instance.new("TextButton"); btn.Size = btnWidth
     btn.BackgroundColor3 = currentThemeColor; btn.TextColor3 = currentTextColor
     btn.Font = GLOBAL_FONT; btn.TextSize = 11; btn.Parent = row
     table.insert(themeButtons, btn); table.insert(textElements, btn)
     local cr = Instance.new("UICorner"); cr.CornerRadius = UDim.new(0, 6); cr.Parent = btn
-    local function refresh() btn.Text = translations[currentLang][labelKey] or labelKey end
+
+    local floatWidget = nil
+    if hasPlus then
+        local plusBtn = Instance.new("TextButton")
+        plusBtn.Size = UDim2.fromOffset(30, 32)
+        plusBtn.Position = UDim2.new(1, -30, 0, 0)
+        plusBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 80)
+        plusBtn.Text = "+"
+        plusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        plusBtn.Font = GLOBAL_FONT
+        plusBtn.TextSize = 14
+        plusBtn.Parent = row
+        Instance.new("UICorner", plusBtn).CornerRadius = UDim.new(0, 6)
+
+        floatWidget = createFloatingFeatureShortcut(labelKey, function() return false end, function()
+            callback()
+        end)
+
+        plusBtn.MouseButton1Click:Connect(function()
+            floatWidget.Visible = not floatWidget.Visible
+        end)
+    end
+
+    local function refresh()
+        local txt = translations[currentLang][labelKey] or labelKey
+        btn.Text = txt
+        if floatWidget then floatWidget.Text = txt end
+    end
     refresh(); btn.MouseButton1Click:Connect(callback)
     return btn, refresh
 end
 
 local function createInputRow(parent, labelKey, defaultVal, callback)
     local row = Instance.new("Frame"); row.Size = UDim2.new(1, 0, 0, 30); row.BackgroundTransparency = 1; row.Parent = parent
-    local lbl = Instance.new("TextLabel"); lbl.Size = UDim2.new(.6, 0, 1, 0)
+    local lbl = Instance.new("TextLabel"); lbl.Size = UDim2.new(.55, 0, 1, 0)
     lbl.BackgroundTransparency = 1; lbl.TextColor3 = currentTextColor; lbl.Font = GLOBAL_FONT
     lbl.TextSize = 11; lbl.TextXAlignment = Enum.TextXAlignment.Left; lbl.Parent = row
     table.insert(textElements, lbl)
-    local box = Instance.new("TextBox"); box.Size = UDim2.new(.38, 0, 1, 0)
-    box.Position = UDim2.new(.62, 0, 0, 0); box.BackgroundColor3 = currentThemeColor
+    local box = Instance.new("TextBox"); box.Size = UDim2.new(.43, 0, 1, 0)
+    box.Position = UDim2.new(.57, 0, 0, 0); box.BackgroundColor3 = currentThemeColor
     box.TextColor3 = currentTextColor; box.Font = GLOBAL_FONT; box.TextSize = 11
     box.Text = tostring(defaultVal); box.Parent = row
     table.insert(themeButtons, box); table.insert(textElements, box)
     local cr = Instance.new("UICorner"); cr.CornerRadius = UDim.new(0, 6); cr.Parent = box
     box.FocusLost:Connect(function()
         local val = tonumber(box.Text)
-        if val then callback(val) else box.Text = tostring(defaultVal) end
+        if val then callback(val, box) else box.Text = tostring(defaultVal) end
     end)
     local function refresh() lbl.Text = translations[currentLang][labelKey] or labelKey end
-    refresh(); return row, refresh
+    refresh(); return row, refresh, box
 end
 
-local mainTab = tabs.Main; mainTab.Visible = true
+local mainTab = tabs.Main
+local rollTab = tabs.Roll
 local refreshFuncs = {}
 
-local function addToggle(parent, key, state, callback)
-    local _, r = createToggleRow(parent, key, state, callback); table.insert(refreshFuncs, r)
+local function addToggle(parent, key, state, callback, hasPlus)
+    local btn, r, setVis = createToggleRow(parent, key, state, callback, hasPlus)
+    table.insert(refreshFuncs, r)
+    return btn, setVis
 end
 local function addInput(parent, key, value, callback)
-    local _, r = createInputRow(parent, key, value, callback); table.insert(refreshFuncs, r)
+    local _, r, box = createInputRow(parent, key, value, callback)
+    table.insert(refreshFuncs, r)
+    return box
 end
-local function addButton(parent, key, callback)
-    local _, r = createButtonRow(parent, key, callback); table.insert(refreshFuncs, r)
+local function addButton(parent, key, callback, hasPlus)
+    local _, r = createButtonRow(parent, key, callback, hasPlus)
+    table.insert(refreshFuncs, r)
 end
 
-addInput(mainTab, "tpSpd", tpSpeed, function(v) tpSpeed = v end)
-addToggle(mainTab, "tpBtn", tpEnabled, function(v) tpEnabled = v end)
-addInput(mainTab, "walkSpd", walkSpeed, function(v)
-    walkSpeed = v
-    if walkEnabled then
-        local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if h then h.WalkSpeed = v end
+-- ==========================================
+-- XÂY DỰNG TAB ROLL & BẢNG CHỌN NHIỀU SỨC MẠNH [^]
+-- ==========================================
+
+local _, setAutoRollVisual = addToggle(rollTab, "autoRollBtn", autoRollEnabled, function(v, setVis)
+    toggleAutoRoll(v)
+    if setVis then setVis(v) end
+end, true)
+autoRollRefreshUI = setAutoRollVisual
+
+-- Nút quay 1 lần riêng lẻ kèm nút [+]
+addButton(rollTab, "rollOnceBtn", function()
+    fireGenerateAttackRandom()
+end, true)
+
+local rollTargetRow = Instance.new("Frame"); rollTargetRow.Size = UDim2.new(1, 0, 0, 34); rollTargetRow.BackgroundTransparency = 1; rollTargetRow.Parent = rollTab
+local rollTargetLabel = Instance.new("TextLabel"); rollTargetLabel.Size = UDim2.new(1, -40, 1, 0)
+rollTargetLabel.BackgroundTransparency = 1; rollTargetLabel.TextColor3 = currentTextColor; rollTargetLabel.Font = GLOBAL_FONT
+rollTargetLabel.TextSize = 11; rollTargetLabel.TextXAlignment = Enum.TextXAlignment.Left; rollTargetLabel.TextWrapped = true; rollTargetLabel.Parent = rollTargetRow
+table.insert(textElements, rollTargetLabel)
+
+local function updateRollTargetText()
+    local selectedNames = {}
+    for _, name in ipairs(allRngAttacks) do
+        if selectedAttacksMap[name] then
+            table.insert(selectedNames, name)
+        end
     end
+    local prefix = translations[currentLang]["rollTargetLabel"] or "Đã chọn: "
+    if #selectedNames == 0 then
+        rollTargetLabel.Text = prefix .. "Chưa chọn (Quay tự do)"
+    elseif #selectedNames <= 2 then
+        rollTargetLabel.Text = prefix .. table.concat(selectedNames, ", ")
+    else
+        rollTargetLabel.Text = prefix .. #selectedNames .. " sức mạnh"
+    end
+end
+updateRollTargetText()
+table.insert(refreshFuncs, updateRollTargetText)
+
+-- Nút Mũi Tên [^] mở bảng chọn nhiều sức mạnh
+local arrowBtn = Instance.new("TextButton")
+arrowBtn.Size = UDim2.fromOffset(32, 32)
+arrowBtn.Position = UDim2.new(1, -32, 0, 1)
+arrowBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 110)
+arrowBtn.Text = "^"
+arrowBtn.TextColor3 = Color3.new(1, 1, 1)
+arrowBtn.Font = GLOBAL_FONT
+arrowBtn.TextSize = 16
+arrowBtn.Parent = rollTargetRow
+Instance.new("UICorner", arrowBtn).CornerRadius = UDim.new(0, 6)
+
+-- Bảng Popup chọn nhiều sức mạnh
+local selectorPopup = Instance.new("Frame")
+selectorPopup.Size = UDim2.fromOffset(290, 260)
+selectorPopup.Position = UDim2.new(0.5, -145, 0.5, -130)
+selectorPopup.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
+selectorPopup.BorderSizePixel = 0
+selectorPopup.Visible = false
+selectorPopup.ZIndex = 800
+selectorPopup.Parent = screenGui
+Instance.new("UICorner", selectorPopup).CornerRadius = UDim.new(0, 8)
+local sfStroke = Instance.new("UIStroke"); sfStroke.Color = Color3.fromRGB(90, 90, 255); sfStroke.Thickness = 2; sfStroke.Parent = selectorPopup
+
+local selHeader = Instance.new("TextLabel")
+selHeader.Size = UDim2.new(1, -40, 0, 32)
+selHeader.Position = UDim2.new(0, 10, 0, 0)
+selHeader.BackgroundTransparency = 1
+selHeader.Text = "Chọn Nhiều Sức Mạnh Mục Tiêu"
+selHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
+selHeader.Font = GLOBAL_FONT
+selHeader.TextSize = 12
+selHeader.TextXAlignment = Enum.TextXAlignment.Left
+selHeader.Parent = selectorPopup
+
+local selClose = Instance.new("TextButton")
+selClose.Size = UDim2.fromOffset(26, 22)
+selClose.Position = UDim2.new(1, -30, 0, 5)
+selClose.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+selClose.Text = "X"
+selClose.TextColor3 = Color3.new(1, 1, 1)
+selClose.Font = GLOBAL_FONT
+selClose.TextSize = 12
+selClose.Parent = selectorPopup
+Instance.new("UICorner", selClose).CornerRadius = UDim.new(0, 4)
+selClose.MouseButton1Click:Connect(function() selectorPopup.Visible = false end)
+
+local selectorScroll = Instance.new("ScrollingFrame")
+selectorScroll.Size = UDim2.new(1, -12, 1, -72)
+selectorScroll.Position = UDim2.new(0, 6, 0, 34)
+selectorScroll.BackgroundTransparency = 1
+selectorScroll.BorderSizePixel = 0
+selectorScroll.ScrollBarThickness = 4
+selectorScroll.Parent = selectorPopup
+
+local selLayout = Instance.new("UIListLayout")
+selLayout.SortOrder = Enum.SortOrder.LayoutOrder
+selLayout.Padding = UDim.new(0, 4)
+selLayout.Parent = selectorScroll
+
+selLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    selectorScroll.CanvasSize = UDim2.new(0, 0, 0, selLayout.AbsoluteContentSize.Y + 10)
+end)
+
+local choiceButtonsMap = {}
+
+-- Nút xóa nhanh toàn bộ lựa chọn
+local clearSelBtn = Instance.new("TextButton")
+clearSelBtn.Size = UDim2.new(1, -12, 0, 28)
+clearSelBtn.Position = UDim2.new(0, 6, 1, -32)
+clearSelBtn.BackgroundColor3 = Color3.fromRGB(70, 40, 40)
+clearSelBtn.Text = "Bỏ chọn tất cả"
+clearSelBtn.TextColor3 = Color3.new(1, 1, 1)
+clearSelBtn.Font = GLOBAL_FONT
+clearSelBtn.TextSize = 11
+clearSelBtn.Parent = selectorPopup
+Instance.new("UICorner", clearSelBtn).CornerRadius = UDim.new(0, 5)
+
+clearSelBtn.MouseButton1Click:Connect(function()
+    selectedAttacksMap = {}
+    for atkName, btn in pairs(choiceButtonsMap) do
+        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+        btn.Text = atkName
+    end
+    updateRollTargetText()
+end)
+
+for _, atkName in ipairs(allRngAttacks) do
+    local choiceBtn = Instance.new("TextButton")
+    choiceBtn.Size = UDim2.new(1, 0, 0, 28)
+    choiceBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+    choiceBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    choiceBtn.Font = GLOBAL_FONT
+    choiceBtn.TextSize = 11
+    choiceBtn.Text = atkName
+    choiceBtn.Parent = selectorScroll
+    Instance.new("UICorner", choiceBtn).CornerRadius = UDim.new(0, 5)
+    choiceButtonsMap[atkName] = choiceBtn
+
+    choiceBtn.MouseButton1Click:Connect(function()
+        selectedAttacksMap[atkName] = not selectedAttacksMap[atkName]
+        if selectedAttacksMap[atkName] then
+            choiceBtn.BackgroundColor3 = Color3.fromRGB(45, 160, 85)
+            choiceBtn.Text = "✔ " .. atkName
+        else
+            choiceBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+            choiceBtn.Text = atkName
+        end
+        updateRollTargetText()
+    end)
+end
+
+arrowBtn.MouseButton1Click:Connect(function()
+    selectorPopup.Visible = not selectorPopup.Visible
+end)
+
+-- ==========================================
+-- ĐIỀN DỮ LIỆU TAB CHÍNH (CÓ CHẶN NGƯỠNG ANTIBAN)
+-- ==========================================
+
+addInput(mainTab, "tpSpd", tpSpeed, function(v) tpSpeed = v end)
+addToggle(mainTab, "tpBtn", tpEnabled, function(v, setVis)
+    tpEnabled = v
+    if setVis then setVis(v) end
+end, true)
+
+addInput(mainTab, "walkSpd", walkSpeed, function(v, box)
+    checkSafetyThreshold("walk", v, function(allowed)
+        if allowed then
+            walkSpeed = v
+            if walkEnabled then
+                local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+                if h then h.WalkSpeed = v end
+            end
+        end
+    end, function()
+        box.Text = tostring(walkSpeed)
+    end)
 end)
 
 local walkConnection
-addToggle(mainTab, "walkBtn", walkEnabled, function(v)
-    walkEnabled = v
-    if walkConnection then walkConnection:Disconnect(); walkConnection = nil end
+addToggle(mainTab, "walkBtn", walkEnabled, function(v, setVis)
     if v then
-        walkConnection = RunService.RenderStepped:Connect(function()
-            local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if h then h.WalkSpeed = walkSpeed end
+        checkSafetyThreshold("walk", walkSpeed, function(allowed)
+            if allowed then
+                walkEnabled = true
+                if setVis then setVis(true) end
+                if walkConnection then walkConnection:Disconnect(); walkConnection = nil end
+                walkConnection = RunService.RenderStepped:Connect(function()
+                    local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+                    if h then h.WalkSpeed = walkSpeed end
+                end)
+            end
+        end, function()
+            walkEnabled = false
+            if setVis then setVis(false) end
         end)
     else
+        walkEnabled = false
+        if setVis then setVis(false) end
+        if walkConnection then walkConnection:Disconnect(); walkConnection = nil end
         local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
         if h then h.WalkSpeed = 16 end
     end
-end)
+end, true)
 
-addInput(mainTab, "jumpSpd", jumpPower, function(v)
-    jumpPower = v
-    local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-    if jumpEnabled and h then h.UseJumpPower = true; h.JumpPower = v end
+addInput(mainTab, "jumpSpd", jumpPower, function(v, box)
+    checkSafetyThreshold("jump", v, function(allowed)
+        if allowed then
+            jumpPower = v
+            local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if jumpEnabled and h then h.UseJumpPower = true; h.JumpPower = v end
+        end
+    end, function()
+        box.Text = tostring(jumpPower)
+    end)
 end)
 
 local jumpConnection
-addToggle(mainTab, "jumpBtn", jumpEnabled, function(v)
-    jumpEnabled = v
-    if jumpConnection then jumpConnection:Disconnect(); jumpConnection = nil end
+addToggle(mainTab, "jumpBtn", jumpEnabled, function(v, setVis)
     if v then
-        jumpConnection = RunService.RenderStepped:Connect(function()
-            local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if h then h.UseJumpPower = true; h.JumpPower = jumpPower end
+        checkSafetyThreshold("jump", jumpPower, function(allowed)
+            if allowed then
+                jumpEnabled = true
+                if setVis then setVis(true) end
+                if jumpConnection then jumpConnection:Disconnect(); jumpConnection = nil end
+                jumpConnection = RunService.RenderStepped:Connect(function()
+                    local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+                    if h then h.UseJumpPower = true; h.JumpPower = jumpPower end
+                end)
+            end
+        end, function()
+            jumpEnabled = false
+            if setVis then setVis(false) end
         end)
+    else
+        jumpEnabled = false
+        if setVis then setVis(false) end
+        if jumpConnection then jumpConnection:Disconnect(); jumpConnection = nil end
     end
-end)
+end, true)
 
 addInput(mainTab, "flySpd", flySpeed, function(v) flySpeed = v end)
-addToggle(mainTab, "flyBtn", flyEnabled, toggleFly)
+addToggle(mainTab, "flyBtn", flyEnabled, function(v, setVis) toggleFly(v); if setVis then setVis(v) end end, true)
 addInput(mainTab, "gravSpd", customGravity, function(v) customGravity = v if gravityEnabled then Workspace.Gravity = v end end)
 
 local gravityConnection
-addToggle(mainTab, "gravBtn", gravityEnabled, function(v)
+addToggle(mainTab, "gravBtn", gravityEnabled, function(v, setVis)
     gravityEnabled = v
+    if setVis then setVis(v) end
     if gravityConnection then gravityConnection:Disconnect(); gravityConnection = nil end
     if v then
         gravityConnection = RunService.RenderStepped:Connect(function() Workspace.Gravity = customGravity end)
     else Workspace.Gravity = 196.2 end
-end)
+end, true)
 
-addToggle(mainTab, "noclipBtn", noclipEnabled, toggleNoclip)
-addToggle(mainTab, "invisBtn", invisibleEnabled, toggleInvisibility)
-addToggle(mainTab, "infJumpBtn", infJumpEnabled, toggleInfJump)
+addToggle(mainTab, "noclipBtn", noclipEnabled, function(v, setVis) toggleNoclip(v); if setVis then setVis(v) end end, true)
+addToggle(mainTab, "invisBtn", invisibleEnabled, function(v, setVis) toggleInvisibility(v); if setVis then setVis(v) end end, true)
+addToggle(mainTab, "infJumpBtn", infJumpEnabled, function(v, setVis) toggleInfJump(v); if setVis then setVis(v) end end, true)
 addInput(mainTab, "freezeRng", freezeRadius, function(v) freezeRadius = v end)
-addToggle(mainTab, "freezeBtn", freezeRayEnabled, toggleFreezeRay)
-addButton(mainTab, "autoEquipBtn", equipItemsOnce)
+addToggle(mainTab, "freezeBtn", freezeRayEnabled, function(v, setVis) toggleFreezeRay(v); if setVis then setVis(v) end end, true)
+addButton(mainTab, "autoEquipBtn", equipItemsOnce, true)
 addInput(mainTab, "autoPressRadiusLabel", autoPressRadius, function(v) autoPressRadius = v end)
 addInput(mainTab, "autoPressDelayLabel", autoPressDelay, function(v) autoPressDelay = v end)
-addToggle(mainTab, "autoPressBtn", autoPressButtonEnabled, toggleAutoPressButton)
+addToggle(mainTab, "autoPressBtn", autoPressButtonEnabled, function(v, setVis) toggleAutoPressButton(v); if setVis then setVis(v) end end, true)
 
 local godRow = Instance.new("Frame"); godRow.Size = UDim2.new(1, 0, 0, 36); godRow.BackgroundTransparency = 1; godRow.Parent = mainTab
 local godButton = Instance.new("TextButton"); godButton.Size = UDim2.fromScale(1, 1)
@@ -1130,8 +1585,8 @@ godButton.MouseButton1Click:Connect(function()
 end)
 
 local espTab = tabs.ESP
-addToggle(espTab, "espBtn", espEnabled, function(v) espEnabled = v; updateESP() end)
-addToggle(espTab, "fpsBtn", fpsEnabled, toggleFPSDisplay)
+addToggle(espTab, "espBtn", espEnabled, function(v, setVis) espEnabled = v; if setVis then setVis(v) end; updateESP() end, true)
+addToggle(espTab, "fpsBtn", fpsEnabled, function(v, setVis) toggleFPSDisplay(v); if setVis then setVis(v) end end, true)
 
 local espColorLabel = Instance.new("TextLabel"); espColorLabel.Size = UDim2.new(1, 0, 0, 20)
 espColorLabel.BackgroundTransparency = 1; espColorLabel.TextColor3 = currentTextColor; espColorLabel.Font = GLOBAL_FONT
@@ -1151,9 +1606,9 @@ for i, col in ipairs(espColors) do
 end
 
 local fixTab = tabs.FixLag
-addToggle(fixTab, "fixLagBtn", fixLagEnabled, toggleFixLag)
-addToggle(fixTab, "hideMapBtn", hideMapOthersEnabled, toggleHideMapAndOthers)
-addToggle(fixTab, "muteSoundsBtn", muteAllSoundsEnabled, toggleMuteAllSounds)
+addToggle(fixTab, "fixLagBtn", fixLagEnabled, function(v, setVis) toggleFixLag(v); if setVis then setVis(v) end end, true)
+addToggle(fixTab, "hideMapBtn", hideMapOthersEnabled, function(v, setVis) toggleHideMapAndOthers(v); if setVis then setVis(v) end end, true)
+addToggle(fixTab, "muteSoundsBtn", muteAllSoundsEnabled, function(v, setVis) toggleMuteAllSounds(v); if setVis then setVis(v) end end, true)
 
 local miscTab = tabs.Misc
 local function addLabel(parent, key)
@@ -1192,9 +1647,8 @@ addPalette(miscTab, {
     Color3.fromRGB(100, 255, 200), Color3.fromRGB(255, 150, 200)
 }, applyTextColor)
 
--- Thêm các nút Bật/Tắt Antiban & Server Hop vào tab Misc
-addToggle(miscTab, "autoHopBtn", autoServerHopEnabled, function(v) autoServerHopEnabled = v end)
-addToggle(miscTab, "adminDetectBtn", adminDetectorEnabled, function(v) adminDetectorEnabled = v end)
+addToggle(miscTab, "autoHopBtn", autoServerHopEnabled, function(v, setVis) autoServerHopEnabled = v; if setVis then setVis(v) end end, true)
+addToggle(miscTab, "adminDetectBtn", adminDetectorEnabled, function(v, setVis) adminDetectorEnabled = v; if setVis then setVis(v) end end, true)
 
 local _, rLang = addLabel(miscTab, "langLabel"); table.insert(refreshFuncs, rLang)
 local langFrame = Instance.new("Frame"); langFrame.Size = UDim2.new(1, 0, 0, 30); langFrame.BackgroundTransparency = 1; langFrame.Parent = miscTab
@@ -1214,7 +1668,7 @@ rejoinButton.MouseButton1Click:Connect(rejoinServer)
 serverHopButton.MouseButton1Click:Connect(serverHopFiltered)
 
 local tabButtons = {}
-local tabTextKeys = {Main = "tabMain", ESP = "tabEsp", FixLag = "tabFixLag", Misc = "tabMisc", Experimental = "tabExperimental"}
+local tabTextKeys = {Main = "tabMain", Roll = "tabRoll", ESP = "tabEsp", FixLag = "tabFixLag", Misc = "tabMisc", Experimental = "tabExperimental"}
 local y = 10
 for i, name in ipairs(tabNames) do
     local b = Instance.new("TextButton"); b.Size = UDim2.new(1, -16, 0, 32); b.Position = UDim2.new(0, 8, 0, y)
@@ -1242,12 +1696,8 @@ end
 btnEnglish.MouseButton1Click:Connect(function() currentLang = "EN"; updateLanguage() end)
 btnVietnamese.MouseButton1Click:Connect(function() currentLang = "VI"; updateLanguage() end)
 
--- ==========================================
--- TAB THỬ NGHIỆM: SPECTATE & CAMERA VIEW
--- ==========================================
-
+-- TAB THỬ NGHIỆM: SPECTATE
 local expTab = tabs.Experimental
-
 local toggleButton = Instance.new("TextButton")
 toggleButton.Name = "ToggleSpectateButton"
 toggleButton.Size = UDim2.new(0, 110, 0, 40)
@@ -1264,255 +1714,12 @@ toggleButton.Visible = false
 toggleButton.Parent = screenGui
 Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0, 8)
 
-local toggleStroke = Instance.new("UIStroke")
-toggleStroke.Thickness = 2
-toggleStroke.Color = Color3.fromRGB(80, 80, 255)
-toggleStroke.Parent = toggleButton
-
-createToggleRow(expTab, "specBtnToggle", spectating, function(state)
-    spectating = state
+createToggleRow(expTab, "specBtnToggle", false, function(state, setVis)
     toggleButton.Visible = state
-    if not state then
-        pcall(function()
-            if spectateConnection then spectateConnection:Disconnect(); spectateConnection = nil end
-            local cam = Workspace.CurrentCamera
-            if cam and player.Character then
-                local myHum = player.Character:FindFirstChildOfClass("Humanoid")
-                if myHum then cam.CameraSubject = myHum end
-            end
-        end)
-    end
-end)
+    if setVis then setVis(state) end
+end, true)
 
-local spectateFrame = Instance.new("Frame")
-spectateFrame.Size = UDim2.new(0, 320, 0, 115)
-spectateFrame.Position = UDim2.new(0.5, -160, 0.85, -55)
-spectateFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-spectateFrame.BackgroundTransparency = 0.2
-spectateFrame.BorderSizePixel = 0
-spectateFrame.Visible = false
-spectateFrame.ZIndex = 50
-spectateFrame.Parent = screenGui
-Instance.new("UICorner", spectateFrame).CornerRadius = UDim.new(0, 8)
-
-local specStroke = Instance.new("UIStroke")
-specStroke.Color = Color3.fromRGB(80, 80, 255)
-specStroke.Thickness = 2
-specStroke.Parent = spectateFrame
-
-local specNameLabel = Instance.new("TextLabel")
-specNameLabel.Size = UDim2.new(1, -90, 0, 34)
-specNameLabel.Position = UDim2.new(0, 45, 0, 6)
-specNameLabel.BackgroundTransparency = 1
-specNameLabel.Text = "Player Name"
-specNameLabel.TextColor3 = currentTextColor
-specNameLabel.Font = GLOBAL_FONT
-specNameLabel.TextSize = 13
-specNameLabel.Parent = spectateFrame
-table.insert(textElements, specNameLabel)
-
-local specPrevBtn = Instance.new("TextButton")
-specPrevBtn.Size = UDim2.new(0, 35, 0, 34)
-specPrevBtn.Position = UDim2.new(0, 8, 0, 6)
-specPrevBtn.BackgroundColor3 = currentThemeColor
-specPrevBtn.Text = "<"
-specPrevBtn.TextColor3 = currentTextColor
-specPrevBtn.Font = GLOBAL_FONT
-specPrevBtn.TextSize = 16
-specPrevBtn.Parent = spectateFrame
-Instance.new("UICorner", specPrevBtn).CornerRadius = UDim.new(0, 6)
-table.insert(themeButtons, specPrevBtn); table.insert(textElements, specPrevBtn)
-
-local specNextBtn = specPrevBtn:Clone()
-specNextBtn.Position = UDim2.new(1, -43, 0, 6)
-specNextBtn.Text = ">"
-specNextBtn.Parent = spectateFrame
-table.insert(themeButtons, specNextBtn); table.insert(textElements, specNextBtn)
-
-local teleportBtn = Instance.new("TextButton")
-teleportBtn.Size = UDim2.new(0, 160, 0, 28)
-teleportBtn.Position = UDim2.new(0.5, -80, 0, 44)
-teleportBtn.BackgroundColor3 = Color3.fromRGB(45, 120, 210)
-teleportBtn.Text = "🚀 Dịch Chuyển Tới"
-teleportBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-teleportBtn.Font = GLOBAL_FONT
-teleportBtn.TextSize = 11
-teleportBtn.Parent = spectateFrame
-Instance.new("UICorner", teleportBtn).CornerRadius = UDim.new(0, 5)
-
-local specCloseBtn = Instance.new("TextButton")
-specCloseBtn.Size = UDim2.new(0, 120, 0, 24)
-specCloseBtn.Position = UDim2.new(0.5, -60, 0, 78)
-specCloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-specCloseBtn.Text = "Đóng Spectate"
-specCloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-specCloseBtn.Font = GLOBAL_FONT
-specCloseBtn.TextSize = 11
-specCloseBtn.Parent = spectateFrame
-Instance.new("UICorner", specCloseBtn).CornerRadius = UDim.new(0, 5)
-
-local function getSpectateTargets()
-    local targets = {}
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p and p ~= player and p.Parent then
-            table.insert(targets, p)
-        end
-    end
-    return targets
-end
-
-local function updateSpectateCamera()
-    pcall(function()
-        local targets = getSpectateTargets()
-        if #targets == 0 then
-            specNameLabel.Text = "Không có người chơi khác!"
-            return
-        end
-        if spectateIndex > #targets then spectateIndex = 1 end
-        if spectateIndex < 1 then spectateIndex = #targets end
-
-        local target = targets[spectateIndex]
-        if not target then return end
-        specNameLabel.Text = (target.DisplayName or target.Name) .. " (@" .. target.Name .. ")"
-
-        local cam = Workspace.CurrentCamera
-        if cam and target.Character then
-            local hum = target.Character:FindFirstChildOfClass("Humanoid")
-            if hum then cam.CameraSubject = hum end
-        end
-    end)
-end
-
-local function teleportToSpectateTarget()
-    pcall(function()
-        local targets = getSpectateTargets()
-        local target = targets[spectateIndex]
-        if not target then return end
-        local targetRoot = target.Character and (target.Character:FindFirstChild("HumanoidRootPart") or target.Character:FindFirstChild("Torso"))
-        local myRoot = player.Character and (player.Character:FindFirstChild("HumanoidRootPart") or player.Character:FindFirstChild("Torso"))
-        if targetRoot and myRoot then myRoot.CFrame = targetRoot.CFrame * CFrame.new(0, 0, 3) end
-    end)
-end
-
-local function toggleSpectateWindow(state)
-    spectateFrame.Visible = state
-    setBackpackVisible(not state)
-    local cam = Workspace.CurrentCamera
-    if not cam then return end
-
-    if state then
-        spectateIndex = 1
-        updateSpectateCamera()
-        if not spectateConnection then
-            spectateConnection = RunService.RenderStepped:Connect(function()
-                if not spectateFrame.Visible then return end
-                pcall(function()
-                    local targets = getSpectateTargets()
-                    local target = targets[spectateIndex]
-                    if target and target.Character then
-                        local hum = target.Character:FindFirstChildOfClass("Humanoid")
-                        if hum and cam.CameraSubject ~= hum then cam.CameraSubject = hum end
-                    end
-                end)
-            end)
-        end
-    else
-        if spectateConnection then spectateConnection:Disconnect(); spectateConnection = nil end
-        if player.Character then
-            local myHum = player.Character:FindFirstChildOfClass("Humanoid")
-            if myHum then cam.CameraSubject = myHum end
-        end
-    end
-end
-
-toggleButton.MouseButton1Click:Connect(function() toggleSpectateWindow(not spectateFrame.Visible) end)
-specPrevBtn.MouseButton1Click:Connect(function() spectateIndex = spectateIndex - 1; updateSpectateCamera() end)
-specNextBtn.MouseButton1Click:Connect(function() spectateIndex = spectateIndex + 1; updateSpectateCamera() end)
-teleportBtn.MouseButton1Click:Connect(teleportToSpectateTarget)
-specCloseBtn.MouseButton1Click:Connect(function() toggleSpectateWindow(false) end)
-
-local cameraLabel = Instance.new("TextLabel")
-cameraLabel.Size = UDim2.new(1, 0, 0, 20); cameraLabel.BackgroundTransparency = 1
-cameraLabel.TextColor3 = currentTextColor; cameraLabel.Font = GLOBAL_FONT; cameraLabel.TextSize = 11
-cameraLabel.TextXAlignment = Enum.TextXAlignment.Left; cameraLabel.Parent = expTab
-table.insert(textElements, cameraLabel)
-
-local function refreshCamLabel()
-    cameraLabel.Text = translations[currentLang]["cameraViewLabel"] or "Chỉnh Góc Nhìn Camera:"
-end
-refreshCamLabel()
-table.insert(refreshFuncs, refreshCamLabel)
-
-local function setCameraMode(mode)
-    currentCameraMode = mode
-    if cameraViewConnection then cameraViewConnection:Disconnect(); cameraViewConnection = nil end
-    local cam = Workspace.CurrentCamera
-    if not cam then return end
-
-    if mode == "Default" then
-        player.CameraMode = Enum.CameraMode.Classic
-        cam.CameraType = Enum.CameraType.Custom
-        if player.Character then
-            local hum = player.Character:FindFirstChildOfClass("Humanoid")
-            if hum then cam.CameraSubject = hum end
-        end
-    elseif mode == "FirstPerson" then
-        player.CameraMode = Enum.CameraMode.LockFirstPerson
-    else
-        player.CameraMode = Enum.CameraMode.Classic
-        cam.CameraType = Enum.CameraType.Scriptable
-        cameraViewConnection = RunService.RenderStepped:Connect(function()
-            local char = player.Character
-            local root = char and (char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Head"))
-            if not root or not cam then return end
-
-            if currentCameraMode == "Shoulder" then
-                cam.CFrame = CFrame.new(root.Position + Vector3.new(2.5, 2, 4), root.Position + Vector3.new(1, 0, -10))
-            elseif currentCameraMode == "Side" then
-                cam.CFrame = CFrame.new(root.Position + Vector3.new(8, 2, 0), root.Position)
-            elseif currentCameraMode == "TopDown" then
-                cam.CFrame = CFrame.new(root.Position + Vector3.new(0, 18, 0.1), root.Position)
-            end
-        end)
-    end
-end
-
-local cameraButtonsData = {
-    {Name = "Góc Nhìn 3 (Gốc)", Mode = "Default"},
-    {Name = "Góc Nhìn 1", Mode = "FirstPerson"},
-    {Name = "Góc Vai (ShiftLock)", Mode = "Shoulder"},
-    {Name = "Góc Mặt Cạnh", Mode = "Side"},
-    {Name = "Góc Trên Xuống", Mode = "TopDown"}
-}
-
-for _, data in ipairs(cameraButtonsData) do
-    local btnRow = Instance.new("Frame"); btnRow.Size = UDim2.new(1, 0, 0, 28); btnRow.BackgroundTransparency = 1; btnRow.Parent = expTab
-    local btn = Instance.new("TextButton"); btn.Size = UDim2.fromScale(1, 1)
-    btn.BackgroundColor3 = currentThemeColor; btn.TextColor3 = currentTextColor
-    btn.Font = GLOBAL_FONT; btn.TextSize = 11; btn.Text = data.Name; btn.Parent = btnRow
-    table.insert(themeButtons, btn); table.insert(textElements, btn)
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
-    btn.MouseButton1Click:Connect(function() setCameraMode(data.Mode) end)
-end
-
--- Animation nút bấm
-local function applyButtonAnimation(btn)
-    if not btn or not btn:IsA("TextButton") then return end
-    if btn:FindFirstChild("HHubScale") then return end
-    local scale = Instance.new("UIScale"); scale.Name = "HHubScale"; scale.Scale = 1; scale.Parent = btn
-    btn.MouseEnter:Connect(function() TweenService:Create(scale, TweenInfo.new(.12), {Scale = 1.05}):Play() end)
-    btn.MouseLeave:Connect(function() TweenService:Create(scale, TweenInfo.new(.12), {Scale = 1}):Play() end)
-    btn.MouseButton1Down:Connect(function() TweenService:Create(scale, TweenInfo.new(.08), {Scale = .92}):Play() end)
-    btn.MouseButton1Up:Connect(function() TweenService:Create(scale, TweenInfo.new(.08), {Scale = 1.05}):Play() end)
-end
-
-for _, obj in ipairs(screenGui:GetDescendants()) do
-    if obj:IsA("TextButton") then applyButtonAnimation(obj) end
-end
-screenGui.DescendantAdded:Connect(function(obj)
-    if obj:IsA("TextButton") then task.defer(function() applyButtonAnimation(obj) end) end
-end)
-
+-- Quản lý thu phóng UI
 local isAnimating = false
 minimizeButton.MouseButton1Click:Connect(function()
     if isAnimating then return end
@@ -1537,36 +1744,14 @@ openUIButton.MouseButton1Click:Connect(function()
         openUIButton.Visible = false
         frame.Visible = true
         frame.Size = UDim2.fromOffset(0, 0)
-        TweenService:Create(frame, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(390, 320)}):Play()
+        TweenService:Create(frame, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(410, 340)}):Play()
         isAnimating = false
     end)
 end)
 
 closeButton.MouseButton1Click:Connect(function()
-    if isAnimating then return end
-    isAnimating = true
-    local tween = TweenService:Create(frame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.fromOffset(0, 0)})
-    tween:Play()
-    tween.Completed:Connect(function()
-        pcall(function() toggleSpectateWindow(false) end)
-        pcall(function() setCameraMode("Default") end)
-        pcall(function() toggleNoclip(false) end)
-        pcall(function() toggleInvisibility(false) end)
-        pcall(function() toggleFly(false) end)
-        pcall(function() toggleInfJump(false) end)
-        pcall(function() toggleFPSDisplay(false) end)
-        pcall(function() toggleAutoPressButton(false) end)
-        pcall(function() toggleFixLag(false) end)
-        pcall(function() toggleHideMapAndOthers(false) end)
-        pcall(function() toggleMuteAllSounds(false) end)
-        if gravityConnection then gravityConnection:Disconnect(); gravityConnection = nil end
-        Workspace.Gravity = 196.2
-        espEnabled = false; updateESP()
-        if walkConnection then walkConnection:Disconnect(); walkConnection = nil end
-        if jumpConnection then jumpConnection:Disconnect(); jumpConnection = nil end
-        tpEnabled = false
-        pcall(function() screenGui:Destroy() end)
-    end)
+    toggleAutoRoll(false)
+    pcall(function() screenGui:Destroy() end)
 end)
 
 updateLanguage()
@@ -1575,7 +1760,7 @@ frame.Size = UDim2.fromOffset(1, 1)
 
 task.defer(function()
     task.wait(0.05)
-    TweenService:Create(frame, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(390, 320)}):Play()
+    TweenService:Create(frame, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(410, 340)}):Play()
 end)
 
-print("[H HUB] Antiban & Server Hop System Loaded Successfully!")
+print("[H HUB] RNG Fights Multi-Target Auto Roll & Antiban Loaded!")
