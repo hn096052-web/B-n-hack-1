@@ -1,5 +1,5 @@
 -- ==========================================
--- H HUB - RNG FIGHTS FULL FEATURES, MULTI-ROLL & SELECTIVE AIMLOCK
+-- H HUB - RNG FIGHTS AUTOFARM, MULTI-TARGET AUTO ROLL & ANTIBAN
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -19,7 +19,7 @@ if not player then return end
 local playerGui = player:WaitForChild("PlayerGui", 10)
 if not playerGui then return end
 
--- 1. Dọn GUI cũ an toàn
+-- 1. Dọn GUI cũ
 pcall(function()
     local old1 = playerGui:FindFirstChild("AutoFarmHubGui")
     if old1 then old1:Destroy() end
@@ -55,6 +55,7 @@ local walkEnabled = false
 local jumpEnabled = false
 local noclipEnabled = false
 local invisibleEnabled = false
+local flyEnabled = false
 local infJumpEnabled = false
 local freezeRayEnabled = false
 local espEnabled = false
@@ -64,17 +65,13 @@ local autoPressButtonEnabled = false
 local fixLagEnabled = false
 local hideMapOthersEnabled = false
 local muteAllSoundsEnabled = false
-local aimLockEnabled = false
 
 -- Trạng thái Antiban & Server Hop & Auto Roll
 local autoServerHopEnabled = false
 local adminDetectorEnabled = true
 local autoRollEnabled = false
 
--- Mục tiêu AimLock được chọn ("Tất cả" hoặc tên cụ thể)
-local selectedAimTargetName = "Tất cả"
-
--- Danh sách toàn bộ sức mạnh RNG Fights chuẩn game
+-- Danh sách toàn bộ 36+ sức mạnh RNG Fights chuẩn game
 local allRngAttacks = {
     "Punch", "Slap", "Laser", "Shockwave", "Rage", "Get Out", "Streak",
     "Rapid Fire", "Phase", "Nope", "Party", "Rock", "UltraPunch", "Orbital Strike",
@@ -84,13 +81,14 @@ local allRngAttacks = {
     "Reverse", "Hellfire", "Reaper", "Nuke"
 }
 
--- Bảng lưu danh sách các sức mạnh được chọn nhiều mục tiêu
+-- Bảng lưu danh sách các sức mạnh được chọn để dừng khi roll trúng
 local selectedAttacksMap = {}
 
 -- Cấu hình mặc định
 local tpSpeed = 0.15
 local walkSpeed = 35
-local jumpPower = 75
+local jumpPower = 25
+local flySpeed = 100
 local customGravity = 196.2
 local coinName = "Coin"
 local freezeRadius = 150
@@ -115,10 +113,10 @@ local translations = {
     EN = {
         title = "H HUB - RNG Fights",
         tabMain = "Main", tabRoll = "Auto Roll", tabEsp = "ESP", tabMisc = "Settings", tabFixLag = "Fix Lag", tabExperimental = "Exp",
-        tpSpd = "TP Speed (s):", walkSpd = "Walk Speed:",
+        tpSpd = "TP Speed (s):", walkSpd = "Walk Speed:", flySpd = "Fly Speed:",
         jumpSpd = "Jump Power:", gravSpd = "Gravity:", freezeRng = "Freeze Range:",
         tpBtn = "Auto TP Coins", walkBtn = "Custom Speed", jumpBtn = "Custom Jump",
-        aimLockBtn = "AimLock (Select Target)", gravBtn = "Custom Gravity", noclipBtn = "Noclip Pass-Wall",
+        flyBtn = "Fly Mode", gravBtn = "Custom Gravity", noclipBtn = "Noclip Pass-Wall",
         invisBtn = "Invisibility", infJumpBtn = "Infinite Jump", freezeBtn = "Auto Freeze Ray",
         autoEquipBtn = "Equip Items", godBtn = "⚡ God Mode Panel",
         espBtn = "ESP Wallhack", fpsBtn = "Display FPS",
@@ -130,15 +128,15 @@ local translations = {
         rejoinBtn = "Rejoin", serverHopBtn = "Server Hop", on = "ON", off = "OFF",
         specBtnToggle = "👁️ Spectate Mode", cameraViewLabel = "Camera View Angle:",
         autoHopBtn = "Auto Server Hop (20m)", adminDetectBtn = "Anti-Admin Detector",
-        autoRollBtn = "Auto Roll (Multi-Target)", rollOnceBtn = "Roll 1 Time", rollTargetLabel = "Selected: "
+        autoRollBtn = "Auto Roll (Stop on Match)", rollOnceBtn = "Roll 1 Time", rollTargetLabel = "Selected: "
     },
     VI = {
         title = "H HUB - RNG Fights",
         tabMain = "Chính", tabRoll = "Quay Sức Mạnh", tabEsp = "Người chơi/ESP", tabMisc = "Cài đặt", tabFixLag = "Fix Lag", tabExperimental = "Thử nghiệm",
-        tpSpd = "Tốc độ TP (giây):", walkSpd = "Tốc độ Đi bộ:",
+        tpSpd = "Tốc độ TP (giây):", walkSpd = "Tốc độ Đi bộ:", flySpd = "Tốc độ Bay:",
         jumpSpd = "Độ Cao Nhảy:", gravSpd = "Trọng Lực Game:", freezeRng = "Khoảng cách Freeze:",
         tpBtn = "Auto TP Nhặt Xu", walkBtn = "Chỉnh Tốc Độ Đi", jumpBtn = "Chỉnh Độ Nhảy",
-        aimLockBtn = "AimLock (Chọn Mục Tiêu)", gravBtn = "Trọng Lực Tùy Chỉnh", noclipBtn = "Đi Xuyên Tường (Noclip)",
+        flyBtn = "Chế Độ Bay", gravBtn = "Trọng Lực Tùy Chỉnh", noclipBtn = "Đi Xuyên Tường (Noclip)",
         invisBtn = "Tàng Hình Nhìn Thấy", infJumpBtn = "Nhảy Vô Hạn",
         freezeBtn = "Tự Động Freeze Ray", autoEquipBtn = "Trang Bị Đồ",
         godBtn = "⚡ Bảng God Mode (Bất Tử)", espBtn = "ESP Nhìn Xuyên Tường",
@@ -149,9 +147,9 @@ local translations = {
         boardColorLabel = "Màu Bảng Điều Khiển:", themeLabel = "Màu Nút Giao Diện:",
         textLabel = "Màu Chữ Giao Diện:", langLabel = "Ngôn ngữ / Language:",
         rejoinBtn = "Vào Lại Server", serverHopBtn = "Đổi Server Khác", on = "BẬT", off = "TẮT",
-        specBtnToggle = "👁️ Chế Độ Spectate", cameraViewLabel = "Camera View Angle:",
+        specBtnToggle = "👁️ Chế Độ Spectate", cameraViewLabel = "Chỉnh Góc Nhìn Camera:",
         autoHopBtn = "Tự Động Đổi Server (20p)", adminDetectBtn = "Phát Hiện Admin (Antiban)",
-        autoRollBtn = "Auto Roll (Chọn Nhiều Mục Tiêu)", rollOnceBtn = "Quay 1 Lần", rollTargetLabel = "Đã chọn: "
+        autoRollBtn = "Auto Roll (Dừng Khi Trúng)", rollOnceBtn = "Quay 1 Lần", rollTargetLabel = "Đã chọn: "
     }
 }
 
@@ -173,7 +171,7 @@ local bwStroke = Instance.new("UIStroke"); bwStroke.Color = Color3.fromRGB(255, 
 local bwTitle = Instance.new("TextLabel")
 bwTitle.Size = UDim2.new(1, 0, 0, 35)
 bwTitle.BackgroundTransparency = 1
-bwTitle.Text = "⚠️ CẢNH BÁO BẢO MẬT (ANTIBAN)"
+bwTitle.Text = "⚠️ CẢNH BÁO: BẠN CÓ THỂ BỊ BAN"
 bwTitle.TextColor3 = Color3.fromRGB(255, 60, 60)
 bwTitle.Font = GLOBAL_FONT
 bwTitle.TextSize = 13
@@ -183,7 +181,7 @@ local bwDesc = Instance.new("TextLabel")
 bwDesc.Size = UDim2.new(1, -20, 0, 55)
 bwDesc.Position = UDim2.new(0, 10, 0, 35)
 bwDesc.BackgroundTransparency = 1
-bwDesc.Text = "Bạn đang chỉnh tốc độ hoặc độ nhảy vượt ngưỡng an toàn! Bạn có thể bị ban khỏi game."
+bwDesc.Text = "Thông số vượt ngưỡng an toàn! Bạn có thể bị ban khỏi game."
 bwDesc.TextColor3 = Color3.fromRGB(255, 255, 255)
 bwDesc.Font = GLOBAL_FONT
 bwDesc.TextSize = 11
@@ -194,7 +192,7 @@ local bwBtnConfirm = Instance.new("TextButton")
 bwBtnConfirm.Size = UDim2.new(0, 145, 0, 30)
 bwBtnConfirm.Position = UDim2.new(0, 15, 1, -40)
 bwBtnConfirm.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-bwBtnConfirm.Text = "Vẫn tiếp tục"
+bwBtnConfirm.Text = "Bật luôn"
 bwBtnConfirm.TextColor3 = Color3.fromRGB(255, 255, 255)
 bwBtnConfirm.Font = GLOBAL_FONT
 bwBtnConfirm.TextSize = 12
@@ -205,7 +203,7 @@ local bwBtnCancel = Instance.new("TextButton")
 bwBtnCancel.Size = UDim2.new(0, 145, 0, 30)
 bwBtnCancel.Position = UDim2.new(1, -160, 1, -40)
 bwBtnCancel.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-bwBtnCancel.Text = "Hủy bỏ (An toàn)"
+bwBtnCancel.Text = "Thôi (Tắt)"
 bwBtnCancel.TextColor3 = Color3.fromRGB(255, 255, 255)
 bwBtnCancel.Font = GLOBAL_FONT
 bwBtnCancel.TextSize = 12
@@ -213,25 +211,32 @@ bwBtnCancel.Parent = banWarningPopup
 Instance.new("UICorner", bwBtnCancel).CornerRadius = UDim.new(0, 6)
 
 local pendingActionCallback = nil
+local pendingCancelCallback = nil
 
 bwBtnConfirm.MouseButton1Click:Connect(function()
     banWarningPopup.Visible = false
     if pendingActionCallback then
         pendingActionCallback(true)
         pendingActionCallback = nil
+        pendingCancelCallback = nil
     end
 end)
 
 bwBtnCancel.MouseButton1Click:Connect(function()
     banWarningPopup.Visible = false
+    if pendingCancelCallback then
+        pendingCancelCallback()
+    end
     pendingActionCallback = nil
+    pendingCancelCallback = nil
 end)
 
-local function checkSafetyThreshold(typeStr, value, applyCallback)
+local function checkSafetyThreshold(typeStr, value, applyCallback, cancelCallback)
     if (typeStr == "walk" and value > 50) or (typeStr == "jump" and value > 30) then
         banWarningPopup.Visible = true
-        bwDesc.Text = "Phát hiện " .. (typeStr == "walk" and "Tốc độ đi (" .. value .. " > 50)" or "Độ cao nhảy (" .. value .. " > 30)") .. ". Bạn có thể bị ban!"
+        bwDesc.Text = "Cảnh báo: " .. (typeStr == "walk" and "Tốc độ đi (" .. value .. " > 50)" or "Độ cao nhảy (" .. value .. " > 30)") .. ". Bạn có thể bị ban!"
         pendingActionCallback = applyCallback
+        pendingCancelCallback = cancelCallback
         return false
     else
         applyCallback(true)
@@ -240,116 +245,23 @@ local function checkSafetyThreshold(typeStr, value, applyCallback)
 end
 
 -- ==========================================
--- TÍNH NĂNG AIMLOCK ĐỘNG (CHỌN MỤC TIÊU + CHECK MÁU)
--- ==========================================
-
-local aimLockConnection = nil
-local function toggleAimLock(state)
-    aimLockEnabled = state
-    if state then
-        if not aimLockConnection then
-            aimLockConnection = RunService.RenderStepped:Connect(function()
-                if not aimLockEnabled then return end
-                pcall(function()
-                    local cam = Workspace.CurrentCamera
-                    local char = player.Character
-                    local root = char and char:FindFirstChild("HumanoidRootPart")
-                    if not cam or not root then return end
-
-                    local closestTargetPart = nil
-                    local shortestDist = 300
-
-                    if selectedAimTargetName == "Tất cả" then
-                        -- Quét tất cả người chơi đang sống (máu > 0)
-                        for _, p in ipairs(Players:GetPlayers()) do
-                            if p ~= player and p.Character then
-                                local hum = p.Character:FindFirstChildOfClass("Humanoid")
-                                local targetRoot = p.Character:FindFirstChild("HumanoidRootPart") or p.Character:FindFirstChild("Torso")
-                                if hum and hum.Health > 0 and targetRoot then
-                                    local dist = (targetRoot.Position - root.Position).Magnitude
-                                    if dist < shortestDist then
-                                        shortestDist = dist
-                                        closestTargetPart = targetRoot
-                                    end
-                                end
-                            end
-                        end
-                        -- Quét tất cả Dummy / Bot có máu trong Workspace
-                        for _, obj in ipairs(Workspace:GetDescendants()) do
-                            if obj:IsA("Model") and obj ~= char and not Players:GetPlayerFromCharacter(obj) then
-                                local hum = obj:FindFirstChildOfClass("Humanoid")
-                                local targetRoot = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") or obj.PrimaryPart
-                                if hum and hum.Health > 0 and targetRoot then
-                                    local dist = (targetRoot.Position - root.Position).Magnitude
-                                    if dist < shortestDist then
-                                        shortestDist = dist
-                                        closestTargetPart = targetRoot
-                                    end
-                                end
-                            end
-                        end
-                    else
-                        -- Tìm đúng người chơi được chọn (tự động nhận diện lại khi họ vào lại hoặc hồi sinh)
-                        for _, p in ipairs(Players:GetPlayers()) do
-                            if (p.Name == selectedAimTargetName or p.DisplayName == selectedAimTargetName) and p.Character then
-                                local hum = p.Character:FindFirstChildOfClass("Humanoid")
-                                local targetRoot = p.Character:FindFirstChild("HumanoidRootPart") or p.Character:FindFirstChild("Torso")
-                                if hum and hum.Health > 0 and targetRoot then
-                                    closestTargetPart = targetRoot
-                                end
-                            end
-                        end
-                        -- Nếu không phải người chơi thì tìm Dummy theo tên (tự động nhận diện lại khi hồi sinh)
-                        if not closestTargetPart then
-                            for _, obj in ipairs(Workspace:GetDescendants()) do
-                                if obj:IsA("Model") and obj.Name == selectedAimTargetName then
-                                    local hum = obj:FindFirstChildOfClass("Humanoid")
-                                    local targetRoot = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") or obj.PrimaryPart
-                                    if hum and hum.Health > 0 and targetRoot then
-                                        closestTargetPart = targetRoot
-                                    end
-                                end
-                            end
-                        end
-                    end
-
-                    -- Khóa góc nhìn camera và hướng nhân vật vào mục tiêu
-                    if closestTargetPart then
-                        local targetPos = closestTargetPart.Position + Vector3.new(0, 0.5, 0)
-                        cam.CFrame = CFrame.new(cam.CFrame.Position, targetPos)
-                        root.CFrame = CFrame.new(root.Position, Vector3.new(targetPos.X, root.Position.Y, targetPos.Z))
-                    end
-                end)
-            end)
-        end
-    else
-        if aimLockConnection then
-            aimLockConnection:Disconnect()
-            aimLockConnection = nil
-        end
-    end
-end
-
--- ==========================================
--- HỆ THỐNG SERVER HOP & ANTIBAN THÔNG MINH
+-- HỆ THỐNG SERVER HOP & ANTIBAN
 -- ==========================================
 
 local function serverHopFiltered()
     task.spawn(function()
-        pcall(function()
-            local placeId = game.PlaceId
-            local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100"
-            local ok, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(url)) end)
-            if ok and result and result.data then
-                for _, server in ipairs(result.data) do
-                    if server.id ~= game.JobId and server.playing >= 5 and server.playing < server.maxPlayers then
-                        TeleportService:TeleportToPlaceInstance(placeId, server.id, player)
-                        return
-                    end
+        local placeId = game.PlaceId
+        local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100"
+        local ok, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(url)) end)
+        if ok and result and result.data then
+            for _, server in ipairs(result.data) do
+                if server.id ~= game.JobId and server.playing >= 5 and server.playing < server.maxPlayers then
+                    pcall(function() TeleportService:TeleportToPlaceInstance(placeId, server.id, player) end)
+                    return
                 end
             end
-            TeleportService:Teleport(placeId, player)
-        end)
+        end
+        pcall(function() TeleportService:Teleport(placeId, player) end)
     end)
 end
 
@@ -486,24 +398,14 @@ task.spawn(function()
 end)
 
 -- ==========================================
--- LOGIC AUTO ROLL ĐA MỤC TIÊU (KIỂM TRA KHO ĐỒ)
+-- LOGIC AUTO ROLL ĐA MỤC TIÊU
 -- ==========================================
 
-local function fireGenerateAttackRandom()
-    pcall(function()
-        local eventsFolder = ReplicatedStorage:FindFirstChild("EventsFolder")
-        if eventsFolder then
-            local genEvent = eventsFolder:FindFirstChild("GenerateAttack")
-            if genEvent then
-                genEvent:FireServer("Random")
-            end
-        end
-    end)
-end
-
-local function hasSelectedAttackInInventory()
+local function hasSelectedAttack()
     local countSelected = 0
-    for _, v in pairs(selectedAttacksMap) do if v then countSelected += 1 end end
+    for _, v in pairs(selectedAttacksMap) do
+        if v then countSelected += 1 end
+    end
     if countSelected == 0 then return false end
 
     local function checkContainer(container)
@@ -521,7 +423,24 @@ local function hasSelectedAttackInInventory()
 
     if checkContainer(player:FindFirstChild("Backpack")) then return true end
     if checkContainer(player.Character) then return true end
+    
+    local currentAtkVal = player:FindFirstChild("Attack") or player:FindFirstChild("CurrentAttack") or (player:FindFirstChild("Data") and player.Data:FindFirstChild("Attack"))
+    if currentAtkVal and currentAtkVal:IsA("StringValue") then
+        for targetName, isSelected in pairs(selectedAttacksMap) do
+            if isSelected and currentAtkVal.Value == targetName then
+                return true
+            end
+        end
+    end
+
     return false
+end
+
+local function fireGenerateAttackRandom()
+    pcall(function()
+        local args = { "Random" }
+        ReplicatedStorage:WaitForChild("EventsFolder"):WaitForChild("GenerateAttack"):FireServer(unpack(args))
+    end)
 end
 
 local autoRollTask = nil
@@ -535,14 +454,12 @@ local function toggleAutoRoll(state)
         if not autoRollTask then
             autoRollTask = task.spawn(function()
                 while autoRollEnabled do
-                    pcall(function()
-                        if hasSelectedAttackInInventory() then
-                            autoRollEnabled = false
-                            if autoRollRefreshUI then autoRollRefreshUI(false) end
-                            return
-                        end
-                        fireGenerateAttackRandom()
-                    end)
+                    if hasSelectedAttack() then
+                        autoRollEnabled = false
+                        if autoRollRefreshUI then autoRollRefreshUI(false) end
+                        break
+                    end
+                    fireGenerateAttackRandom()
                     task.wait(0.45)
                 end
                 autoRollTask = nil
@@ -557,7 +474,7 @@ local function toggleAutoRoll(state)
 end
 
 -- ==========================================
--- CÁC TÍNH NĂNG GỐC KHÁC (EQUIP, FIX LAG, NOCLIP, ESP, FREEZE RAY, TP...)
+-- CÁC TÍNH NĂNG PHỤ TRỢ KHÁC
 -- ==========================================
 
 local allEquipItems = {"PieThrow","SmallPotion","GiantPotion","GhostPotion","Healing","GravityPotion","Bloxiade","ClownBomb"}
@@ -750,11 +667,8 @@ local function toggleAutoPressButton(state)
                                 elseif v.Parent and v.Parent:IsA("BasePart") then pos = v.Parent.Position end
                                 
                                 if pos and (root.Position - pos).Magnitude <= autoPressRadius then
-                                    if v:IsA("ClickDetector") and type(fireclickdetector) == "function" then
-                                        pcall(function() fireclickdetector(v) end)
-                                    elseif v:IsA("ProximityPrompt") and type(fireproximityprompt) == "function" then
-                                        pcall(function() fireproximityprompt(v) end)
-                                    end
+                                    if v:IsA("ClickDetector") and fireclickdetector then fireclickdetector(v)
+                                    elseif v:IsA("ProximityPrompt") and fireproximityprompt then fireproximityprompt(v) end
                                 end
                             end
                         end
@@ -826,6 +740,49 @@ local function toggleInvisibility(state)
             if child and child.Parent then child.Transparency = transp end
         end
         savedTransparencies = {}
+    end
+end
+
+local flyConnection
+local function toggleFly(state)
+    flyEnabled = state
+    local character = player.Character
+    if not character then return end
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if state then
+        if not rootPart or not humanoid then return end
+        humanoid.PlatformStand = true
+        local bg = Instance.new("BodyGyro")
+        bg.Name = "FlyGyro"; bg.P = 9e4; bg.MaxTorque = Vector3.new(9e4, 9e4, 9e4); bg.CFrame = rootPart.CFrame; bg.Parent = rootPart
+        local bv = Instance.new("BodyVelocity")
+        bv.Name = "FlyVelocity"; bv.Velocity = Vector3.zero; bv.MaxForce = Vector3.new(9e4, 9e4, 9e4); bv.Parent = rootPart
+        
+        if flyConnection then flyConnection:Disconnect() end
+        flyConnection = RunService.RenderStepped:Connect(function()
+            if not flyEnabled or not character.Parent then
+                if bg.Parent then bg:Destroy() end
+                if bv.Parent then bv:Destroy() end
+                return
+            end
+            local cam = Workspace.CurrentCamera
+            local moveDir = humanoid.MoveDirection
+            if moveDir.Magnitude > 0 and cam then
+                bv.Velocity = moveDir * flySpeed
+            else
+                bv.Velocity = Vector3.zero
+            end
+            bg.CFrame = cam and cam.CFrame or rootPart.CFrame
+        end)
+    else
+        if flyConnection then flyConnection:Disconnect(); flyConnection = nil end
+        if rootPart then
+            local bg = rootPart:FindFirstChild("FlyGyro")
+            local bv = rootPart:FindFirstChild("FlyVelocity")
+            if bg then bg:Destroy() end
+            if bv then bv:Destroy() end
+        end
+        if humanoid then humanoid.PlatformStand = false end
     end
 end
 
@@ -1183,8 +1140,8 @@ end
 
 local function createFloatingFeatureShortcut(labelKey, stateGetter, callback)
     local floatBtn = Instance.new("TextButton")
-    floatBtn.Size = UDim2.fromOffset(120, 32)
-    floatBtn.Position = UDim2.new(0.02, 0, 0.6 + math.random() * 0.2, 0)
+    floatBtn.Size = UDim2.fromOffset(125, 32)
+    floatBtn.Position = UDim2.new(0.02, 0, 0.55 + math.random() * 0.25, 0)
     floatBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
     floatBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     floatBtn.Font = GLOBAL_FONT
@@ -1201,12 +1158,11 @@ local function createFloatingFeatureShortcut(labelKey, stateGetter, callback)
     floatBtn.MouseButton1Click:Connect(function()
         local newState = not stateGetter()
         callback(newState)
-        floatBtn.BackgroundColor3 = newState and Color3.fromRGB(45, 160, 85) or Color3.fromRGB(30, 30, 45)
     end)
     return floatBtn
 end
 
-local function createToggleRow(parent, labelKey, stateBool, callback, hasPlus, customPlusCallback)
+local function createToggleRow(parent, labelKey, stateBool, callback, hasPlus)
     local row = Instance.new("Frame"); row.Size = UDim2.new(1, 0, 0, 32); row.BackgroundTransparency = 1; row.Parent = parent
     
     local btnWidth = hasPlus and UDim2.new(1, -36, 1, 0) or UDim2.fromScale(1, 1)
@@ -1242,39 +1198,60 @@ local function createToggleRow(parent, labelKey, stateBool, callback, hasPlus, c
         plusBtn.Parent = row
         Instance.new("UICorner", plusBtn).CornerRadius = UDim.new(0, 6)
 
-        if customPlusCallback then
-            plusBtn.MouseButton1Click:Connect(customPlusCallback)
-        else
-            floatWidget = createFloatingFeatureShortcut(labelKey, function() return stateBool end, function(newState)
-                stateBool = newState
-                setVisualState(newState)
-                callback(newState)
-            end)
+        floatWidget = createFloatingFeatureShortcut(labelKey, function() return stateBool end, function(newState)
+            callback(newState, setVisualState)
+        end)
 
-            plusBtn.MouseButton1Click:Connect(function()
-                floatWidget.Visible = not floatWidget.Visible
-            end)
-        end
+        plusBtn.MouseButton1Click:Connect(function()
+            floatWidget.Visible = not floatWidget.Visible
+        end)
     end
 
     btn.MouseButton1Click:Connect(function()
-        stateBool = not stateBool
-        setVisualState(stateBool)
-        callback(stateBool, setVisualState)
+        local targetState = not stateBool
+        callback(targetState, setVisualState)
     end)
 
     setVisualState(stateBool)
     return btn, function() setVisualState(stateBool) end, setVisualState
 end
 
-local function createButtonRow(parent, labelKey, callback)
+local function createButtonRow(parent, labelKey, callback, hasPlus)
     local row = Instance.new("Frame"); row.Size = UDim2.new(1, 0, 0, 32); row.BackgroundTransparency = 1; row.Parent = parent
-    local btn = Instance.new("TextButton"); btn.Size = UDim2.fromScale(1, 1)
+    local btnWidth = hasPlus and UDim2.new(1, -36, 1, 0) or UDim2.fromScale(1, 1)
+    local btn = Instance.new("TextButton"); btn.Size = btnWidth
     btn.BackgroundColor3 = currentThemeColor; btn.TextColor3 = currentTextColor
     btn.Font = GLOBAL_FONT; btn.TextSize = 11; btn.Parent = row
     table.insert(themeButtons, btn); table.insert(textElements, btn)
     local cr = Instance.new("UICorner"); cr.CornerRadius = UDim.new(0, 6); cr.Parent = btn
-    local function refresh() btn.Text = translations[currentLang][labelKey] or labelKey end
+
+    local floatWidget = nil
+    if hasPlus then
+        local plusBtn = Instance.new("TextButton")
+        plusBtn.Size = UDim2.fromOffset(30, 32)
+        plusBtn.Position = UDim2.new(1, -30, 0, 0)
+        plusBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 80)
+        plusBtn.Text = "+"
+        plusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        plusBtn.Font = GLOBAL_FONT
+        plusBtn.TextSize = 14
+        plusBtn.Parent = row
+        Instance.new("UICorner", plusBtn).CornerRadius = UDim.new(0, 6)
+
+        floatWidget = createFloatingFeatureShortcut(labelKey, function() return false end, function()
+            callback()
+        end)
+
+        plusBtn.MouseButton1Click:Connect(function()
+            floatWidget.Visible = not floatWidget.Visible
+        end)
+    end
+
+    local function refresh()
+        local txt = translations[currentLang][labelKey] or labelKey
+        btn.Text = txt
+        if floatWidget then floatWidget.Text = txt end
+    end
     refresh(); btn.MouseButton1Click:Connect(callback)
     return btn, refresh
 end
@@ -1293,36 +1270,44 @@ local function createInputRow(parent, labelKey, defaultVal, callback)
     local cr = Instance.new("UICorner"); cr.CornerRadius = UDim.new(0, 6); cr.Parent = box
     box.FocusLost:Connect(function()
         local val = tonumber(box.Text)
-        if val then callback(val) else box.Text = tostring(defaultVal) end
+        if val then callback(val, box) else box.Text = tostring(defaultVal) end
     end)
     local function refresh() lbl.Text = translations[currentLang][labelKey] or labelKey end
-    refresh(); return row, refresh
+    refresh(); return row, refresh, box
 end
 
 local mainTab = tabs.Main
 local rollTab = tabs.Roll
 local refreshFuncs = {}
 
-local function addToggle(parent, key, state, callback, hasPlus, customPlusCallback)
-    local _, r, setVis = createToggleRow(parent, key, state, callback, hasPlus, customPlusCallback); table.insert(refreshFuncs, r)
-    return setVis
+local function addToggle(parent, key, state, callback, hasPlus)
+    local btn, r, setVis = createToggleRow(parent, key, state, callback, hasPlus)
+    table.insert(refreshFuncs, r)
+    return btn, setVis
 end
 local function addInput(parent, key, value, callback)
-    local _, r = createInputRow(parent, key, value, callback); table.insert(refreshFuncs, r)
+    local _, r, box = createInputRow(parent, key, value, callback)
+    table.insert(refreshFuncs, r)
+    return box
 end
-local function addButton(parent, key, callback)
-    local _, r = createButtonRow(parent, key, callback); table.insert(refreshFuncs, r)
+local function addButton(parent, key, callback, hasPlus)
+    local _, r = createButtonRow(parent, key, callback, hasPlus)
+    table.insert(refreshFuncs, r)
 end
 
 -- ==========================================
--- XÂY DỰNG TAB ROLL & TÍNH NĂNG NÚT MŨI TÊN [^] (CHỌN NHIỀU + CHECK KHO ĐỒ)
+-- TAB ROLL & BẢNG CHỌN SỨC MẠNH
 -- ==========================================
 
-autoRollRefreshUI = addToggle(rollTab, "autoRollBtn", autoRollEnabled, toggleAutoRoll, true)
+local _, setAutoRollVisual = addToggle(rollTab, "autoRollBtn", autoRollEnabled, function(v, setVis)
+    toggleAutoRoll(v)
+    if setVis then setVis(v) end
+end, true)
+autoRollRefreshUI = setAutoRollVisual
 
 addButton(rollTab, "rollOnceBtn", function()
     fireGenerateAttackRandom()
-end)
+end, true)
 
 local rollTargetRow = Instance.new("Frame"); rollTargetRow.Size = UDim2.new(1, 0, 0, 34); rollTargetRow.BackgroundTransparency = 1; rollTargetRow.Parent = rollTab
 local rollTargetLabel = Instance.new("TextLabel"); rollTargetLabel.Size = UDim2.new(1, -40, 1, 0)
@@ -1333,7 +1318,9 @@ table.insert(textElements, rollTargetLabel)
 local function updateRollTargetText()
     local selectedNames = {}
     for _, name in ipairs(allRngAttacks) do
-        if selectedAttacksMap[name] then table.insert(selectedNames, name) end
+        if selectedAttacksMap[name] then
+            table.insert(selectedNames, name)
+        end
     end
     local prefix = translations[currentLang]["rollTargetLabel"] or "Đã chọn: "
     if #selectedNames == 0 then
@@ -1341,7 +1328,7 @@ local function updateRollTargetText()
     elseif #selectedNames <= 2 then
         rollTargetLabel.Text = prefix .. table.concat(selectedNames, ", ")
     else
-        rollTargetLabel.Text = prefix .. #selectedNames .. " mục tiêu"
+        rollTargetLabel.Text = prefix .. #selectedNames .. " sức mạnh"
     end
 end
 updateRollTargetText()
@@ -1373,10 +1360,11 @@ local selHeader = Instance.new("TextLabel")
 selHeader.Size = UDim2.new(1, -40, 0, 32)
 selHeader.Position = UDim2.new(0, 10, 0, 0)
 selHeader.BackgroundTransparency = 1
-selHeader.Text = "Chọn Nhiều Sức Mạnh / Quái Mục Tiêu"
+selHeader.Text = "Chọn Nhiều Sức Mạnh Mục Tiêu"
 selHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
 selHeader.Font = GLOBAL_FONT
-selHeader.TextSize = 11
+selHeader.TextSize = 12
+selHeader.TextXAlignment = Enum.TextXAlignment.Left
 selHeader.Parent = selectorPopup
 
 local selClose = Instance.new("TextButton")
@@ -1408,6 +1396,28 @@ selLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     selectorScroll.CanvasSize = UDim2.new(0, 0, 0, selLayout.AbsoluteContentSize.Y + 10)
 end)
 
+local choiceButtonsMap = {}
+
+local clearSelBtn = Instance.new("TextButton")
+clearSelBtn.Size = UDim2.new(1, -12, 0, 28)
+clearSelBtn.Position = UDim2.new(0, 6, 1, -32)
+clearSelBtn.BackgroundColor3 = Color3.fromRGB(70, 40, 40)
+clearSelBtn.Text = "Bỏ chọn tất cả"
+clearSelBtn.TextColor3 = Color3.new(1, 1, 1)
+clearSelBtn.Font = GLOBAL_FONT
+clearSelBtn.TextSize = 11
+clearSelBtn.Parent = selectorPopup
+Instance.new("UICorner", clearSelBtn).CornerRadius = UDim.new(0, 5)
+
+clearSelBtn.MouseButton1Click:Connect(function()
+    selectedAttacksMap = {}
+    for atkName, btn in pairs(choiceButtonsMap) do
+        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+        btn.Text = atkName
+    end
+    updateRollTargetText()
+end)
+
 for _, atkName in ipairs(allRngAttacks) do
     local choiceBtn = Instance.new("TextButton")
     choiceBtn.Size = UDim2.new(1, 0, 0, 28)
@@ -1418,6 +1428,7 @@ for _, atkName in ipairs(allRngAttacks) do
     choiceBtn.Text = atkName
     choiceBtn.Parent = selectorScroll
     Instance.new("UICorner", choiceBtn).CornerRadius = UDim.new(0, 5)
+    choiceButtonsMap[atkName] = choiceBtn
 
     choiceBtn.MouseButton1Click:Connect(function()
         selectedAttacksMap[atkName] = not selectedAttacksMap[atkName]
@@ -1437,127 +1448,16 @@ arrowBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- BẢNG CHỌN NGƯỜI / DUMMY CHO AIMLOCK QUA NÚT [+]
--- ==========================================
-
-local aimTargetPopup = Instance.new("Frame")
-aimTargetPopup.Size = UDim2.fromOffset(260, 220)
-aimTargetPopup.Position = UDim2.new(0.5, -130, 0.5, -110)
-aimTargetPopup.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
-aimTargetPopup.BorderSizePixel = 0
-aimTargetPopup.Visible = false
-aimTargetPopup.ZIndex = 900
-aimTargetPopup.Parent = screenGui
-Instance.new("UICorner", aimTargetPopup).CornerRadius = UDim.new(0, 8)
-local atStroke = Instance.new("UIStroke"); atStroke.Color = Color3.fromRGB(90, 90, 255); atStroke.Thickness = 2; atStroke.Parent = aimTargetPopup
-
-local atHeader = Instance.new("TextLabel")
-atHeader.Size = UDim2.new(1, -40, 0, 32)
-atHeader.Position = UDim2.new(0, 10, 0, 0)
-atHeader.BackgroundTransparency = 1
-atHeader.Text = "Chọn Người / Dummy Cần Aim"
-atHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
-atHeader.Font = GLOBAL_FONT
-atHeader.TextSize = 11
-atHeader.Parent = aimTargetPopup
-
-local atClose = Instance.new("TextButton")
-atClose.Size = UDim2.fromOffset(26, 22)
-atClose.Position = UDim2.new(1, -30, 0, 5)
-atClose.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-atClose.Text = "X"
-atClose.TextColor3 = Color3.new(1, 1, 1)
-atClose.Font = GLOBAL_FONT
-atClose.TextSize = 12
-atClose.Parent = aimTargetPopup
-Instance.new("UICorner", atClose).CornerRadius = UDim.new(0, 4)
-atClose.MouseButton1Click:Connect(function() aimTargetPopup.Visible = false end)
-
-local atScroll = Instance.new("ScrollingFrame")
-atScroll.Size = UDim2.new(1, -12, 1, -44)
-atScroll.Position = UDim2.new(0, 6, 0, 38)
-atScroll.BackgroundTransparency = 1
-atScroll.BorderSizePixel = 0
-atScroll.ScrollBarThickness = 4
-atScroll.Parent = aimTargetPopup
-
-local atLayout = Instance.new("UIListLayout")
-atLayout.SortOrder = Enum.SortOrder.LayoutOrder
-atLayout.Padding = UDim.new(0, 4)
-atLayout.Parent = atScroll
-
-atLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    atScroll.CanvasSize = UDim2.new(0, 0, 0, atLayout.AbsoluteContentSize.Y + 10)
-end)
-
-local function refreshAimTargetsList()
-    for _, child in ipairs(atScroll:GetChildren()) do
-        if child:IsA("TextButton") then child:Destroy() end
-    end
-
-    local allBtn = Instance.new("TextButton")
-    allBtn.Size = UDim2.new(1, 0, 0, 28)
-    allBtn.BackgroundColor3 = (selectedAimTargetName == "Tất cả") and Color3.fromRGB(45, 160, 85) or Color3.fromRGB(30, 30, 45)
-    allBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    allBtn.Font = GLOBAL_FONT
-    allBtn.TextSize = 11
-    allBtn.Text = "⚡ Tất Cả (Tự động gần nhất)"
-    allBtn.Parent = atScroll
-    Instance.new("UICorner", allBtn).CornerRadius = UDim.new(0, 5)
-    allBtn.MouseButton1Click:Connect(function()
-        selectedAimTargetName = "Tất cả"
-        aimTargetPopup.Visible = false
-    end)
-
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= player then
-            local pBtn = Instance.new("TextButton")
-            pBtn.Size = UDim2.new(1, 0, 0, 28)
-            pBtn.BackgroundColor3 = (selectedAimTargetName == p.Name or selectedAimTargetName == p.DisplayName) and Color3.fromRGB(45, 160, 85) or Color3.fromRGB(30, 30, 45)
-            pBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            pBtn.Font = GLOBAL_FONT
-            pBtn.TextSize = 11
-            pBtn.Text = "👤 " .. (p.DisplayName or p.Name) .. " (@" .. p.Name .. ")"
-            pBtn.Parent = atScroll
-            Instance.new("UICorner", pBtn).CornerRadius = UDim.new(0, 5)
-
-            pBtn.MouseButton1Click:Connect(function()
-                selectedAimTargetName = p.Name
-                aimTargetPopup.Visible = false
-            end)
-        end
-    end
-
-    for _, obj in ipairs(Workspace:GetDescendants()) do
-        if obj:IsA("Model") and obj ~= player.Character and not Players:GetPlayerFromCharacter(obj) then
-            local hum = obj:FindFirstChildOfClass("Humanoid")
-            if hum then
-                local dBtn = Instance.new("TextButton")
-                dBtn.Size = UDim2.new(1, 0, 0, 28)
-                dBtn.BackgroundColor3 = (selectedAimTargetName == obj.Name) and Color3.fromRGB(45, 160, 85) or Color3.fromRGB(30, 30, 45)
-                dBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-                dBtn.Font = GLOBAL_FONT
-                dBtn.TextSize = 11
-                dBtn.Text = "🤖 Dummy: " .. obj.Name
-                dBtn.Parent = atScroll
-                Instance.new("UICorner", dBtn).CornerRadius = UDim.new(0, 5)
-
-                dBtn.MouseButton1Click:Connect(function()
-                    selectedAimTargetName = obj.Name
-                    aimTargetPopup.Visible = false
-                end)
-            end
-        end
-    end
-end
-
--- ==========================================
--- ĐIỀN ĐẦY ĐỦ DỮ LIỆU TẤT CẢ CÁC TAB GỐC
+-- TAB CHÍNH
 -- ==========================================
 
 addInput(mainTab, "tpSpd", tpSpeed, function(v) tpSpeed = v end)
-addToggle(mainTab, "tpBtn", tpEnabled, function(v) tpEnabled = v end, true)
-addInput(mainTab, "walkSpd", walkSpeed, function(v)
+addToggle(mainTab, "tpBtn", tpEnabled, function(v, setVis)
+    tpEnabled = v
+    if setVis then setVis(v) end
+end, true)
+
+addInput(mainTab, "walkSpd", walkSpeed, function(v, box)
     checkSafetyThreshold("walk", v, function(allowed)
         if allowed then
             walkSpeed = v
@@ -1566,80 +1466,96 @@ addInput(mainTab, "walkSpd", walkSpeed, function(v)
                 if h then h.WalkSpeed = v end
             end
         end
+    end, function()
+        box.Text = tostring(walkSpeed)
     end)
 end)
 
 local walkConnection
-addToggle(mainTab, "walkBtn", walkEnabled, function(v)
-    checkSafetyThreshold("walk", walkSpeed, function(allowed)
-        if allowed then
-            walkEnabled = v
-            if walkConnection then walkConnection:Disconnect(); walkConnection = nil end
-            if v then
+addToggle(mainTab, "walkBtn", walkEnabled, function(v, setVis)
+    if v then
+        checkSafetyThreshold("walk", walkSpeed, function(allowed)
+            if allowed then
+                walkEnabled = true
+                if setVis then setVis(true) end
+                if walkConnection then walkConnection:Disconnect(); walkConnection = nil end
                 walkConnection = RunService.RenderStepped:Connect(function()
                     local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
                     if h then h.WalkSpeed = walkSpeed end
                 end)
-            else
-                local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-                if h then h.WalkSpeed = 16 end
             end
-        end
-    end)
+        end, function()
+            walkEnabled = false
+            if setVis then setVis(false) end
+        end)
+    else
+        walkEnabled = false
+        if setVis then setVis(false) end
+        if walkConnection then walkConnection:Disconnect(); walkConnection = nil end
+        local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if h then h.WalkSpeed = 16 end
+    end
 end, true)
 
-addInput(mainTab, "jumpSpd", jumpPower, function(v)
+addInput(mainTab, "jumpSpd", jumpPower, function(v, box)
     checkSafetyThreshold("jump", v, function(allowed)
         if allowed then
             jumpPower = v
             local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
             if jumpEnabled and h then h.UseJumpPower = true; h.JumpPower = v end
         end
+    end, function()
+        box.Text = tostring(jumpPower)
     end)
 end)
 
 local jumpConnection
-addToggle(mainTab, "jumpBtn", jumpEnabled, function(v)
-    checkSafetyThreshold("jump", jumpPower, function(allowed)
-        if allowed then
-            jumpEnabled = v
-            if jumpConnection then jumpConnection:Disconnect(); jumpConnection = nil end
-            if v then
+addToggle(mainTab, "jumpBtn", jumpEnabled, function(v, setVis)
+    if v then
+        checkSafetyThreshold("jump", jumpPower, function(allowed)
+            if allowed then
+                jumpEnabled = true
+                if setVis then setVis(true) end
+                if jumpConnection then jumpConnection:Disconnect(); jumpConnection = nil end
                 jumpConnection = RunService.RenderStepped:Connect(function()
                     local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
                     if h then h.UseJumpPower = true; h.JumpPower = jumpPower end
                 end)
             end
-        end
-    end)
+        end, function()
+            jumpEnabled = false
+            if setVis then setVis(false) end
+        end)
+    else
+        jumpEnabled = false
+        if setVis then setVis(false) end
+        if jumpConnection then jumpConnection:Disconnect(); jumpConnection = nil end
+    end
 end, true)
 
--- AimLock kèm nút [+] chọn người cần Aim
-addToggle(mainTab, "aimLockBtn", aimLockEnabled, toggleAimLock, true, function()
-    refreshAimTargetsList()
-    aimTargetPopup.Visible = not aimTargetPopup.Visible
-end)
-
+addInput(mainTab, "flySpd", flySpeed, function(v) flySpeed = v end)
+addToggle(mainTab, "flyBtn", flyEnabled, function(v, setVis) toggleFly(v); if setVis then setVis(v) end end, true)
 addInput(mainTab, "gravSpd", customGravity, function(v) customGravity = v if gravityEnabled then Workspace.Gravity = v end end)
 
 local gravityConnection
-addToggle(mainTab, "gravBtn", gravityEnabled, function(v)
+addToggle(mainTab, "gravBtn", gravityEnabled, function(v, setVis)
     gravityEnabled = v
+    if setVis then setVis(v) end
     if gravityConnection then gravityConnection:Disconnect(); gravityConnection = nil end
     if v then
         gravityConnection = RunService.RenderStepped:Connect(function() Workspace.Gravity = customGravity end)
     else Workspace.Gravity = 196.2 end
 end, true)
 
-addToggle(mainTab, "noclipBtn", noclipEnabled, toggleNoclip, true)
-addToggle(mainTab, "invisBtn", invisibleEnabled, toggleInvisibility, true)
-addToggle(mainTab, "infJumpBtn", infJumpEnabled, toggleInfJump, true)
+addToggle(mainTab, "noclipBtn", noclipEnabled, function(v, setVis) toggleNoclip(v); if setVis then setVis(v) end end, true)
+addToggle(mainTab, "invisBtn", invisibleEnabled, function(v, setVis) toggleInvisibility(v); if setVis then setVis(v) end end, true)
+addToggle(mainTab, "infJumpBtn", infJumpEnabled, function(v, setVis) toggleInfJump(v); if setVis then setVis(v) end end, true)
 addInput(mainTab, "freezeRng", freezeRadius, function(v) freezeRadius = v end)
-addToggle(mainTab, "freezeBtn", freezeRayEnabled, toggleFreezeRay, true)
-addButton(mainTab, "autoEquipBtn", equipItemsOnce)
+addToggle(mainTab, "freezeBtn", freezeRayEnabled, function(v, setVis) toggleFreezeRay(v); if setVis then setVis(v) end end, true)
+addButton(mainTab, "autoEquipBtn", equipItemsOnce, true)
 addInput(mainTab, "autoPressRadiusLabel", autoPressRadius, function(v) autoPressRadius = v end)
 addInput(mainTab, "autoPressDelayLabel", autoPressDelay, function(v) autoPressDelay = v end)
-addToggle(mainTab, "autoPressBtn", autoPressButtonEnabled, toggleAutoPressButton, true)
+addToggle(mainTab, "autoPressBtn", autoPressButtonEnabled, function(v, setVis) toggleAutoPressButton(v); if setVis then setVis(v) end end, true)
 
 local godRow = Instance.new("Frame"); godRow.Size = UDim2.new(1, 0, 0, 36); godRow.BackgroundTransparency = 1; godRow.Parent = mainTab
 local godButton = Instance.new("TextButton"); godButton.Size = UDim2.fromScale(1, 1)
@@ -1653,8 +1569,8 @@ godButton.MouseButton1Click:Connect(function()
 end)
 
 local espTab = tabs.ESP
-addToggle(espTab, "espBtn", espEnabled, function(v) espEnabled = v; updateESP() end, true)
-addToggle(espTab, "fpsBtn", fpsEnabled, toggleFPSDisplay, true)
+addToggle(espTab, "espBtn", espEnabled, function(v, setVis) espEnabled = v; if setVis then setVis(v) end; updateESP() end, true)
+addToggle(espTab, "fpsBtn", fpsEnabled, function(v, setVis) toggleFPSDisplay(v); if setVis then setVis(v) end end, true)
 
 local espColorLabel = Instance.new("TextLabel"); espColorLabel.Size = UDim2.new(1, 0, 0, 20)
 espColorLabel.BackgroundTransparency = 1; espColorLabel.TextColor3 = currentTextColor; espColorLabel.Font = GLOBAL_FONT
@@ -1674,9 +1590,9 @@ for i, col in ipairs(espColors) do
 end
 
 local fixTab = tabs.FixLag
-addToggle(fixTab, "fixLagBtn", fixLagEnabled, toggleFixLag, true)
-addToggle(fixTab, "hideMapBtn", hideMapOthersEnabled, toggleHideMapAndOthers, true)
-addToggle(fixTab, "muteSoundsBtn", muteAllSoundsEnabled, toggleMuteAllSounds, true)
+addToggle(fixTab, "fixLagBtn", fixLagEnabled, function(v, setVis) toggleFixLag(v); if setVis then setVis(v) end end, true)
+addToggle(fixTab, "hideMapBtn", hideMapOthersEnabled, function(v, setVis) toggleHideMapAndOthers(v); if setVis then setVis(v) end end, true)
+addToggle(fixTab, "muteSoundsBtn", muteAllSoundsEnabled, function(v, setVis) toggleMuteAllSounds(v); if setVis then setVis(v) end end, true)
 
 local miscTab = tabs.Misc
 local function addLabel(parent, key)
@@ -1715,8 +1631,8 @@ addPalette(miscTab, {
     Color3.fromRGB(100, 255, 200), Color3.fromRGB(255, 150, 200)
 }, applyTextColor)
 
-addToggle(miscTab, "autoHopBtn", autoServerHopEnabled, function(v) autoServerHopEnabled = v end, true)
-addToggle(miscTab, "adminDetectBtn", adminDetectorEnabled, function(v) adminDetectorEnabled = v end, true)
+addToggle(miscTab, "autoHopBtn", autoServerHopEnabled, function(v, setVis) autoServerHopEnabled = v; if setVis then setVis(v) end end, true)
+addToggle(miscTab, "adminDetectBtn", adminDetectorEnabled, function(v, setVis) adminDetectorEnabled = v; if setVis then setVis(v) end end, true)
 
 local _, rLang = addLabel(miscTab, "langLabel"); table.insert(refreshFuncs, rLang)
 local langFrame = Instance.new("Frame"); langFrame.Size = UDim2.new(1, 0, 0, 30); langFrame.BackgroundTransparency = 1; langFrame.Parent = miscTab
@@ -1764,136 +1680,136 @@ end
 btnEnglish.MouseButton1Click:Connect(function() currentLang = "EN"; updateLanguage() end)
 btnVietnamese.MouseButton1Click:Connect(function() currentLang = "VI"; updateLanguage() end)
 
--- TAB THỬ NGHIỆM: SPECTATE
+-- ==========================================
+-- TAB THỬ NGHIỆM: SPECTATE (ĐÃ ĐƯỢC SỬA HOẠT ĐỘNG)
+-- ==========================================
 local expTab = tabs.Experimental
+
+local spectateEnabled = false
+local currentSpectateTarget = nil
+local spectateConnection = nil
+
+-- Tạo nút bật tắt nổi ngoài màn hình
 local toggleButton = Instance.new("TextButton")
 toggleButton.Name = "ToggleSpectateButton"
-toggleButton.Size = UDim2.new(0, 110, 0, 40)
+toggleButton.Size = UDim2.new(0, 130, 0, 35)
 toggleButton.Position = UDim2.new(0.02, 0, 0.48, 0)
 toggleButton.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-toggleButton.Text = "👁️ Spectate"
+toggleButton.Text = "👁️ Dừng Spectate"
 toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleButton.Font = GLOBAL_FONT
-toggleButton.TextSize = 14
+toggleButton.TextSize = 12
 toggleButton.Active = true
 toggleButton.Draggable = true
 toggleButton.ZIndex = 100
 toggleButton.Visible = false
 toggleButton.Parent = screenGui
 Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0, 8)
+local tbStroke = Instance.new("UIStroke"); tbStroke.Color = Color3.fromRGB(80, 80, 255); tbStroke.Parent = toggleButton
 
-local spectateFrame = Instance.new("Frame")
-spectateFrame.Size = UDim2.new(0, 320, 0, 115)
-spectateFrame.Position = UDim2.new(0.5, -160, 0.85, -55)
-spectateFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-spectateFrame.BackgroundTransparency = 0.2; spectateFrame.BorderSizePixel = 0; spectateFrame.Visible = false; spectateFrame.ZIndex = 50; spectateFrame.Parent = screenGui
-Instance.new("UICorner", spectateFrame).CornerRadius = UDim.new(0, 8)
+-- Tạo bảng chọn danh sách người chơi để Spectate
+local specListFrame = Instance.new("Frame")
+specListFrame.Size = UDim2.fromOffset(220, 200)
+specListFrame.Position = UDim2.new(0.02, 0, 0.55, 0)
+specListFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+specListFrame.Visible = false
+specListFrame.ZIndex = 110
+specListFrame.Parent = screenGui
+Instance.new("UICorner", specListFrame).CornerRadius = UDim.new(0, 8)
+local slStroke = Instance.new("UIStroke"); slStroke.Color = Color3.fromRGB(100, 100, 200); slStroke.Parent = specListFrame
 
-local specNameLabel = Instance.new("TextLabel")
-specNameLabel.Size = UDim2.new(1, -90, 0, 34); specNameLabel.Position = UDim2.new(0, 45, 0, 6); specNameLabel.BackgroundTransparency = 1; specNameLabel.Text = "Player Name"; specNameLabel.TextColor3 = currentTextColor; specNameLabel.Font = GLOBAL_FONT; specNameLabel.TextSize = 13; specNameLabel.Parent = spectateFrame
+local specScroll = Instance.new("ScrollingFrame")
+specScroll.Size = UDim2.new(1, -10, 1, -10)
+specScroll.Position = UDim2.new(0, 5, 0, 5)
+specScroll.BackgroundTransparency = 1
+specScroll.BorderSizePixel = 0
+specScroll.ScrollBarThickness = 4
+specScroll.Parent = specListFrame
 
-local specPrevBtn = Instance.new("TextButton")
-specPrevBtn.Size = UDim2.new(0, 35, 0, 34); specPrevBtn.Position = UDim2.new(0, 8, 0, 6); specPrevBtn.BackgroundColor3 = currentThemeColor; specPrevBtn.Text = "<"; specPrevBtn.TextColor3 = currentTextColor; specPrevBtn.Font = GLOBAL_FONT; specPrevBtn.TextSize = 16; specPrevBtn.Parent = spectateFrame
-Instance.new("UICorner", specPrevBtn).CornerRadius = UDim.new(0, 6)
+local specLayout = Instance.new("UIListLayout")
+specLayout.SortOrder = Enum.SortOrder.LayoutOrder
+specLayout.Padding = UDim.new(0, 4)
+specLayout.Parent = specScroll
 
-local specNextBtn = specPrevBtn:Clone()
-specNextBtn.Position = UDim2.new(1, -43, 0, 6); specNextBtn.Text = ">"; specNextBtn.Parent = spectateFrame
+specLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    specScroll.CanvasSize = UDim2.new(0, 0, 0, specLayout.AbsoluteContentSize.Y + 10)
+end)
 
-local teleportBtn = Instance.new("TextButton")
-teleportBtn.Size = UDim2.new(0, 160, 0, 28); teleportBtn.Position = UDim2.new(0.5, -80, 0, 44); teleportBtn.BackgroundColor3 = Color3.fromRGB(45, 120, 210); teleportBtn.Text = "🚀 Dịch Chuyển Tới"; teleportBtn.TextColor3 = Color3.fromRGB(255, 255, 255); teleportBtn.Font = GLOBAL_FONT; teleportBtn.TextSize = 11; teleportBtn.Parent = spectateFrame
-Instance.new("UICorner", teleportBtn).CornerRadius = UDim.new(0, 5)
-
-local specCloseBtn = Instance.new("TextButton")
-specCloseBtn.Size = UDim2.new(0, 120, 0, 24); specCloseBtn.Position = UDim2.new(0.5, -60, 0, 78); specCloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); specCloseBtn.Text = "Đóng Spectate"; specCloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255); specCloseBtn.Font = GLOBAL_FONT; specCloseBtn.TextSize = 11; specCloseBtn.Parent = spectateFrame
-Instance.new("UICorner", specCloseBtn).CornerRadius = UDim.new(0, 5)
-
-local spectateIndex = 1
-local spectateConnection = nil
-
-local function getSpectateTargets()
-    local targets = {}
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p and p ~= player and p.Parent and p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
-            table.insert(targets, p)
-        end
-    end
-    return targets
-end
-
-local function updateSpectateCamera()
-    pcall(function()
-        local targets = getSpectateTargets()
-        if #targets == 0 then
-            specNameLabel.Text = "Không có người chơi khác!"
-            return
-        end
-        if spectateIndex > #targets then spectateIndex = 1 end
-        if spectateIndex < 1 then spectateIndex = #targets end
-
-        local target = targets[spectateIndex]
-        if not target then return end
-        specNameLabel.Text = (target.DisplayName or target.Name) .. " (@" .. target.Name .. ")"
-
-        local cam = Workspace.CurrentCamera
-        if cam and target.Character then
-            local hum = target.Character:FindFirstChildOfClass("Humanoid")
-            if hum then cam.CameraSubject = hum end
-        end
+local function updateSpectateCamera(targetP)
+    if spectateConnection then spectateConnection:Disconnect(); spectateConnection = nil end
+    if not targetP then return end
+    
+    spectateConnection = RunService.RenderStepped:Connect(function()
+        pcall(function()
+            if not spectateEnabled or not targetP or not targetP.Character then return end
+            local humanoidRootPart = targetP.Character:FindFirstChild("HumanoidRootPart") or targetP.Character:FindFirstChild("Head")
+            if humanoidRootPart then
+                Workspace.CurrentCamera.CameraSubject = targetP.Character:FindFirstChildOfClass("Humanoid")
+            end
+        end)
     end)
 end
 
-local function toggleSpectateWindow(state)
-    spectateFrame.Visible = state
-    local cam = Workspace.CurrentCamera
-    if not cam then return end
+local function refreshSpectateList()
+    for _, v in ipairs(specScroll:GetChildren()) do
+        if v:IsA("TextButton") then v:Destroy() end
+    end
 
-    if state then
-        spectateIndex = 1
-        updateSpectateCamera()
-        if not spectateConnection then
-            spectateConnection = RunService.RenderStepped:Connect(function()
-                if not spectateFrame.Visible then return end
-                pcall(function()
-                    local targets = getSpectateTargets()
-                    local target = targets[spectateIndex]
-                    if target and target.Character then
-                        local hum = target.Character:FindFirstChildOfClass("Humanoid")
-                        if hum and cam.CameraSubject ~= hum then cam.CameraSubject = hum end
-                    end
-                end)
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            local pBtn = Instance.new("TextButton")
+            pBtn.Size = UDim2.new(1, 0, 0, 28)
+            pBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+            pBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            pBtn.Font = GLOBAL_FONT
+            pBtn.TextSize = 11
+            pBtn.Text = p.DisplayName .. " (@" .. p.Name .. ")"
+            pBtn.Parent = specScroll
+            Instance.new("UICorner", pBtn).CornerRadius = UDim.new(0, 5)
+
+            pBtn.MouseButton1Click:Connect(function()
+                currentSpectateTarget = p
+                toggleButton.Text = "👁️ Xem: " .. p.DisplayName
+                updateSpectateCamera(p)
             end)
         end
-    else
-        if spectateConnection then spectateConnection:Disconnect(); spectateConnection = nil end
-        if player.Character then
-            local myHum = player.Character:FindFirstChildOfClass("Humanoid")
-            if myHum then cam.CameraSubject = myHum end
-        end
     end
 end
 
-toggleButton.MouseButton1Click:Connect(function() toggleSpectateWindow(not spectateFrame.Visible) end)
-specPrevBtn.MouseButton1Click:Connect(function() spectateIndex -= 1; updateSpectateCamera() end)
-specNextBtn.MouseButton1Click:Connect(function() spectateIndex += 1; updateSpectateCamera() end)
-teleportBtn.MouseButton1Click:Connect(function()
-    pcall(function()
-        local targets = getSpectateTargets()
-        local target = targets[spectateIndex]
-        if target and target.Character and player.Character then
-            local tRoot = target.Character:FindFirstChild("HumanoidRootPart")
-            local mRoot = player.Character:FindFirstChild("HumanoidRootPart")
-            if tRoot and mRoot then mRoot.CFrame = tRoot.CFrame * CFrame.new(0, 0, 3) end
-        end
-    end)
-end)
-specCloseBtn.MouseButton1Click:Connect(function() toggleSpectateWindow(false) end)
-
-addToggle(expTab, "specBtnToggle", false, function(state)
+-- Toggle logic cho Spectate Mode trong Menu Thử nghiệm
+createToggleRow(expTab, "specBtnToggle", false, function(state, setVis)
+    spectateEnabled = state
     toggleButton.Visible = state
-    if not state then toggleSpectateWindow(false) end
+    specListFrame.Visible = state
+
+    if state then
+        refreshSpectateList()
+    else
+        spectateEnabled = false
+        if spectateConnection then spectateConnection:Disconnect(); spectateConnection = nil end
+        pcall(function()
+            if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+                Workspace.CurrentCamera.CameraSubject = player.Character:FindFirstChildOfClass("Humanoid")
+            end
+        end)
+        currentSpectateTarget = nil
+    end
+
+    if setVis then setVis(state) end
 end, true)
 
--- Quản lý thu phóng UI
+-- Nút nổi click để tắt nhanh chế độ spectate hoặc mở lại danh sách chọn
+toggleButton.MouseButton1Click:Connect(function()
+    specListFrame.Visible = not specListFrame.Visible
+    if specListFrame.Visible then
+        refreshSpectateList()
+    end
+end)
+
+-- ==========================================
+-- ĐIỀU KHIỂN ĐÓNG/MỞ GIAO DIỆN CHÍNH
+-- ==========================================
+
 local isAnimating = false
 minimizeButton.MouseButton1Click:Connect(function()
     if isAnimating then return end
@@ -1925,7 +1841,7 @@ end)
 
 closeButton.MouseButton1Click:Connect(function()
     toggleAutoRoll(false)
-    toggleAimLock(false)
+    if spectateConnection then spectateConnection:Disconnect() end
     pcall(function() screenGui:Destroy() end)
 end)
 
@@ -1938,4 +1854,4 @@ task.defer(function()
     TweenService:Create(frame, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(410, 340)}):Play()
 end)
 
-print("[H HUB] RNG Fights Full Features, Multi-Roll & Selective AimLock Loaded!")
+print("[H HUB] RNG Fights Multi-Target Auto Roll & Spectate Loaded!")
