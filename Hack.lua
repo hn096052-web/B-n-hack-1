@@ -1,5 +1,5 @@
 -- ==========================================
--- H HUB - RNG FIGHTS (FIXED & FULL AUTO ROLL)
+-- H HUB - RNG FIGHTS FULL FEATURES, MULTI-ROLL & SELECTIVE AIMLOCK
 -- ==========================================
 
 local Players = game:GetService("Players")
@@ -19,7 +19,7 @@ if not player then return end
 local playerGui = player:WaitForChild("PlayerGui", 10)
 if not playerGui then return end
 
--- 1. Dọn GUI cũ
+-- 1. Dọn GUI cũ an toàn
 pcall(function()
     local old1 = playerGui:FindFirstChild("AutoFarmHubGui")
     if old1 then old1:Destroy() end
@@ -55,7 +55,6 @@ local walkEnabled = false
 local jumpEnabled = false
 local noclipEnabled = false
 local invisibleEnabled = false
-local flyEnabled = false
 local infJumpEnabled = false
 local freezeRayEnabled = false
 local espEnabled = false
@@ -65,20 +64,33 @@ local autoPressButtonEnabled = false
 local fixLagEnabled = false
 local hideMapOthersEnabled = false
 local muteAllSoundsEnabled = false
+local aimLockEnabled = false
 
+-- Trạng thái Antiban & Server Hop & Auto Roll
 local autoServerHopEnabled = false
 local adminDetectorEnabled = true
+local autoRollEnabled = false
 
-local spectating = false
-local spectateIndex = 1
-local spectateConnection = nil
-local currentCameraMode = "Default"
-local cameraViewConnection = nil
+-- Mục tiêu AimLock được chọn ("Tất cả" hoặc tên cụ thể)
+local selectedAimTargetName = "Tất cả"
 
+-- Danh sách toàn bộ sức mạnh RNG Fights chuẩn game
+local allRngAttacks = {
+    "Punch", "Slap", "Laser", "Shockwave", "Rage", "Get Out", "Streak",
+    "Rapid Fire", "Phase", "Nope", "Party", "Rock", "UltraPunch", "Orbital Strike",
+    "Nani", "Bounty", "Randomized", "Ultra Instinct", "Cloned", "Cyborg", "Time God",
+    "360-NoScope", "Divinity", "SuperCharged", "Supernova", "Gravity", "Hacker",
+    "D E A T H", "Singularity", "Eternal", "E R R O R", "Present", "Ghost",
+    "Reverse", "Hellfire", "Reaper", "Nuke"
+}
+
+-- Bảng lưu danh sách các sức mạnh được chọn nhiều mục tiêu
+local selectedAttacksMap = {}
+
+-- Cấu hình mặc định
 local tpSpeed = 0.15
 local walkSpeed = 35
 local jumpPower = 75
-local flySpeed = 100
 local customGravity = 196.2
 local coinName = "Coin"
 local freezeRadius = 150
@@ -102,34 +114,33 @@ local GLOBAL_FONT = Enum.Font.GothamBold
 local translations = {
     EN = {
         title = "H HUB - RNG Fights",
-        tabMain = "Main", tabRoll = "Auto Roll", tabEsp = "ESP", tabFixLag = "Fix Lag", tabMisc = "Settings", tabExperimental = "Experimental",
-        tpSpd = "TP Speed (s):", walkSpd = "Walk Speed:", flySpd = "Fly Speed:",
+        tabMain = "Main", tabRoll = "Auto Roll", tabEsp = "ESP", tabMisc = "Settings", tabFixLag = "Fix Lag", tabExperimental = "Exp",
+        tpSpd = "TP Speed (s):", walkSpd = "Walk Speed:",
         jumpSpd = "Jump Power:", gravSpd = "Gravity:", freezeRng = "Freeze Range:",
-        clickDelayLabel = "Click Delay (s):", targetBtn = "Target: ", allTarget = "All",
         tpBtn = "Auto TP Coins", walkBtn = "Custom Speed", jumpBtn = "Custom Jump",
-        flyBtn = "Fly Mode", gravBtn = "Custom Gravity", noclipBtn = "Noclip Pass-Wall",
+        aimLockBtn = "AimLock (Select Target)", gravBtn = "Custom Gravity", noclipBtn = "Noclip Pass-Wall",
         invisBtn = "Invisibility", infJumpBtn = "Infinite Jump", freezeBtn = "Auto Freeze Ray",
-        autoEquipBtn = "Equip Items (Run Once)", godBtn = "⚡ Open God Mode Panel",
+        autoEquipBtn = "Equip Items", godBtn = "⚡ God Mode Panel",
         espBtn = "ESP Wallhack", fpsBtn = "Display FPS",
-        autoPressRadiusLabel = "Click Button Range:", autoPressDelayLabel = "Click Button Delay (s):",
-        autoPressBtn = "Auto Click Buttons", fixLagBtn = "Ultra Fix Lag (Max FPS)",
-        hideMapBtn = "Hide Map & Players", muteSoundsBtn = "Mute Game Sounds",
-        espColorLabel = "ESP Highlight Color:", boardColorLabel = "Board Background Color:",
+        autoPressRadiusLabel = "Click Button Range:", autoPressDelayLabel = "Click Delay (s):",
+        autoPressBtn = "Auto Click Buttons", fixLagBtn = "Ultra Fix Lag",
+        hideMapBtn = "Hide Map & Players", muteSoundsBtn = "Mute Sounds",
+        espColorLabel = "ESP Color:", boardColorLabel = "Board Background Color:",
         themeLabel = "UI Button Color:", textLabel = "UI Text Color:", langLabel = "Language:",
-        rejoinBtn = "Rejoin Server", serverHopBtn = "Server Hop", on = "ON", off = "OFF",
+        rejoinBtn = "Rejoin", serverHopBtn = "Server Hop", on = "ON", off = "OFF",
         specBtnToggle = "👁️ Spectate Mode", cameraViewLabel = "Camera View Angle:",
-        autoHopBtn = "Auto Server Hop (20m)", adminDetectBtn = "Anti-Admin Detector"
+        autoHopBtn = "Auto Server Hop (20m)", adminDetectBtn = "Anti-Admin Detector",
+        autoRollBtn = "Auto Roll (Multi-Target)", rollOnceBtn = "Roll 1 Time", rollTargetLabel = "Selected: "
     },
     VI = {
         title = "H HUB - RNG Fights",
-        tabMain = "Chính", tabRoll = "Auto Roll", tabEsp = "Người chơi/ESP", tabFixLag = "Fix Lag", tabMisc = "Cài đặt", tabExperimental = "Thử nghiệm",
-        tpSpd = "Tốc độ TP (giây):", walkSpd = "Tốc độ Đi bộ:", flySpd = "Tốc độ Bay:",
+        tabMain = "Chính", tabRoll = "Quay Sức Mạnh", tabEsp = "Người chơi/ESP", tabMisc = "Cài đặt", tabFixLag = "Fix Lag", tabExperimental = "Thử nghiệm",
+        tpSpd = "Tốc độ TP (giây):", walkSpd = "Tốc độ Đi bộ:",
         jumpSpd = "Độ Cao Nhảy:", gravSpd = "Trọng Lực Game:", freezeRng = "Khoảng cách Freeze:",
-        clickDelayLabel = "Tốc độ Click (giây):", targetBtn = "Mục tiêu: ", allTarget = "Tất cả",
         tpBtn = "Auto TP Nhặt Xu", walkBtn = "Chỉnh Tốc Độ Đi", jumpBtn = "Chỉnh Độ Nhảy",
-        flyBtn = "Chế Độ Bay", gravBtn = "Trọng Lực Tùy Chỉnh", noclipBtn = "Đi Xuyên Tường (Noclip)",
+        aimLockBtn = "AimLock (Chọn Mục Tiêu)", gravBtn = "Trọng Lực Tùy Chỉnh", noclipBtn = "Đi Xuyên Tường (Noclip)",
         invisBtn = "Tàng Hình Nhìn Thấy", infJumpBtn = "Nhảy Vô Hạn",
-        freezeBtn = "Tự Động Freeze Ray", autoEquipBtn = "Trang Bị Đồ (Nhấn 1 Lần)",
+        freezeBtn = "Tự Động Freeze Ray", autoEquipBtn = "Trang Bị Đồ",
         godBtn = "⚡ Bảng God Mode (Bất Tử)", espBtn = "ESP Nhìn Xuyên Tường",
         fpsBtn = "Hiển Thị FPS", autoPressRadiusLabel = "Bán kính Click Nút:",
         autoPressDelayLabel = "Tốc độ Click Nút (s):", autoPressBtn = "Auto Click Nút",
@@ -138,31 +149,32 @@ local translations = {
         boardColorLabel = "Màu Bảng Điều Khiển:", themeLabel = "Màu Nút Giao Diện:",
         textLabel = "Màu Chữ Giao Diện:", langLabel = "Ngôn ngữ / Language:",
         rejoinBtn = "Vào Lại Server", serverHopBtn = "Đổi Server Khác", on = "BẬT", off = "TẮT",
-        specBtnToggle = "👁️ Chế Độ Spectate", cameraViewLabel = "Chỉnh Góc Nhìn Camera:",
-        autoHopBtn = "Tự Động Đổi Server (20p)", adminDetectBtn = "Phát Hiện Admin (Antiban)"
+        specBtnToggle = "👁️ Chế Độ Spectate", cameraViewLabel = "Camera View Angle:",
+        autoHopBtn = "Tự Động Đổi Server (20p)", adminDetectBtn = "Phát Hiện Admin (Antiban)",
+        autoRollBtn = "Auto Roll (Chọn Nhiều Mục Tiêu)", rollOnceBtn = "Quay 1 Lần", rollTargetLabel = "Đã chọn: "
     }
 }
 
 -- ==========================================
--- HỆ THỐNG CẢNH BÁO CHỐNG BẤM NHẦM (WALK > 50 HOẶC JUMP > 30)
+-- HỆ THỐNG CẢNH BÁO AN TOÀN (ANTIBAN)
 -- ==========================================
 
 local banWarningPopup = Instance.new("Frame")
 banWarningPopup.Size = UDim2.fromOffset(340, 150)
-banWarningPopup.Position = UDim2.new(0.5, -170, 0.3, -75)
-banWarningPopup.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+banWarningPopup.Position = UDim2.new(0.5, -170, 0.35, -75)
+banWarningPopup.BackgroundColor3 = Color3.fromRGB(25, 20, 25)
 banWarningPopup.BorderSizePixel = 0
 banWarningPopup.Visible = false
 banWarningPopup.ZIndex = 99999
 banWarningPopup.Parent = screenGui
 Instance.new("UICorner", banWarningPopup).CornerRadius = UDim.new(0, 10)
-local bwStroke = Instance.new("UIStroke"); bwStroke.Color = Color3.fromRGB(255, 60, 60); bwStroke.Thickness = 2; bwStroke.Parent = banWarningPopup
+local bwStroke = Instance.new("UIStroke"); bwStroke.Color = Color3.fromRGB(255, 50, 50); bwStroke.Thickness = 2; bwStroke.Parent = banWarningPopup
 
 local bwTitle = Instance.new("TextLabel")
 bwTitle.Size = UDim2.new(1, 0, 0, 35)
 bwTitle.BackgroundTransparency = 1
-bwTitle.Text = "🚨 CẢNH BÁO NGUY HIỂM (ANTI-BAN)"
-bwTitle.TextColor3 = Color3.fromRGB(255, 80, 80)
+bwTitle.Text = "⚠️ CẢNH BÁO BẢO MẬT (ANTIBAN)"
+bwTitle.TextColor3 = Color3.fromRGB(255, 60, 60)
 bwTitle.Font = GLOBAL_FONT
 bwTitle.TextSize = 13
 bwTitle.Parent = banWarningPopup
@@ -171,114 +183,369 @@ local bwDesc = Instance.new("TextLabel")
 bwDesc.Size = UDim2.new(1, -20, 0, 55)
 bwDesc.Position = UDim2.new(0, 10, 0, 35)
 bwDesc.BackgroundTransparency = 1
-bwDesc.Text = "Bạn đang chỉnh tốc độ hoặc độ cao vượt ngưỡng an toàn (>50 hoặc >30). Bạn có thể bị BAN! Bạn có muốn tiếp tục kích hoạt không?"
+bwDesc.Text = "Bạn đang chỉnh tốc độ hoặc độ nhảy vượt ngưỡng an toàn! Bạn có thể bị ban khỏi game."
 bwDesc.TextColor3 = Color3.fromRGB(255, 255, 255)
 bwDesc.Font = GLOBAL_FONT
 bwDesc.TextSize = 11
 bwDesc.TextWrapped = true
 bwDesc.Parent = banWarningPopup
 
-local bwBtnYes = Instance.new("TextButton")
-bwBtnYes.Size = UDim2.new(0, 140, 0, 30)
-bwBtnYes.Position = UDim2.new(0, 15, 1, -40)
-bwBtnYes.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-bwBtnYes.Text = "Vẫn kích hoạt"
-bwBtnYes.TextColor3 = Color3.fromRGB(255, 255, 255)
-bwBtnYes.Font = GLOBAL_FONT
-bwBtnYes.TextSize = 11
-bwBtnYes.Parent = banWarningPopup
-Instance.new("UICorner", bwBtnYes).CornerRadius = UDim.new(0, 6)
+local bwBtnConfirm = Instance.new("TextButton")
+bwBtnConfirm.Size = UDim2.new(0, 145, 0, 30)
+bwBtnConfirm.Position = UDim2.new(0, 15, 1, -40)
+bwBtnConfirm.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+bwBtnConfirm.Text = "Vẫn tiếp tục"
+bwBtnConfirm.TextColor3 = Color3.fromRGB(255, 255, 255)
+bwBtnConfirm.Font = GLOBAL_FONT
+bwBtnConfirm.TextSize = 12
+bwBtnConfirm.Parent = banWarningPopup
+Instance.new("UICorner", bwBtnConfirm).CornerRadius = UDim.new(0, 6)
 
-local bwBtnNo = Instance.new("TextButton")
-bwBtnNo.Size = UDim2.new(0, 140, 0, 30)
-bwBtnNo.Position = UDim2.new(1, -155, 1, -40)
-bwBtnNo.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
-bwBtnNo.Text = "Bỏ qua / Tắt"
-bwBtnNo.TextColor3 = Color3.fromRGB(255, 255, 255)
-bwBtnNo.Font = GLOBAL_FONT
-bwBtnNo.TextSize = 11
-bwBtnNo.Parent = banWarningPopup
-Instance.new("UICorner", bwBtnNo).CornerRadius = UDim.new(0, 6)
+local bwBtnCancel = Instance.new("TextButton")
+bwBtnCancel.Size = UDim2.new(0, 145, 0, 30)
+bwBtnCancel.Position = UDim2.new(1, -160, 1, -40)
+bwBtnCancel.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+bwBtnCancel.Text = "Hủy bỏ (An toàn)"
+bwBtnCancel.TextColor3 = Color3.fromRGB(255, 255, 255)
+bwBtnCancel.Font = GLOBAL_FONT
+bwBtnCancel.TextSize = 12
+bwBtnCancel.Parent = banWarningPopup
+Instance.new("UICorner", bwBtnCancel).CornerRadius = UDim.new(0, 6)
 
 local pendingActionCallback = nil
-bwBtnYes.MouseButton1Click:Connect(function()
+
+bwBtnConfirm.MouseButton1Click:Connect(function()
     banWarningPopup.Visible = false
     if pendingActionCallback then
         pendingActionCallback(true)
         pendingActionCallback = nil
     end
 end)
-bwBtnNo.MouseButton1Click:Connect(function()
+
+bwBtnCancel.MouseButton1Click:Connect(function()
     banWarningPopup.Visible = false
     pendingActionCallback = nil
 end)
 
-local function checkAndWarnLimit(val, isWalk, confirmCallback)
-    if (isWalk and val > 50) or (not isWalk and val > 30) then
-        pendingActionCallback = confirmCallback
+local function checkSafetyThreshold(typeStr, value, applyCallback)
+    if (typeStr == "walk" and value > 50) or (typeStr == "jump" and value > 30) then
         banWarningPopup.Visible = true
+        bwDesc.Text = "Phát hiện " .. (typeStr == "walk" and "Tốc độ đi (" .. value .. " > 50)" or "Độ cao nhảy (" .. value .. " > 30)") .. ". Bạn có thể bị ban!"
+        pendingActionCallback = applyCallback
+        return false
     else
-        confirmCallback(true)
+        applyCallback(true)
+        return true
     end
 end
 
 -- ==========================================
--- HỆ THỐNG AUTO ROLL AN TOÀN (TỰ DÒ TÌM REMOTE)
+-- TÍNH NĂNG AIMLOCK ĐỘNG (CHỌN MỤC TIÊU + CHECK MÁU)
 -- ==========================================
 
-local allAttacksList = {
-    "Punch", "Slap", "Laser", "Shockwave", "Rage", "Get Out", "Streak", "Rapid Fire",
-    "Phase", "Nope", "Party", "Rock", "UltraPunch", "Orbital Strike", "Nani", "Bounty",
-    "Randomized", "Ultra Instinct", "Cloned", "Cyborg", "Time God", "360-NoScope",
-    "Divinity", "SuperCharged", "Supernova", "Gravity", "Hacker", "D E A T H",
-    "Singularity", "Eternal", "E R R O R", "Present", "Ghost", "Reverse", "Hellfire", "Reaper"
-}
+local aimLockConnection = nil
+local function toggleAimLock(state)
+    aimLockEnabled = state
+    if state then
+        if not aimLockConnection then
+            aimLockConnection = RunService.RenderStepped:Connect(function()
+                if not aimLockEnabled then return end
+                pcall(function()
+                    local cam = Workspace.CurrentCamera
+                    local char = player.Character
+                    local root = char and char:FindFirstChild("HumanoidRootPart")
+                    if not cam or not root then return end
 
-local autoRollActive = false
-local selectedRollTargets = {} 
-local rollSpeedDelay = 0.5
+                    local closestTargetPart = nil
+                    local shortestDist = 300
 
-local function getGenerateAttackRemote()
-    -- Tự động tìm kiếm RemoteEvent "GenerateAttack" trong toàn bộ ReplicatedStorage nếu đường dẫn thay đổi
-    local found = ReplicatedStorage:FindFirstChild("GenerateAttack", true)
-    if found and found:IsA("RemoteEvent") then return found end
-    
-    local eventsFolder = ReplicatedStorage:FindFirstChild("EventsFolder") or ReplicatedStorage:FindFirstChild("Events")
-    if eventsFolder then
-        local ev = eventsFolder:FindFirstChild("GenerateAttack")
-        if ev and ev:IsA("RemoteEvent") then return ev end
+                    if selectedAimTargetName == "Tất cả" then
+                        -- Quét tất cả người chơi đang sống (máu > 0)
+                        for _, p in ipairs(Players:GetPlayers()) do
+                            if p ~= player and p.Character then
+                                local hum = p.Character:FindFirstChildOfClass("Humanoid")
+                                local targetRoot = p.Character:FindFirstChild("HumanoidRootPart") or p.Character:FindFirstChild("Torso")
+                                if hum and hum.Health > 0 and targetRoot then
+                                    local dist = (targetRoot.Position - root.Position).Magnitude
+                                    if dist < shortestDist then
+                                        shortestDist = dist
+                                        closestTargetPart = targetRoot
+                                    end
+                                end
+                            end
+                        end
+                        -- Quét tất cả Dummy / Bot có máu trong Workspace
+                        for _, obj in ipairs(Workspace:GetDescendants()) do
+                            if obj:IsA("Model") and obj ~= char and not Players:GetPlayerFromCharacter(obj) then
+                                local hum = obj:FindFirstChildOfClass("Humanoid")
+                                local targetRoot = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") or obj.PrimaryPart
+                                if hum and hum.Health > 0 and targetRoot then
+                                    local dist = (targetRoot.Position - root.Position).Magnitude
+                                    if dist < shortestDist then
+                                        shortestDist = dist
+                                        closestTargetPart = targetRoot
+                                    end
+                                end
+                            end
+                        end
+                    else
+                        -- Tìm đúng người chơi được chọn (tự động nhận diện lại khi họ vào lại hoặc hồi sinh)
+                        for _, p in ipairs(Players:GetPlayers()) do
+                            if (p.Name == selectedAimTargetName or p.DisplayName == selectedAimTargetName) and p.Character then
+                                local hum = p.Character:FindFirstChildOfClass("Humanoid")
+                                local targetRoot = p.Character:FindFirstChild("HumanoidRootPart") or p.Character:FindFirstChild("Torso")
+                                if hum and hum.Health > 0 and targetRoot then
+                                    closestTargetPart = targetRoot
+                                end
+                            end
+                        end
+                        -- Nếu không phải người chơi thì tìm Dummy theo tên (tự động nhận diện lại khi hồi sinh)
+                        if not closestTargetPart then
+                            for _, obj in ipairs(Workspace:GetDescendants()) do
+                                if obj:IsA("Model") and obj.Name == selectedAimTargetName then
+                                    local hum = obj:FindFirstChildOfClass("Humanoid")
+                                    local targetRoot = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") or obj.PrimaryPart
+                                    if hum and hum.Health > 0 and targetRoot then
+                                        closestTargetPart = targetRoot
+                                    end
+                                end
+                            end
+                        end
+                    end
+
+                    -- Khóa góc nhìn camera và hướng nhân vật vào mục tiêu
+                    if closestTargetPart then
+                        local targetPos = closestTargetPart.Position + Vector3.new(0, 0.5, 0)
+                        cam.CFrame = CFrame.new(cam.CFrame.Position, targetPos)
+                        root.CFrame = CFrame.new(root.Position, Vector3.new(targetPos.X, root.Position.Y, targetPos.Z))
+                    end
+                end)
+            end)
+        end
+    else
+        if aimLockConnection then
+            aimLockConnection:Disconnect()
+            aimLockConnection = nil
+        end
     end
-    return nil
 end
 
-local function fireRollServer(attackName)
-    pcall(function()
-        local remote = getGenerateAttackRemote()
-        if remote then
-            remote:FireServer(attackName or "Random")
+-- ==========================================
+-- HỆ THỐNG SERVER HOP & ANTIBAN THÔNG MINH
+-- ==========================================
+
+local function serverHopFiltered()
+    task.spawn(function()
+        pcall(function()
+            local placeId = game.PlaceId
+            local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100"
+            local ok, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(url)) end)
+            if ok and result and result.data then
+                for _, server in ipairs(result.data) do
+                    if server.id ~= game.JobId and server.playing >= 5 and server.playing < server.maxPlayers then
+                        TeleportService:TeleportToPlaceInstance(placeId, server.id, player)
+                        return
+                    end
+                end
+            end
+            TeleportService:Teleport(placeId, player)
+        end)
+    end)
+end
+
+local alertPopup = Instance.new("Frame")
+alertPopup.Size = UDim2.fromOffset(320, 140)
+alertPopup.Position = UDim2.new(0.5, -160, 0.3, -70)
+alertPopup.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+alertPopup.BorderSizePixel = 0
+alertPopup.Visible = false
+alertPopup.ZIndex = 99999
+alertPopup.Parent = screenGui
+Instance.new("UICorner", alertPopup).CornerRadius = UDim.new(0, 10)
+local alertStroke = Instance.new("UIStroke"); alertStroke.Color = Color3.fromRGB(255, 100, 100); alertStroke.Thickness = 2; alertStroke.Parent = alertPopup
+
+local alertTitle = Instance.new("TextLabel")
+alertTitle.Size = UDim2.new(1, 0, 0, 35)
+alertTitle.BackgroundTransparency = 1
+alertTitle.Text = "⚠️ CẢNH BÁO BẢO MẬT"
+alertTitle.TextColor3 = Color3.fromRGB(255, 80, 80)
+alertTitle.Font = GLOBAL_FONT
+alertTitle.TextSize = 14
+alertTitle.Parent = alertPopup
+
+local alertDesc = Instance.new("TextLabel")
+alertDesc.Size = UDim2.new(1, -20, 0, 50)
+alertDesc.Position = UDim2.new(0, 10, 0, 35)
+alertDesc.BackgroundTransparency = 1
+alertDesc.Text = "Sắp tiến hành chuyển server..."
+alertDesc.TextColor3 = Color3.fromRGB(255, 255, 255)
+alertDesc.Font = GLOBAL_FONT
+alertDesc.TextSize = 12
+alertDesc.TextWrapped = true
+alertDesc.Parent = alertPopup
+
+local btnNow = Instance.new("TextButton")
+btnNow.Size = UDim2.new(0, 135, 0, 30)
+btnNow.Position = UDim2.new(0, 15, 1, -40)
+btnNow.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+btnNow.Text = "Chuyển ngay"
+btnNow.TextColor3 = Color3.fromRGB(255, 255, 255)
+btnNow.Font = GLOBAL_FONT
+btnNow.TextSize = 12
+btnNow.Parent = alertPopup
+Instance.new("UICorner", btnNow).CornerRadius = UDim.new(0, 6)
+
+local btnIgnore = Instance.new("TextButton")
+btnIgnore.Size = UDim2.new(0, 135, 0, 30)
+btnIgnore.Position = UDim2.new(1, -150, 1, -40)
+btnIgnore.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+btnIgnore.Text = "Kệ"
+btnIgnore.TextColor3 = Color3.fromRGB(255, 255, 255)
+btnIgnore.Font = GLOBAL_FONT
+btnIgnore.TextSize = 12
+btnIgnore.Parent = alertPopup
+Instance.new("UICorner", btnIgnore).CornerRadius = UDim.new(0, 6)
+
+local alertActiveAction = nil
+btnNow.MouseButton1Click:Connect(function()
+    alertPopup.Visible = false
+    if alertActiveAction then alertActiveAction() end
+end)
+btnIgnore.MouseButton1Click:Connect(function()
+    alertPopup.Visible = false
+end)
+
+local function showAlertPopup(titleTextStr, descTextStr, actionCallback, countdownSec)
+    alertTitle.Text = titleTextStr
+    alertDesc.Text = descTextStr
+    alertActiveAction = actionCallback
+    alertPopup.Visible = true
+
+    if countdownSec then
+        task.spawn(function()
+            for i = countdownSec, 1, -1 do
+                if not alertPopup.Visible then break end
+                alertDesc.Text = descTextStr .. " (" .. i .. "s)"
+                task.wait(1)
+            end
+            if alertPopup.Visible then
+                alertPopup.Visible = false
+                if alertActiveAction then alertActiveAction() end
+            end
+        end)
+    end
+end
+
+task.spawn(function()
+    while true do
+        task.wait(1170)
+        if autoServerHopEnabled then
+            showAlertPopup(
+                "⚠️ CHUYỂN SERVER ĐỊNH KỲ",
+                "Sắp tiến hành chuyển sang server mới (>= 5 người) để tránh quét bảo mật!",
+                serverHopFiltered,
+                30
+            )
         else
-            -- Fallback theo cấu trúc bạn cung cấp
-            local evFolder = ReplicatedStorage:FindFirstChild("EventsFolder")
-            if evFolder then
-                local gen = evFolder:FindFirstChild("GenerateAttack")
-                if gen then gen:FireServer(attackName or "Random") end
+            task.wait(30)
+        end
+    end
+end)
+
+local function isAdminOrDev(p)
+    if not p then return false end
+    local success, isMember = pcall(function() return p:IsInGroup(12000000) end)
+    if success and isMember then return true end
+    if p.UserId == game.CreatorId then return true end
+    local nameLower = p.Name:lower()
+    local displayLower = p.DisplayName:lower()
+    if nameLower:find("admin") or nameLower:find("owner") or nameLower:find("developer") or
+       displayLower:find("admin") or displayLower:find("owner") or displayLower:find("dev") then
+        return true
+    end
+    return false
+end
+
+task.spawn(function()
+    while true do
+        task.wait(5)
+        if adminDetectorEnabled then
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= player and isAdminOrDev(p) then
+                    showAlertPopup(
+                        "🚨 PHÁT HIỆN ADMIN TRONG SERVER!",
+                        "Hiện đang có admin (" .. p.Name .. ") trong server tiến hành chuyển đổi bảo mật khẩn cấp...",
+                        serverHopFiltered,
+                        10
+                    )
+                    break
+                end
+            end
+        end
+    end
+end)
+
+-- ==========================================
+-- LOGIC AUTO ROLL ĐA MỤC TIÊU (KIỂM TRA KHO ĐỒ)
+-- ==========================================
+
+local function fireGenerateAttackRandom()
+    pcall(function()
+        local eventsFolder = ReplicatedStorage:FindFirstChild("EventsFolder")
+        if eventsFolder then
+            local genEvent = eventsFolder:FindFirstChild("GenerateAttack")
+            if genEvent then
+                genEvent:FireServer("Random")
             end
         end
     end)
 end
 
+local function hasSelectedAttackInInventory()
+    local countSelected = 0
+    for _, v in pairs(selectedAttacksMap) do if v then countSelected += 1 end end
+    if countSelected == 0 then return false end
+
+    local function checkContainer(container)
+        if not container then return false end
+        for _, item in ipairs(container:GetChildren()) do
+            local itemName = item.Name
+            for targetName, isSelected in pairs(selectedAttacksMap) do
+                if isSelected and (itemName == targetName or itemName:lower():find(targetName:lower(), 1, true)) then
+                    return true
+                end
+            end
+        end
+        return false
+    end
+
+    if checkContainer(player:FindFirstChild("Backpack")) then return true end
+    if checkContainer(player.Character) then return true end
+    return false
+end
+
 local autoRollTask = nil
+local autoRollRefreshUI = nil
+
 local function toggleAutoRoll(state)
-    autoRollActive = state
+    autoRollEnabled = state
+    if autoRollRefreshUI then autoRollRefreshUI(state) end
+
     if state then
         if not autoRollTask then
             autoRollTask = task.spawn(function()
-                while autoRollActive do
+                while autoRollEnabled do
                     pcall(function()
-                        fireRollServer("Random")
+                        if hasSelectedAttackInInventory() then
+                            autoRollEnabled = false
+                            if autoRollRefreshUI then autoRollRefreshUI(false) end
+                            return
+                        end
+                        fireGenerateAttackRandom()
                     end)
-                    task.wait(rollSpeedDelay)
+                    task.wait(0.45)
                 end
+                autoRollTask = nil
             end)
         end
     else
@@ -290,22 +557,13 @@ local function toggleAutoRoll(state)
 end
 
 -- ==========================================
--- CÁC CHỨC NĂNG KHÁC (TP, ESP, Noclip,...)
+-- CÁC TÍNH NĂNG GỐC KHÁC (EQUIP, FIX LAG, NOCLIP, ESP, FREEZE RAY, TP...)
 -- ==========================================
 
-local function setBackpackVisible(visible)
-    pcall(function() StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, visible) end)
-end
-
-local allEquipItems = {
-    "PieThrow","SmallPotion","GiantPotion","GhostPotion","Healing","GravityPotion",
-    "Bloxiade","ClownBomb","Slate","WindPotion","IcePotion","Caltrops","SlowDownGun",
-    "GravityGun","GravityDisruptor","FreezeRay","Bomb","Jetpack","DecoyDeploy"
-}
-
+local allEquipItems = {"PieThrow","SmallPotion","GiantPotion","GhostPotion","Healing","GravityPotion","Bloxiade","ClownBomb"}
 local function equipItemsOnce()
     task.spawn(function()
-        local equipEvent = ReplicatedStorage:FindFirstChild("Equip", true)
+        local equipEvent = ReplicatedStorage:FindFirstChild("Equip")
         if not equipEvent then return end
         for _, item in ipairs(allEquipItems) do
             pcall(function() equipEvent:FireServer("UNEQUIP", item) end)
@@ -321,6 +579,7 @@ end
 
 local hiddenObjects = {}
 local mutedSounds = {}
+local fixLagChildConnection, fixLagTask, hideMapConnection, muteSoundsConnection
 
 local function applyMuteToSound(sound)
     if not muteAllSoundsEnabled then return end
@@ -336,7 +595,13 @@ local function toggleMuteAllSounds(state)
     muteAllSoundsEnabled = state
     if state then
         for _, v in ipairs(game:GetDescendants()) do applyMuteToSound(v) end
+        if not muteSoundsConnection then
+            muteSoundsConnection = game.DescendantAdded:Connect(function(v)
+                if muteAllSoundsEnabled then applyMuteToSound(v) end
+            end)
+        end
     else
+        if muteSoundsConnection then muteSoundsConnection:Disconnect(); muteSoundsConnection = nil end
         for sound, origVol in pairs(mutedSounds) do
             if sound and sound.Parent then pcall(function() sound.Volume = origVol end) end
         end
@@ -361,6 +626,10 @@ local function applyHideToObject(v)
         elseif v:IsA("Decal") or v:IsA("Texture") then
             if hiddenObjects[v] == nil then hiddenObjects[v] = v.Transparency end
             v.Transparency = 1
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke")
+            or v:IsA("Fire") or v:IsA("Sparkles") or v:IsA("BillboardGui") or v:IsA("SurfaceGui") then
+            if hiddenObjects[v] == nil then hiddenObjects[v] = v.Enabled end
+            v.Enabled = false
         end
     end)
 end
@@ -369,11 +638,23 @@ local function toggleHideMapAndOthers(state)
     hideMapOthersEnabled = state
     if state then
         for _, v in ipairs(Workspace:GetDescendants()) do applyHideToObject(v) end
+        if not hideMapConnection then
+            hideMapConnection = Workspace.DescendantAdded:Connect(function(v)
+                if hideMapOthersEnabled then applyHideToObject(v) end
+            end)
+        end
     else
+        if hideMapConnection then hideMapConnection:Disconnect(); hideMapConnection = nil end
         for obj, originalVal in pairs(hiddenObjects) do
             if obj and obj.Parent then
                 pcall(function()
-                    if obj:IsA("BasePart") then obj.LocalTransparencyModifier = originalVal end
+                    if obj:IsA("BasePart") then obj.LocalTransparencyModifier = originalVal
+                    elseif obj:IsA("Decal") or obj:IsA("Texture") then obj.Transparency = originalVal
+                    elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke")
+                        or obj:IsA("Fire") or obj:IsA("Sparkles") or obj:IsA("BillboardGui")
+                        or obj:IsA("SurfaceGui") then
+                        obj.Enabled = originalVal
+                    end
                 end)
             end
         end
@@ -384,10 +665,21 @@ end
 local function optimizePartExtreme(v)
     if not fixLagEnabled then return end
     pcall(function()
-        if v:IsA("MeshPart") or v:IsA("BasePart") then
+        if v:IsA("MeshPart") then
+            v.Material = Enum.Material.SmoothPlastic; v.Reflectance = 0; v.CastShadow = false; v.TextureID = ""
+        elseif v:IsA("BasePart") then
             v.Material = Enum.Material.SmoothPlastic; v.Reflectance = 0; v.CastShadow = false
-        elseif v:IsA("Decal") or v:IsA("Texture") then
+        elseif v:IsA("SpecialMesh") then
+            v.TextureId = ""
+        elseif v:IsA("Decal") or v:IsA("Texture") or v:IsA("SurfaceAppearance") then
             v:Destroy()
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke")
+            or v:IsA("Fire") or v:IsA("Sparkles") or v:IsA("Beam") then
+            v.Enabled = false
+        elseif v:IsA("PostEffect") then
+            v.Enabled = false
+        elseif v:IsA("Explosion") then
+            pcall(function() v.Visible = false end)
         end
     end)
 end
@@ -397,9 +689,35 @@ local function toggleFixLag(state)
     if state then
         pcall(function()
             Lighting.GlobalShadows = false
-            Lighting.FogEnd = 9e9
+            Lighting.FogEnd = 9e9; Lighting.FogStart = 9e9
+            Lighting.Brightness = 1
+            Lighting.Technology = Enum.Technology.Compatibility
+            local terrain = Workspace:FindFirstChildOfClass("Terrain")
+            if terrain then
+                terrain.WaterWaveSize = 0; terrain.WaterWaveSpeed = 0
+                terrain.WaterReflectance = 0; terrain.WaterTransparency = 0; terrain.Decoration = false
+            end
         end)
         for _, v in ipairs(game:GetDescendants()) do optimizePartExtreme(v) end
+        if not fixLagChildConnection then
+            fixLagChildConnection = game.DescendantAdded:Connect(function(v)
+                if fixLagEnabled then optimizePartExtreme(v) end
+            end)
+        end
+        if not fixLagTask then
+            fixLagTask = task.spawn(function()
+                while fixLagEnabled do
+                    for _, v in ipairs(Workspace:GetDescendants()) do
+                        if not fixLagEnabled then break end
+                        optimizePartExtreme(v)
+                    end
+                    task.wait(2)
+                end
+            end)
+        end
+    else
+        if fixLagChildConnection then fixLagChildConnection:Disconnect(); fixLagChildConnection = nil end
+        if fixLagTask then task.cancel(fixLagTask); fixLagTask = nil end
     end
 end
 
@@ -410,23 +728,6 @@ local function rejoinServer()
         else
             TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
         end
-    end)
-end
-
-local function serverHopFiltered()
-    task.spawn(function()
-        local placeId = game.PlaceId
-        local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100"
-        local ok, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(url)) end)
-        if ok and result and result.data then
-            for _, server in ipairs(result.data) do
-                if server.id ~= game.JobId and server.playing >= 5 and server.playing < server.maxPlayers then
-                    pcall(function() TeleportService:TeleportToPlaceInstance(placeId, server.id, player) end)
-                    return
-                end
-            end
-        end
-        pcall(function() TeleportService:Teleport(placeId, player) end)
     end)
 end
 
@@ -445,16 +746,20 @@ local function toggleAutoPressButton(state)
                                 if not autoPressButtonEnabled then break end
                                 local pos
                                 if v:IsA("BasePart") then pos = v.Position
-                                elseif v:IsA("PVInstance") then pos = v:GetPivot().Position end
+                                elseif v:IsA("PVInstance") then pos = v:GetPivot().Position
+                                elseif v.Parent and v.Parent:IsA("BasePart") then pos = v.Parent.Position end
                                 
                                 if pos and (root.Position - pos).Magnitude <= autoPressRadius then
-                                    if v:IsA("ClickDetector") and fireclickdetector then fireclickdetector(v)
-                                    elseif v:IsA("ProximityPrompt") and fireproximityprompt then fireproximityprompt(v) end
+                                    if v:IsA("ClickDetector") and type(fireclickdetector) == "function" then
+                                        pcall(function() fireclickdetector(v) end)
+                                    elseif v:IsA("ProximityPrompt") and type(fireproximityprompt) == "function" then
+                                        pcall(function() fireproximityprompt(v) end)
+                                    end
                                 end
                             end
                         end
                     end)
-                    task.wait(0.1)
+                    task.wait(math.max(autoPressDelay, 0.05))
                 end
             end)
         end
@@ -463,10 +768,17 @@ local function toggleAutoPressButton(state)
     end
 end
 
-local noclipConnection
+local noclipConnection, originalHipHeight
 local function toggleNoclip(state)
     noclipEnabled = state
+    local character = player.Character
+    if not character then return end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
     if state then
+        if humanoid and not originalHipHeight then
+            originalHipHeight = humanoid.HipHeight
+            humanoid.HipHeight = originalHipHeight + 0.5
+        end
         if not noclipConnection then
             noclipConnection = RunService.Stepped:Connect(function()
                 local char = player.Character
@@ -479,67 +791,41 @@ local function toggleNoclip(state)
         end
     else
         if noclipConnection then noclipConnection:Disconnect(); noclipConnection = nil end
+        if humanoid and originalHipHeight then
+            humanoid.HipHeight = originalHipHeight; originalHipHeight = nil
+        end
     end
 end
 
-local invisibleConnection
+local invisibleConnection, savedTransparencies = nil, {}
 local function toggleInvisibility(state)
     invisibleEnabled = state
+    local character = player.Character
+    if not character then return end
     if state then
+        savedTransparencies = {}
         if not invisibleConnection then
             invisibleConnection = RunService.RenderStepped:Connect(function()
                 local char = player.Character
                 if char then
                     for _, child in ipairs(char:GetDescendants()) do
                         if child:IsA("BasePart") and child.Name ~= "HumanoidRootPart" then
+                            if savedTransparencies[child] == nil then savedTransparencies[child] = child.Transparency end
                             child.Transparency = 1
-                        end
+                        elseif child:IsA("Decal") or child:IsA("Texture") then
+                            if savedTransparencies[child] == nil then savedTransparencies[child] = child.Transparency end
+                            child.Transparency = 1
+                        elseif child:IsA("BillboardGui") or child:IsA("SurfaceGui") then child.Enabled = false end
                     end
                 end
             end)
         end
-    else
-        if invisibleConnection then invisibleConnection:Disconnect(); invisibleConnection = nil end
-    end
-end
-
-local flyConnection
-local function toggleFly(state)
-    flyEnabled = state
-    local character = player.Character
-    if not character then return end
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if state then
-        if not rootPart or not humanoid then return end
-        humanoid.PlatformStand = true
-        local bg = Instance.new("BodyGyro")
-        bg.Name = "FlyGyro"; bg.P = 9e4; bg.MaxTorque = Vector3.new(9e4, 9e4, 9e4); bg.CFrame = rootPart.CFrame; bg.Parent = rootPart
-        local bv = Instance.new("BodyVelocity")
-        bv.Name = "FlyVelocity"; bv.Velocity = Vector3.zero; bv.MaxForce = Vector3.new(9e4, 9e4, 9e4); bv.Parent = rootPart
-        
-        flyConnection = RunService.RenderStepped:Connect(function()
-            if not flyEnabled or not character.Parent then
-                if bg.Parent then bg:Destroy() end
-                if bv.Parent then bv:Destroy() end
-                return
-            end
-            local cam = Workspace.CurrentCamera
-            local moveDir = humanoid.MoveDirection
-            if moveDir.Magnitude > 0 and cam then
-                bv.Velocity = moveDir * flySpeed
-            else
-                bv.Velocity = Vector3.zero
-            end
-            bg.CFrame = cam and cam.CFrame or rootPart.CFrame
-        end)
-    else
-        if flyConnection then flyConnection:Disconnect(); flyConnection = nil end
-        if rootPart then
-            if rootPart:FindFirstChild("FlyGyro") then rootPart.FlyGyro:Destroy() end
-            if rootPart:FindFirstChild("FlyVelocity") then rootPart.FlyVelocity:Destroy() end
+    elseif invisibleConnection then
+        invisibleConnection:Disconnect(); invisibleConnection = nil
+        for child, transp in pairs(savedTransparencies) do
+            if child and child.Parent then child.Transparency = transp end
         end
-        if humanoid then humanoid.PlatformStand = false end
+        savedTransparencies = {}
     end
 end
 
@@ -569,13 +855,13 @@ local function createHighlight(character, targetPlayer)
         billboard.Name = "H_HUB_NameESP"; billboard.Adornee = head; billboard.Size = UDim2.fromOffset(150, 30); billboard.StudsOffset = Vector3.new(0, 2.5, 0); billboard.AlwaysOnTop = true
         local label = Instance.new("TextLabel")
         label.Size = UDim2.fromScale(1, 1); label.BackgroundTransparency = 1; label.Text = targetPlayer.DisplayName .. " (@" .. targetPlayer.Name .. ")"
-        label.TextColor3 = espColor; label.TextStrokeTransparency = 0; label.TextScaled = true; label.Font = GLOBAL_FONT; label.Parent = billboard
+        label.TextColor3 = espColor; label.TextStrokeTransparency = 0; label.TextStrokeColor3 = Color3.new(0, 0, 0); label.TextScaled = true; label.Font = GLOBAL_FONT; label.Parent = billboard
         billboard.Parent = head
     end
     local highlight = character:FindFirstChild("H_HUB_ESP")
     if not highlight then
         highlight = Instance.new("Highlight")
-        highlight.Name = "H_HUB_ESP"; highlight.Adornee = character; highlight.FillTransparency = 0.5; highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop; highlight.Parent = character
+        highlight.Name = "H_HUB_ESP"; highlight.Adornee = character; highlight.FillTransparency = 0.5; highlight.OutlineColor = Color3.new(1, 1, 1); highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop; highlight.Parent = character
     end
     highlight.FillColor = espColor
 end
@@ -596,8 +882,71 @@ local function updateESP()
     if not espEnabled then return end
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= player and p.Character then
-            createHighlight(p.Character, p)
+            if selectedEspTarget == "Tất cả" or p.Name == selectedEspTarget or p.DisplayName == selectedEspTarget then
+                createHighlight(p.Character, p)
+            end
         end
+    end
+end
+
+local function isPlayerInCooldown(targetPlayer)
+    if not targetPlayer then return true end
+    return (tick() - (frozenPlayersTable[targetPlayer] or 0)) < FREEZE_COOLDOWN
+end
+
+local function getDirectTarget()
+    local char = player.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if not root then return nil, nil end
+    if selectedTargetPlayer and selectedTargetPlayer.Parent then
+        if isPlayerInCooldown(selectedTargetPlayer) then return nil, nil end
+        local tc = selectedTargetPlayer.Character
+        local tr = tc and (tc:FindFirstChild("HumanoidRootPart") or tc:FindFirstChild("Torso"))
+        if tr and (tr.Position - root.Position).Magnitude <= freezeRadius then return tr, selectedTargetPlayer end
+        return nil, nil
+    end
+    local closest, closestPlayer, shortest = nil, nil, freezeRadius
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and not isPlayerInCooldown(p) then
+            local tc = p.Character
+            local tr = tc and (tc:FindFirstChild("HumanoidRootPart") or tc:FindFirstChild("Torso"))
+            if tr then
+                local d = (tr.Position - root.Position).Magnitude
+                if d <= shortest then closest, closestPlayer, shortest = tr, p, d end
+            end
+        end
+    end
+    return closest, closestPlayer
+end
+
+local freezeRayTask
+local function toggleFreezeRay(state)
+    freezeRayEnabled = state
+    if state then
+        if not freezeRayTask then
+            freezeRayTask = task.spawn(function()
+                while freezeRayEnabled do
+                    local targetPart, targetPlayerObj = getDirectTarget()
+                    if targetPart and targetPlayerObj then
+                        local char = player.Character
+                        local hum = char and char:FindFirstChildOfClass("Humanoid")
+                        local backpack = player:FindFirstChild("Backpack")
+                        local tool = char and char:FindFirstChild("FreezeRay") or (backpack and backpack:FindFirstChild("FreezeRay"))
+                        if tool and hum then
+                            if tool.Parent == backpack then hum:EquipTool(tool) end
+                            local event = tool:FindFirstChild("FireEvent") or tool:FindFirstChild("RemoteEvent")
+                            if event then
+                                event:FireServer(targetPart.Position, targetPart)
+                                frozenPlayersTable[targetPlayerObj] = tick()
+                            end
+                        end
+                    end
+                    task.wait(SHOT_DELAY)
+                end
+            end)
+        end
+    elseif freezeRayTask then
+        task.cancel(freezeRayTask); freezeRayTask = nil
     end
 end
 
@@ -623,6 +972,7 @@ task.spawn(function()
                     if coin and coin.Parent then
                         root.CFrame = CFrame.new(coin.Position + Vector3.new(0, 1, 0))
                         hum:Move(Vector3.new(1, 0, 0), true)
+                        hum.Jump = false
                         task.wait(math.max(tpSpeed, 0.05))
                     end
                 end
@@ -632,7 +982,7 @@ task.spawn(function()
 end)
 
 -- ==========================================
--- XÂY DỰNG GIAO DIỆN UI
+-- GIAO DIỆN CHÍNH (UI)
 -- ==========================================
 
 local openUIButton = Instance.new("TextButton")
@@ -649,10 +999,12 @@ openUIButton.Active = true
 openUIButton.Draggable = true
 openUIButton.ZIndex = 100
 openUIButton.Parent = screenGui
-Instance.new("UICorner", openUIButton).CornerRadius = UDim.new(1, 0)
-Instance.new("UIStroke", openUIButton).Thickness = 2
+
+local openCorner = Instance.new("UICorner"); openCorner.CornerRadius = UDim.new(1, 0); openCorner.Parent = openUIButton
+local openStroke = Instance.new("UIStroke"); openStroke.Thickness = 2; openStroke.Color = Color3.fromRGB(80, 80, 255); openStroke.Parent = openUIButton
 
 local fpsButton = Instance.new("TextButton")
+fpsButton.Name = "FPSDisplayButton"
 fpsButton.Size = UDim2.fromOffset(85, 32)
 fpsButton.Position = UDim2.new(1, -95, 0.1, 0)
 fpsButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
@@ -664,7 +1016,7 @@ fpsButton.Visible = false
 fpsButton.Active = true
 fpsButton.Draggable = true
 fpsButton.Parent = screenGui
-Instance.new("UICorner", fpsButton).CornerRadius = UDim.new(0, 6)
+local fc = Instance.new("UICorner"); fc.CornerRadius = UDim.new(0, 6); fc.Parent = fpsButton
 
 local frameCount, lastUpdate = 0, tick()
 local fpsConnection
@@ -679,6 +1031,8 @@ local function toggleFPSDisplay(state)
                 if now - lastUpdate >= 1 then
                     local fps = math.floor(frameCount / (now - lastUpdate))
                     fpsButton.Text = "FPS: " .. fps
+                    fpsButton.TextColor3 = fps <= 15 and Color3.fromRGB(255, 50, 50)
+                        or (fps <= 30 and Color3.fromRGB(255, 200, 0) or Color3.fromRGB(50, 255, 50))
                     frameCount, lastUpdate = 0, now
                 end
             end)
@@ -689,6 +1043,7 @@ local function toggleFPSDisplay(state)
 end
 
 local frame = Instance.new("Frame")
+frame.Name = "MainFrame"
 frame.Size = UDim2.fromOffset(410, 340)
 frame.Position = UDim2.new(0.5, -205, 0.5, -170)
 frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
@@ -708,10 +1063,11 @@ gradientFrame.Color = ColorSequence.new{
 }
 gradientFrame.Parent = frame
 
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+local frameCorner = Instance.new("UICorner"); frameCorner.CornerRadius = UDim.new(0, 8); frameCorner.Parent = frame
 local frameStroke = Instance.new("UIStroke"); frameStroke.Thickness = 2; frameStroke.Color = Color3.fromRGB(60, 60, 100); frameStroke.Transparency = 0.4; frameStroke.Parent = frame
 
 local titleBar = Instance.new("Frame")
+titleBar.Name = "TitleBar"
 titleBar.Size = UDim2.new(1, 0, 0, 35)
 titleBar.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
 titleBar.BackgroundTransparency = .2
@@ -738,7 +1094,7 @@ minimizeButton.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 minimizeButton.Text = "-"
 minimizeButton.TextColor3 = Color3.new(1, 1, 1)
 minimizeButton.Font = GLOBAL_FONT; minimizeButton.TextSize = 20; minimizeButton.ZIndex = 22; minimizeButton.Parent = titleBar
-Instance.new("UICorner", minimizeButton).CornerRadius = UDim.new(0, 4)
+local minCorner = Instance.new("UICorner"); minCorner.CornerRadius = UDim.new(0, 4); minCorner.Parent = minimizeButton
 
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.fromOffset(28, 22)
@@ -747,7 +1103,7 @@ closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 closeButton.Text = "X"
 closeButton.TextColor3 = Color3.new(1, 1, 1)
 closeButton.Font = GLOBAL_FONT; closeButton.TextSize = 13; closeButton.ZIndex = 22; closeButton.Parent = titleBar
-Instance.new("UICorner", closeButton).CornerRadius = UDim.new(0, 4)
+local closeCorner = Instance.new("UICorner"); closeCorner.CornerRadius = UDim.new(0, 4); closeCorner.Parent = closeButton
 
 local sidebar = Instance.new("Frame")
 sidebar.Size = UDim2.new(0, 110, 1, -35)
@@ -775,7 +1131,7 @@ for _, name in ipairs(tabNames) do
     scroll.BorderSizePixel = 0
     scroll.ScrollBarThickness = 4
     scroll.CanvasSize = UDim2.new()
-    scroll.Visible = false
+    scroll.Visible = (name == "Main")
     scroll.ZIndex = 16
     scroll.Parent = container
 
@@ -799,73 +1155,116 @@ local function updateButtonVisual(btn, isOn)
     btn.BackgroundColor3 = isOn and Color3.fromRGB(45, 160, 85) or currentThemeColor
 end
 
-local function createFeatureWithPlusButton(parent, labelText, onToggleCallback)
+local function applyThemeColor(color)
+    currentThemeColor = color
+    for _, btn in ipairs(themeButtons) do
+        if btn and btn.Parent and not btn:GetAttribute("IsOnState") then
+            btn.BackgroundColor3 = color
+        end
+    end
+end
+
+local function applyBoardColor(baseColor)
+    local r, g, b = baseColor.R * 255, baseColor.G * 255, baseColor.B * 255
+    local dark = Color3.fromRGB(math.clamp(r - 15, 0, 255), math.clamp(g - 15, 0, 255), math.clamp(b - 15, 0, 255))
+    local light = Color3.fromRGB(math.clamp(r + 10, 0, 255), math.clamp(g + 10, 0, 255), math.clamp(b + 10, 0, 255))
+    gradientFrame.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, dark), ColorSequenceKeypoint.new(.5, light),
+        ColorSequenceKeypoint.new(1, dark)
+    }
+    sidebar.BackgroundColor3 = dark
+    titleBar.BackgroundColor3 = Color3.fromRGB(math.clamp(r - 20, 0, 255), math.clamp(g - 20, 0, 255), math.clamp(b - 20, 0, 255))
+end
+
+local function applyTextColor(color)
+    currentTextColor = color
+    for _, txt in ipairs(textElements) do if txt and txt.Parent then txt.TextColor3 = color end end
+end
+
+local function createFloatingFeatureShortcut(labelKey, stateGetter, callback)
+    local floatBtn = Instance.new("TextButton")
+    floatBtn.Size = UDim2.fromOffset(120, 32)
+    floatBtn.Position = UDim2.new(0.02, 0, 0.6 + math.random() * 0.2, 0)
+    floatBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+    floatBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    floatBtn.Font = GLOBAL_FONT
+    floatBtn.TextSize = 10
+    floatBtn.Text = labelKey
+    floatBtn.Visible = false
+    floatBtn.Active = true
+    floatBtn.Draggable = true
+    floatBtn.ZIndex = 500
+    floatBtn.Parent = screenGui
+    Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(0, 6)
+    local fs = Instance.new("UIStroke"); fs.Color = Color3.fromRGB(80, 80, 255); fs.Parent = floatBtn
+
+    floatBtn.MouseButton1Click:Connect(function()
+        local newState = not stateGetter()
+        callback(newState)
+        floatBtn.BackgroundColor3 = newState and Color3.fromRGB(45, 160, 85) or Color3.fromRGB(30, 30, 45)
+    end)
+    return floatBtn
+end
+
+local function createToggleRow(parent, labelKey, stateBool, callback, hasPlus, customPlusCallback)
     local row = Instance.new("Frame"); row.Size = UDim2.new(1, 0, 0, 32); row.BackgroundTransparency = 1; row.Parent = parent
     
-    local btn = Instance.new("TextButton"); btn.Size = UDim2.new(1, -38, 1, 0)
+    local btnWidth = hasPlus and UDim2.new(1, -36, 1, 0) or UDim2.fromScale(1, 1)
+    local btn = Instance.new("TextButton"); btn.Size = btnWidth
     btn.BackgroundColor3 = currentThemeColor; btn.TextColor3 = currentTextColor
     btn.Font = GLOBAL_FONT; btn.TextSize = 11; btn.Parent = row
     table.insert(themeButtons, btn); table.insert(textElements, btn)
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    local cr = Instance.new("UICorner"); cr.CornerRadius = UDim.new(0, 6); cr.Parent = btn
 
-    local plusBtn = Instance.new("TextButton"); plusBtn.Size = UDim2.fromOffset(30, 30)
-    plusBtn.Position = UDim2.new(1, -32, 0, 1); plusBtn.BackgroundColor3 = Color3.fromRGB(50, 120, 200)
-    plusBtn.Text = "+"; plusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    plusBtn.Font = GLOBAL_FONT; plusBtn.TextSize = 14; plusBtn.Parent = row
-    Instance.new("UICorner", plusBtn).CornerRadius = UDim.new(0, 6)
+    local floatWidget = nil
+    local function setVisualState(newState)
+        stateBool = newState
+        local t = translations[currentLang]
+        local txt = (t[labelKey] or labelKey) .. (stateBool and " [" .. t.on .. "]" or " [" .. t.off .. "]")
+        btn.Text = txt
+        if floatWidget then
+            floatWidget.Text = t[labelKey] or labelKey
+            floatWidget.BackgroundColor3 = stateBool and Color3.fromRGB(45, 160, 85) or Color3.fromRGB(30, 30, 45)
+        end
+        btn:SetAttribute("IsOnState", stateBool)
+        updateButtonVisual(btn, stateBool)
+    end
 
-    local currentState = false
-    local function refreshBtnText()
-        btn.Text = labelText .. (currentState and " [ON]" or " [OFF]")
-        updateButtonVisual(btn, currentState)
+    if hasPlus then
+        local plusBtn = Instance.new("TextButton")
+        plusBtn.Size = UDim2.fromOffset(30, 32)
+        plusBtn.Position = UDim2.new(1, -30, 0, 0)
+        plusBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 80)
+        plusBtn.Text = "+"
+        plusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        plusBtn.Font = GLOBAL_FONT
+        plusBtn.TextSize = 14
+        plusBtn.Parent = row
+        Instance.new("UICorner", plusBtn).CornerRadius = UDim.new(0, 6)
+
+        if customPlusCallback then
+            plusBtn.MouseButton1Click:Connect(customPlusCallback)
+        else
+            floatWidget = createFloatingFeatureShortcut(labelKey, function() return stateBool end, function(newState)
+                stateBool = newState
+                setVisualState(newState)
+                callback(newState)
+            end)
+
+            plusBtn.MouseButton1Click:Connect(function()
+                floatWidget.Visible = not floatWidget.Visible
+            end)
+        end
     end
 
     btn.MouseButton1Click:Connect(function()
-        currentState = not currentState
-        refreshBtnText()
-        onToggleCallback(currentState)
+        stateBool = not stateBool
+        setVisualState(stateBool)
+        callback(stateBool, setVisualState)
     end)
-    refreshBtnText()
 
-    plusBtn.MouseButton1Click:Connect(function()
-        local floatBtn = Instance.new("TextButton")
-        floatBtn.Size = UDim2.fromOffset(120, 35)
-        floatBtn.Position = UDim2.new(0.2, math.random(0, 200), 0.2, math.random(0, 200))
-        floatBtn.BackgroundColor3 = currentState and Color3.fromRGB(45, 160, 85) or currentThemeColor
-        floatBtn.TextColor3 = currentTextColor
-        floatBtn.Font = GLOBAL_FONT
-        floatBtn.TextSize = 11
-        floatBtn.Text = labelText
-        floatBtn.Active = true
-        floatBtn.Draggable = true
-        floatBtn.ZIndex = 500
-        floatBtn.Parent = screenGui
-        Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(0, 6)
-        Instance.new("UIStroke", floatBtn).Color = Color3.fromRGB(255, 255, 255)
-
-        floatBtn.MouseButton1Click:Connect(function()
-            currentState = not currentState
-            floatBtn.BackgroundColor3 = currentState and Color3.fromRGB(45, 160, 85) or currentThemeColor
-            onToggleCallback(currentState)
-        end)
-    end)
-end
-
-local function createToggleRow(parent, labelKey, stateBool, callback)
-    local row = Instance.new("Frame"); row.Size = UDim2.new(1, 0, 0, 32); row.BackgroundTransparency = 1; row.Parent = parent
-    local btn = Instance.new("TextButton"); btn.Size = UDim2.fromScale(1, 1)
-    btn.BackgroundColor3 = currentThemeColor; btn.TextColor3 = currentTextColor
-    btn.Font = GLOBAL_FONT; btn.TextSize = 11; btn.Parent = row
-    table.insert(themeButtons, btn); table.insert(textElements, btn)
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-    local function refresh()
-        local t = translations[currentLang]
-        btn.Text = (t[labelKey] or labelKey) .. (stateBool and " [" .. t.on .. "]" or " [" .. t.off .. "]")
-        updateButtonVisual(btn, stateBool)
-    end
-    btn.MouseButton1Click:Connect(function() stateBool = not stateBool; refresh(); callback(stateBool) end)
-    refresh()
-    return btn, refresh
+    setVisualState(stateBool)
+    return btn, function() setVisualState(stateBool) end, setVisualState
 end
 
 local function createButtonRow(parent, labelKey, callback)
@@ -874,38 +1273,292 @@ local function createButtonRow(parent, labelKey, callback)
     btn.BackgroundColor3 = currentThemeColor; btn.TextColor3 = currentTextColor
     btn.Font = GLOBAL_FONT; btn.TextSize = 11; btn.Parent = row
     table.insert(themeButtons, btn); table.insert(textElements, btn)
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-    btn.MouseButton1Click:Connect(callback)
-    return btn
+    local cr = Instance.new("UICorner"); cr.CornerRadius = UDim.new(0, 6); cr.Parent = btn
+    local function refresh() btn.Text = translations[currentLang][labelKey] or labelKey end
+    refresh(); btn.MouseButton1Click:Connect(callback)
+    return btn, refresh
 end
 
 local function createInputRow(parent, labelKey, defaultVal, callback)
     local row = Instance.new("Frame"); row.Size = UDim2.new(1, 0, 0, 30); row.BackgroundTransparency = 1; row.Parent = parent
-    local lbl = Instance.new("TextLabel"); lbl.Size = UDim2.new(.6, 0, 1, 0)
+    local lbl = Instance.new("TextLabel"); lbl.Size = UDim2.new(.55, 0, 1, 0)
     lbl.BackgroundTransparency = 1; lbl.TextColor3 = currentTextColor; lbl.Font = GLOBAL_FONT
     lbl.TextSize = 11; lbl.TextXAlignment = Enum.TextXAlignment.Left; lbl.Parent = row
     table.insert(textElements, lbl)
-    local box = Instance.new("TextBox"); box.Size = UDim2.new(.38, 0, 1, 0)
-    box.Position = UDim2.new(.62, 0, 0, 0); box.BackgroundColor3 = currentThemeColor
+    local box = Instance.new("TextBox"); box.Size = UDim2.new(.43, 0, 1, 0)
+    box.Position = UDim2.new(.57, 0, 0, 0); box.BackgroundColor3 = currentThemeColor
     box.TextColor3 = currentTextColor; box.Font = GLOBAL_FONT; box.TextSize = 11
     box.Text = tostring(defaultVal); box.Parent = row
     table.insert(themeButtons, box); table.insert(textElements, box)
-    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
+    local cr = Instance.new("UICorner"); cr.CornerRadius = UDim.new(0, 6); cr.Parent = box
     box.FocusLost:Connect(function()
         local val = tonumber(box.Text)
         if val then callback(val) else box.Text = tostring(defaultVal) end
     end)
-    lbl.Text = translations[currentLang][labelKey] or labelKey
-    return row
+    local function refresh() lbl.Text = translations[currentLang][labelKey] or labelKey end
+    refresh(); return row, refresh
 end
 
-local mainTab = tabs.Main; mainTab.Visible = true
+local mainTab = tabs.Main
+local rollTab = tabs.Roll
+local refreshFuncs = {}
 
-createInputRow(mainTab, "tpSpd", tpSpeed, function(v) tpSpeed = v end)
-createFeatureWithPlusButton(mainTab, "Auto TP Nhặt Xu", function(v) tpEnabled = v end)
+local function addToggle(parent, key, state, callback, hasPlus, customPlusCallback)
+    local _, r, setVis = createToggleRow(parent, key, state, callback, hasPlus, customPlusCallback); table.insert(refreshFuncs, r)
+    return setVis
+end
+local function addInput(parent, key, value, callback)
+    local _, r = createInputRow(parent, key, value, callback); table.insert(refreshFuncs, r)
+end
+local function addButton(parent, key, callback)
+    local _, r = createButtonRow(parent, key, callback); table.insert(refreshFuncs, r)
+end
 
-createInputRow(mainTab, "walkSpd", walkSpeed, function(v)
-    checkAndWarnLimit(v, true, function(allowed)
+-- ==========================================
+-- XÂY DỰNG TAB ROLL & TÍNH NĂNG NÚT MŨI TÊN [^] (CHỌN NHIỀU + CHECK KHO ĐỒ)
+-- ==========================================
+
+autoRollRefreshUI = addToggle(rollTab, "autoRollBtn", autoRollEnabled, toggleAutoRoll, true)
+
+addButton(rollTab, "rollOnceBtn", function()
+    fireGenerateAttackRandom()
+end)
+
+local rollTargetRow = Instance.new("Frame"); rollTargetRow.Size = UDim2.new(1, 0, 0, 34); rollTargetRow.BackgroundTransparency = 1; rollTargetRow.Parent = rollTab
+local rollTargetLabel = Instance.new("TextLabel"); rollTargetLabel.Size = UDim2.new(1, -40, 1, 0)
+rollTargetLabel.BackgroundTransparency = 1; rollTargetLabel.TextColor3 = currentTextColor; rollTargetLabel.Font = GLOBAL_FONT
+rollTargetLabel.TextSize = 11; rollTargetLabel.TextXAlignment = Enum.TextXAlignment.Left; rollTargetLabel.TextWrapped = true; rollTargetLabel.Parent = rollTargetRow
+table.insert(textElements, rollTargetLabel)
+
+local function updateRollTargetText()
+    local selectedNames = {}
+    for _, name in ipairs(allRngAttacks) do
+        if selectedAttacksMap[name] then table.insert(selectedNames, name) end
+    end
+    local prefix = translations[currentLang]["rollTargetLabel"] or "Đã chọn: "
+    if #selectedNames == 0 then
+        rollTargetLabel.Text = prefix .. "Chưa chọn (Quay tự do)"
+    elseif #selectedNames <= 2 then
+        rollTargetLabel.Text = prefix .. table.concat(selectedNames, ", ")
+    else
+        rollTargetLabel.Text = prefix .. #selectedNames .. " mục tiêu"
+    end
+end
+updateRollTargetText()
+table.insert(refreshFuncs, updateRollTargetText)
+
+local arrowBtn = Instance.new("TextButton")
+arrowBtn.Size = UDim2.fromOffset(32, 32)
+arrowBtn.Position = UDim2.new(1, -32, 0, 1)
+arrowBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 110)
+arrowBtn.Text = "^"
+arrowBtn.TextColor3 = Color3.new(1, 1, 1)
+arrowBtn.Font = GLOBAL_FONT
+arrowBtn.TextSize = 16
+arrowBtn.Parent = rollTargetRow
+Instance.new("UICorner", arrowBtn).CornerRadius = UDim.new(0, 6)
+
+local selectorPopup = Instance.new("Frame")
+selectorPopup.Size = UDim2.fromOffset(290, 260)
+selectorPopup.Position = UDim2.new(0.5, -145, 0.5, -130)
+selectorPopup.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
+selectorPopup.BorderSizePixel = 0
+selectorPopup.Visible = false
+selectorPopup.ZIndex = 800
+selectorPopup.Parent = screenGui
+Instance.new("UICorner", selectorPopup).CornerRadius = UDim.new(0, 8)
+local sfStroke = Instance.new("UIStroke"); sfStroke.Color = Color3.fromRGB(90, 90, 255); sfStroke.Thickness = 2; sfStroke.Parent = selectorPopup
+
+local selHeader = Instance.new("TextLabel")
+selHeader.Size = UDim2.new(1, -40, 0, 32)
+selHeader.Position = UDim2.new(0, 10, 0, 0)
+selHeader.BackgroundTransparency = 1
+selHeader.Text = "Chọn Nhiều Sức Mạnh / Quái Mục Tiêu"
+selHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
+selHeader.Font = GLOBAL_FONT
+selHeader.TextSize = 11
+selHeader.Parent = selectorPopup
+
+local selClose = Instance.new("TextButton")
+selClose.Size = UDim2.fromOffset(26, 22)
+selClose.Position = UDim2.new(1, -30, 0, 5)
+selClose.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+selClose.Text = "X"
+selClose.TextColor3 = Color3.new(1, 1, 1)
+selClose.Font = GLOBAL_FONT
+selClose.TextSize = 12
+selClose.Parent = selectorPopup
+Instance.new("UICorner", selClose).CornerRadius = UDim.new(0, 4)
+selClose.MouseButton1Click:Connect(function() selectorPopup.Visible = false end)
+
+local selectorScroll = Instance.new("ScrollingFrame")
+selectorScroll.Size = UDim2.new(1, -12, 1, -72)
+selectorScroll.Position = UDim2.new(0, 6, 0, 34)
+selectorScroll.BackgroundTransparency = 1
+selectorScroll.BorderSizePixel = 0
+selectorScroll.ScrollBarThickness = 4
+selectorScroll.Parent = selectorPopup
+
+local selLayout = Instance.new("UIListLayout")
+selLayout.SortOrder = Enum.SortOrder.LayoutOrder
+selLayout.Padding = UDim.new(0, 4)
+selLayout.Parent = selectorScroll
+
+selLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    selectorScroll.CanvasSize = UDim2.new(0, 0, 0, selLayout.AbsoluteContentSize.Y + 10)
+end)
+
+for _, atkName in ipairs(allRngAttacks) do
+    local choiceBtn = Instance.new("TextButton")
+    choiceBtn.Size = UDim2.new(1, 0, 0, 28)
+    choiceBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+    choiceBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    choiceBtn.Font = GLOBAL_FONT
+    choiceBtn.TextSize = 11
+    choiceBtn.Text = atkName
+    choiceBtn.Parent = selectorScroll
+    Instance.new("UICorner", choiceBtn).CornerRadius = UDim.new(0, 5)
+
+    choiceBtn.MouseButton1Click:Connect(function()
+        selectedAttacksMap[atkName] = not selectedAttacksMap[atkName]
+        if selectedAttacksMap[atkName] then
+            choiceBtn.BackgroundColor3 = Color3.fromRGB(45, 160, 85)
+            choiceBtn.Text = "✔ " .. atkName
+        else
+            choiceBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+            choiceBtn.Text = atkName
+        end
+        updateRollTargetText()
+    end)
+end
+
+arrowBtn.MouseButton1Click:Connect(function()
+    selectorPopup.Visible = not selectorPopup.Visible
+end)
+
+-- ==========================================
+-- BẢNG CHỌN NGƯỜI / DUMMY CHO AIMLOCK QUA NÚT [+]
+-- ==========================================
+
+local aimTargetPopup = Instance.new("Frame")
+aimTargetPopup.Size = UDim2.fromOffset(260, 220)
+aimTargetPopup.Position = UDim2.new(0.5, -130, 0.5, -110)
+aimTargetPopup.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
+aimTargetPopup.BorderSizePixel = 0
+aimTargetPopup.Visible = false
+aimTargetPopup.ZIndex = 900
+aimTargetPopup.Parent = screenGui
+Instance.new("UICorner", aimTargetPopup).CornerRadius = UDim.new(0, 8)
+local atStroke = Instance.new("UIStroke"); atStroke.Color = Color3.fromRGB(90, 90, 255); atStroke.Thickness = 2; atStroke.Parent = aimTargetPopup
+
+local atHeader = Instance.new("TextLabel")
+atHeader.Size = UDim2.new(1, -40, 0, 32)
+atHeader.Position = UDim2.new(0, 10, 0, 0)
+atHeader.BackgroundTransparency = 1
+atHeader.Text = "Chọn Người / Dummy Cần Aim"
+atHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
+atHeader.Font = GLOBAL_FONT
+atHeader.TextSize = 11
+atHeader.Parent = aimTargetPopup
+
+local atClose = Instance.new("TextButton")
+atClose.Size = UDim2.fromOffset(26, 22)
+atClose.Position = UDim2.new(1, -30, 0, 5)
+atClose.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+atClose.Text = "X"
+atClose.TextColor3 = Color3.new(1, 1, 1)
+atClose.Font = GLOBAL_FONT
+atClose.TextSize = 12
+atClose.Parent = aimTargetPopup
+Instance.new("UICorner", atClose).CornerRadius = UDim.new(0, 4)
+atClose.MouseButton1Click:Connect(function() aimTargetPopup.Visible = false end)
+
+local atScroll = Instance.new("ScrollingFrame")
+atScroll.Size = UDim2.new(1, -12, 1, -44)
+atScroll.Position = UDim2.new(0, 6, 0, 38)
+atScroll.BackgroundTransparency = 1
+atScroll.BorderSizePixel = 0
+atScroll.ScrollBarThickness = 4
+atScroll.Parent = aimTargetPopup
+
+local atLayout = Instance.new("UIListLayout")
+atLayout.SortOrder = Enum.SortOrder.LayoutOrder
+atLayout.Padding = UDim.new(0, 4)
+atLayout.Parent = atScroll
+
+atLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    atScroll.CanvasSize = UDim2.new(0, 0, 0, atLayout.AbsoluteContentSize.Y + 10)
+end)
+
+local function refreshAimTargetsList()
+    for _, child in ipairs(atScroll:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+
+    local allBtn = Instance.new("TextButton")
+    allBtn.Size = UDim2.new(1, 0, 0, 28)
+    allBtn.BackgroundColor3 = (selectedAimTargetName == "Tất cả") and Color3.fromRGB(45, 160, 85) or Color3.fromRGB(30, 30, 45)
+    allBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    allBtn.Font = GLOBAL_FONT
+    allBtn.TextSize = 11
+    allBtn.Text = "⚡ Tất Cả (Tự động gần nhất)"
+    allBtn.Parent = atScroll
+    Instance.new("UICorner", allBtn).CornerRadius = UDim.new(0, 5)
+    allBtn.MouseButton1Click:Connect(function()
+        selectedAimTargetName = "Tất cả"
+        aimTargetPopup.Visible = false
+    end)
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            local pBtn = Instance.new("TextButton")
+            pBtn.Size = UDim2.new(1, 0, 0, 28)
+            pBtn.BackgroundColor3 = (selectedAimTargetName == p.Name or selectedAimTargetName == p.DisplayName) and Color3.fromRGB(45, 160, 85) or Color3.fromRGB(30, 30, 45)
+            pBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            pBtn.Font = GLOBAL_FONT
+            pBtn.TextSize = 11
+            pBtn.Text = "👤 " .. (p.DisplayName or p.Name) .. " (@" .. p.Name .. ")"
+            pBtn.Parent = atScroll
+            Instance.new("UICorner", pBtn).CornerRadius = UDim.new(0, 5)
+
+            pBtn.MouseButton1Click:Connect(function()
+                selectedAimTargetName = p.Name
+                aimTargetPopup.Visible = false
+            end)
+        end
+    end
+
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("Model") and obj ~= player.Character and not Players:GetPlayerFromCharacter(obj) then
+            local hum = obj:FindFirstChildOfClass("Humanoid")
+            if hum then
+                local dBtn = Instance.new("TextButton")
+                dBtn.Size = UDim2.new(1, 0, 0, 28)
+                dBtn.BackgroundColor3 = (selectedAimTargetName == obj.Name) and Color3.fromRGB(45, 160, 85) or Color3.fromRGB(30, 30, 45)
+                dBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                dBtn.Font = GLOBAL_FONT
+                dBtn.TextSize = 11
+                dBtn.Text = "🤖 Dummy: " .. obj.Name
+                dBtn.Parent = atScroll
+                Instance.new("UICorner", dBtn).CornerRadius = UDim.new(0, 5)
+
+                dBtn.MouseButton1Click:Connect(function()
+                    selectedAimTargetName = obj.Name
+                    aimTargetPopup.Visible = false
+                end)
+            end
+        end
+    end
+end
+
+-- ==========================================
+-- ĐIỀN ĐẦY ĐỦ DỮ LIỆU TẤT CẢ CÁC TAB GỐC
+-- ==========================================
+
+addInput(mainTab, "tpSpd", tpSpeed, function(v) tpSpeed = v end)
+addToggle(mainTab, "tpBtn", tpEnabled, function(v) tpEnabled = v end, true)
+addInput(mainTab, "walkSpd", walkSpeed, function(v)
+    checkSafetyThreshold("walk", v, function(allowed)
         if allowed then
             walkSpeed = v
             if walkEnabled then
@@ -917,22 +1570,26 @@ createInputRow(mainTab, "walkSpd", walkSpeed, function(v)
 end)
 
 local walkConnection
-createFeatureWithPlusButton(mainTab, "Chỉnh Tốc Độ Đi", function(v)
-    walkEnabled = v
-    if walkConnection then walkConnection:Disconnect(); walkConnection = nil end
-    if v then
-        walkConnection = RunService.RenderStepped:Connect(function()
-            local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if h then h.WalkSpeed = walkSpeed end
-        end)
-    else
-        local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if h then h.WalkSpeed = 16 end
-    end
-end)
+addToggle(mainTab, "walkBtn", walkEnabled, function(v)
+    checkSafetyThreshold("walk", walkSpeed, function(allowed)
+        if allowed then
+            walkEnabled = v
+            if walkConnection then walkConnection:Disconnect(); walkConnection = nil end
+            if v then
+                walkConnection = RunService.RenderStepped:Connect(function()
+                    local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+                    if h then h.WalkSpeed = walkSpeed end
+                end)
+            else
+                local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+                if h then h.WalkSpeed = 16 end
+            end
+        end
+    end)
+end, true)
 
-createInputRow(mainTab, "jumpSpd", jumpPower, function(v)
-    checkAndWarnLimit(v, false, function(allowed)
+addInput(mainTab, "jumpSpd", jumpPower, function(v)
+    checkSafetyThreshold("jump", v, function(allowed)
         if allowed then
             jumpPower = v
             local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
@@ -942,123 +1599,343 @@ createInputRow(mainTab, "jumpSpd", jumpPower, function(v)
 end)
 
 local jumpConnection
-createFeatureWithPlusButton(mainTab, "Chỉnh Độ Nhảy", function(v)
-    jumpEnabled = v
-    if jumpConnection then jumpConnection:Disconnect(); jumpConnection = nil end
-    if v then
-        jumpConnection = RunService.RenderStepped:Connect(function()
-            local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if h then h.UseJumpPower = true; h.JumpPower = jumpPower end
-        end)
-    end
-end)
-
-createFeatureWithPlusButton(mainTab, "Chế Độ Bay", toggleFly)
-createFeatureWithPlusButton(mainTab, "Đi Xuyên Tường (Noclip)", toggleNoclip)
-createFeatureWithPlusButton(mainTab, "Tàng Hình Nhìn Thấy", toggleInvisibility)
-createFeatureWithPlusButton(mainTab, "Nhảy Vô Hạn", toggleInfJump)
-createFeatureWithPlusButton(mainTab, "Tự Động Freeze Ray", toggleFreezeRay)
-createButtonRow(mainTab, "autoEquipBtn", equipItemsOnce)
-createFeatureWithPlusButton(mainTab, "Auto Click Nút", toggleAutoPressButton)
-
--- TAB AUTO ROLL
-local rollTab = tabs.Roll
-createFeatureWithPlusButton(rollTab, "Bật Auto Roll (Liên tục)", toggleAutoRoll)
-
-local arrowToggleBtn = Instance.new("TextButton")
-arrowToggleBtn.Size = UDim2.new(1, 0, 0, 36)
-arrowToggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 90)
-arrowToggleBtn.TextColor3 = currentTextColor
-arrowToggleBtn.Font = GLOBAL_FONT
-arrowToggleBtn.TextSize = 12
-arrowToggleBtn.Text = "Mở Bảng Chọn Sức Mạnh [ ^ ]"
-arrowToggleBtn.Parent = rollTab
-Instance.new("UICorner", arrowToggleBtn).CornerRadius = UDim.new(0, 6)
-
-local attackSelectorFrame = Instance.new("ScrollingFrame")
-attackSelectorFrame.Size = UDim2.new(1, 0, 0, 180)
-attackSelectorFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-attackSelectorFrame.BackgroundTransparency = 0.2
-attackSelectorFrame.BorderSizePixel = 0
-attackSelectorFrame.ScrollBarThickness = 4
-attackSelectorFrame.CanvasSize = UDim2.new()
-attackSelectorFrame.Visible = false
-attackSelectorFrame.Parent = rollTab
-
-local asLayout = Instance.new("UIListLayout"); asLayout.SortOrder = Enum.SortOrder.LayoutOrder; asLayout.Padding = UDim.new(0, 4); asLayout.Parent = attackSelectorFrame
-asLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    attackSelectorFrame.CanvasSize = UDim2.new(0, 0, 0, asLayout.AbsoluteContentSize.Y + 10)
-end)
-
-arrowToggleBtn.MouseButton1Click:Connect(function()
-    attackSelectorFrame.Visible = not attackSelectorFrame.Visible
-    arrowToggleBtn.Text = attackSelectorFrame.Visible and "Đóng Bảng Chọn Sức Mạnh [ v ]" or "Mở Bảng Chọn Sức Mạnh [ ^ ]"
-end)
-
-for _, attName in ipairs(allAttacksList) do
-    local attRow = Instance.new("Frame"); attRow.Size = UDim2.new(1, 0, 0, 28); attRow.BackgroundTransparency = 1; attRow.Parent = attackSelectorFrame
-
-    local nameBtn = Instance.new("TextButton"); nameBtn.Size = UDim2.new(1, 0, 1, 0)
-    nameBtn.BackgroundColor3 = currentThemeColor; nameBtn.TextColor3 = currentTextColor; nameBtn.Font = GLOBAL_FONT; nameBtn.TextSize = 11
-    nameBtn.Text = "🎲 Bấm để Roll ngay: " .. attName
-    nameBtn.Parent = attRow
-    Instance.new("UICorner", nameBtn).CornerRadius = UDim.new(0, 4)
-
-    nameBtn.MouseButton1Click:Connect(function()
-        fireRollServer(attName)
+addToggle(mainTab, "jumpBtn", jumpEnabled, function(v)
+    checkSafetyThreshold("jump", jumpPower, function(allowed)
+        if allowed then
+            jumpEnabled = v
+            if jumpConnection then jumpConnection:Disconnect(); jumpConnection = nil end
+            if v then
+                jumpConnection = RunService.RenderStepped:Connect(function()
+                    local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+                    if h then h.UseJumpPower = true; h.JumpPower = jumpPower end
+                end)
+            end
+        end
     end)
+end, true)
+
+-- AimLock kèm nút [+] chọn người cần Aim
+addToggle(mainTab, "aimLockBtn", aimLockEnabled, toggleAimLock, true, function()
+    refreshAimTargetsList()
+    aimTargetPopup.Visible = not aimTargetPopup.Visible
+end)
+
+addInput(mainTab, "gravSpd", customGravity, function(v) customGravity = v if gravityEnabled then Workspace.Gravity = v end end)
+
+local gravityConnection
+addToggle(mainTab, "gravBtn", gravityEnabled, function(v)
+    gravityEnabled = v
+    if gravityConnection then gravityConnection:Disconnect(); gravityConnection = nil end
+    if v then
+        gravityConnection = RunService.RenderStepped:Connect(function() Workspace.Gravity = customGravity end)
+    else Workspace.Gravity = 196.2 end
+end, true)
+
+addToggle(mainTab, "noclipBtn", noclipEnabled, toggleNoclip, true)
+addToggle(mainTab, "invisBtn", invisibleEnabled, toggleInvisibility, true)
+addToggle(mainTab, "infJumpBtn", infJumpEnabled, toggleInfJump, true)
+addInput(mainTab, "freezeRng", freezeRadius, function(v) freezeRadius = v end)
+addToggle(mainTab, "freezeBtn", freezeRayEnabled, toggleFreezeRay, true)
+addButton(mainTab, "autoEquipBtn", equipItemsOnce)
+addInput(mainTab, "autoPressRadiusLabel", autoPressRadius, function(v) autoPressRadius = v end)
+addInput(mainTab, "autoPressDelayLabel", autoPressDelay, function(v) autoPressDelay = v end)
+addToggle(mainTab, "autoPressBtn", autoPressButtonEnabled, toggleAutoPressButton, true)
+
+local godRow = Instance.new("Frame"); godRow.Size = UDim2.new(1, 0, 0, 36); godRow.BackgroundTransparency = 1; godRow.Parent = mainTab
+local godButton = Instance.new("TextButton"); godButton.Size = UDim2.fromScale(1, 1)
+godButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40); godButton.TextColor3 = Color3.new(1, 1, 1)
+godButton.Font = GLOBAL_FONT; godButton.TextSize = 12; godButton.Parent = godRow
+local gc = Instance.new("UICorner"); gc.CornerRadius = UDim.new(0, 6); gc.Parent = godButton
+godButton.MouseButton1Click:Connect(function()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Rawbr10/Roblox-Scripts/refs/heads/main/God%20Mode%20Script%20Universal"))()
+    end)
+end)
+
+local espTab = tabs.ESP
+addToggle(espTab, "espBtn", espEnabled, function(v) espEnabled = v; updateESP() end, true)
+addToggle(espTab, "fpsBtn", fpsEnabled, toggleFPSDisplay, true)
+
+local espColorLabel = Instance.new("TextLabel"); espColorLabel.Size = UDim2.new(1, 0, 0, 20)
+espColorLabel.BackgroundTransparency = 1; espColorLabel.TextColor3 = currentTextColor; espColorLabel.Font = GLOBAL_FONT
+espColorLabel.TextSize = 11; espColorLabel.TextXAlignment = Enum.TextXAlignment.Left; espColorLabel.Parent = espTab
+table.insert(textElements, espColorLabel)
+
+local espPalette = Instance.new("Frame"); espPalette.Size = UDim2.new(1, 0, 0, 28); espPalette.BackgroundTransparency = 1; espPalette.Parent = espTab
+local espColors = {
+    Color3.fromRGB(255, 50, 50), Color3.fromRGB(50, 255, 50), Color3.fromRGB(50, 150, 255),
+    Color3.fromRGB(255, 255, 50), Color3.fromRGB(255, 50, 255), Color3.fromRGB(255, 255, 255)
+}
+for i, col in ipairs(espColors) do
+    local b = Instance.new("TextButton"); b.Size = UDim2.fromOffset(28, 28); b.Position = UDim2.new(0, (i - 1) * 34, 0, 0)
+    b.BackgroundColor3 = col; b.Text = ""; b.Parent = espPalette
+    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 6); c.Parent = b
+    b.MouseButton1Click:Connect(function() espColor = col; updateESP() end)
 end
 
--- ESP Tab
-local espTab = tabs.ESP
-createFeatureWithPlusButton(espTab, "ESP Nhìn Xuyên Tường", function(v) espEnabled = v; updateESP() end)
-createFeatureWithPlusButton(espTab, "Hiển Thị FPS", toggleFPSDisplay)
-
--- Fix Lag Tab
 local fixTab = tabs.FixLag
-createFeatureWithPlusButton(fixTab, "Siêu Giảm Lag (Max FPS)", toggleFixLag)
-createFeatureWithPlusButton(fixTab, "Ẩn Bản Đồ & Người Khác", toggleHideMapAndOthers)
-createFeatureWithPlusButton(fixTab, "Tắt Âm Thanh Game", toggleMuteAllSounds)
+addToggle(fixTab, "fixLagBtn", fixLagEnabled, toggleFixLag, true)
+addToggle(fixTab, "hideMapBtn", hideMapOthersEnabled, toggleHideMapAndOthers, true)
+addToggle(fixTab, "muteSoundsBtn", muteAllSoundsEnabled, toggleMuteAllSounds, true)
 
--- Misc Tab
 local miscTab = tabs.Misc
-createButtonRow(miscTab, "rejoinBtn", rejoinServer)
-createButtonRow(miscTab, "serverHopBtn", serverHopFiltered)
+local function addLabel(parent, key)
+    local l = Instance.new("TextLabel"); l.Size = UDim2.new(1, 0, 0, 18); l.BackgroundTransparency = 1
+    l.TextColor3 = currentTextColor; l.Font = GLOBAL_FONT; l.TextSize = 11; l.TextXAlignment = Enum.TextXAlignment.Left; l.Parent = parent
+    table.insert(textElements, l)
+    local function refresh() l.Text = translations[currentLang][key] or key end
+    refresh(); return l, refresh
+end
+local _, rBoard = addLabel(miscTab, "boardColorLabel"); table.insert(refreshFuncs, rBoard)
 
--- Experimental Tab
-local expTab = tabs.Experimental
-createToggleRow(expTab, "specBtnToggle", spectating, function(state) spectating = state end)
+local function addPalette(parent, colors, callback)
+    local pal = Instance.new("Frame"); pal.Size = UDim2.new(1, 0, 0, 28); pal.BackgroundTransparency = 1; pal.Parent = parent
+    for i, col in ipairs(colors) do
+        local b = Instance.new("TextButton"); b.Size = UDim2.fromOffset(28, 28); b.Position = UDim2.new(0, (i - 1) * 34, 0, 0)
+        b.BackgroundColor3 = col; b.Text = ""; b.Parent = pal
+        local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 6); c.Parent = b
+        b.MouseButton1Click:Connect(function() callback(col) end)
+    end
+end
 
--- Sidebar Navigation
+addPalette(miscTab, {
+    Color3.fromRGB(20, 20, 25), Color3.fromRGB(40, 20, 20), Color3.fromRGB(20, 40, 20),
+    Color3.fromRGB(20, 25, 40), Color3.fromRGB(40, 30, 20)
+}, applyBoardColor)
+
+local _, rTheme = addLabel(miscTab, "themeLabel"); table.insert(refreshFuncs, rTheme)
+addPalette(miscTab, {
+    Color3.fromRGB(35, 35, 45), Color3.fromRGB(50, 40, 80), Color3.fromRGB(30, 60, 90),
+    Color3.fromRGB(70, 30, 40), Color3.fromRGB(30, 70, 50)
+}, applyThemeColor)
+
+local _, rText = addLabel(miscTab, "textLabel"); table.insert(refreshFuncs, rText)
+addPalette(miscTab, {
+    Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 220, 100),
+    Color3.fromRGB(100, 255, 200), Color3.fromRGB(255, 150, 200)
+}, applyTextColor)
+
+addToggle(miscTab, "autoHopBtn", autoServerHopEnabled, function(v) autoServerHopEnabled = v end, true)
+addToggle(miscTab, "adminDetectBtn", adminDetectorEnabled, function(v) adminDetectorEnabled = v end, true)
+
+local _, rLang = addLabel(miscTab, "langLabel"); table.insert(refreshFuncs, rLang)
+local langFrame = Instance.new("Frame"); langFrame.Size = UDim2.new(1, 0, 0, 30); langFrame.BackgroundTransparency = 1; langFrame.Parent = miscTab
+local btnEnglish = Instance.new("TextButton"); btnEnglish.Size = UDim2.new(.48, 0, 1, 0); btnEnglish.BackgroundColor3 = currentThemeColor
+btnEnglish.TextColor3 = currentTextColor; btnEnglish.Font = GLOBAL_FONT; btnEnglish.TextSize = 11; btnEnglish.Text = "English"; btnEnglish.Parent = langFrame
+local btnVietnamese = btnEnglish:Clone(); btnVietnamese.Position = UDim2.new(.52, 0, 0, 0); btnVietnamese.Text = "Tiếng Việt"; btnVietnamese.Parent = langFrame
+for _, b in ipairs({btnEnglish, btnVietnamese}) do
+    table.insert(themeButtons, b); table.insert(textElements, b)
+    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 6); c.Parent = b
+end
+
+local serverFrame = Instance.new("Frame"); serverFrame.Size = UDim2.new(1, 0, 0, 32); serverFrame.BackgroundTransparency = 1; serverFrame.Parent = miscTab
+local rejoinButton = btnEnglish:Clone(); rejoinButton.Size = UDim2.new(.48, 0, 1, 0); rejoinButton.Position = UDim2.new(); rejoinButton.Parent = serverFrame
+local serverHopButton = btnVietnamese:Clone(); serverHopButton.Size = UDim2.new(.48, 0, 1, 0); serverHopButton.Position = UDim2.new(.52, 0, 0, 0); serverHopButton.Parent = serverFrame
+for _, b in ipairs({rejoinButton, serverHopButton}) do table.insert(themeButtons, b); table.insert(textElements, b) end
+rejoinButton.MouseButton1Click:Connect(rejoinServer)
+serverHopButton.MouseButton1Click:Connect(serverHopFiltered)
+
 local tabButtons = {}
+local tabTextKeys = {Main = "tabMain", Roll = "tabRoll", ESP = "tabEsp", FixLag = "tabFixLag", Misc = "tabMisc", Experimental = "tabExperimental"}
 local y = 10
 for i, name in ipairs(tabNames) do
     local b = Instance.new("TextButton"); b.Size = UDim2.new(1, -16, 0, 32); b.Position = UDim2.new(0, 8, 0, y)
     b.BackgroundColor3 = i == 1 and Color3.fromRGB(70, 70, 90) or Color3.fromRGB(30, 30, 40)
     b.TextColor3 = currentTextColor; b.Font = GLOBAL_FONT; b.TextSize = 11; b.Parent = sidebar
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    table.insert(textElements, b)
+    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 6); c.Parent = b
     b.MouseButton1Click:Connect(function()
         for _, t in pairs(tabs) do t.Visible = false end
         for _, other in pairs(tabButtons) do other.BackgroundColor3 = Color3.fromRGB(30, 30, 40) end
         tabs[name].Visible = true; b.BackgroundColor3 = Color3.fromRGB(70, 70, 90)
     end)
     tabButtons[name] = b; y += 40
-    b.Text = name
 end
 
+local function updateLanguage()
+    local t = translations[currentLang]
+    titleText.Text = t.title; godButton.Text = t.godBtn
+    espColorLabel.Text = t.espColorLabel
+    for _, rf in ipairs(refreshFuncs) do rf() end
+    rejoinButton.Text = t.rejoinBtn; serverHopButton.Text = t.serverHopBtn
+    for name, key in pairs(tabTextKeys) do tabButtons[name].Text = t[key] end
+end
+
+btnEnglish.MouseButton1Click:Connect(function() currentLang = "EN"; updateLanguage() end)
+btnVietnamese.MouseButton1Click:Connect(function() currentLang = "VI"; updateLanguage() end)
+
+-- TAB THỬ NGHIỆM: SPECTATE
+local expTab = tabs.Experimental
+local toggleButton = Instance.new("TextButton")
+toggleButton.Name = "ToggleSpectateButton"
+toggleButton.Size = UDim2.new(0, 110, 0, 40)
+toggleButton.Position = UDim2.new(0.02, 0, 0.48, 0)
+toggleButton.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+toggleButton.Text = "👁️ Spectate"
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Font = GLOBAL_FONT
+toggleButton.TextSize = 14
+toggleButton.Active = true
+toggleButton.Draggable = true
+toggleButton.ZIndex = 100
+toggleButton.Visible = false
+toggleButton.Parent = screenGui
+Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0, 8)
+
+local spectateFrame = Instance.new("Frame")
+spectateFrame.Size = UDim2.new(0, 320, 0, 115)
+spectateFrame.Position = UDim2.new(0.5, -160, 0.85, -55)
+spectateFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+spectateFrame.BackgroundTransparency = 0.2; spectateFrame.BorderSizePixel = 0; spectateFrame.Visible = false; spectateFrame.ZIndex = 50; spectateFrame.Parent = screenGui
+Instance.new("UICorner", spectateFrame).CornerRadius = UDim.new(0, 8)
+
+local specNameLabel = Instance.new("TextLabel")
+specNameLabel.Size = UDim2.new(1, -90, 0, 34); specNameLabel.Position = UDim2.new(0, 45, 0, 6); specNameLabel.BackgroundTransparency = 1; specNameLabel.Text = "Player Name"; specNameLabel.TextColor3 = currentTextColor; specNameLabel.Font = GLOBAL_FONT; specNameLabel.TextSize = 13; specNameLabel.Parent = spectateFrame
+
+local specPrevBtn = Instance.new("TextButton")
+specPrevBtn.Size = UDim2.new(0, 35, 0, 34); specPrevBtn.Position = UDim2.new(0, 8, 0, 6); specPrevBtn.BackgroundColor3 = currentThemeColor; specPrevBtn.Text = "<"; specPrevBtn.TextColor3 = currentTextColor; specPrevBtn.Font = GLOBAL_FONT; specPrevBtn.TextSize = 16; specPrevBtn.Parent = spectateFrame
+Instance.new("UICorner", specPrevBtn).CornerRadius = UDim.new(0, 6)
+
+local specNextBtn = specPrevBtn:Clone()
+specNextBtn.Position = UDim2.new(1, -43, 0, 6); specNextBtn.Text = ">"; specNextBtn.Parent = spectateFrame
+
+local teleportBtn = Instance.new("TextButton")
+teleportBtn.Size = UDim2.new(0, 160, 0, 28); teleportBtn.Position = UDim2.new(0.5, -80, 0, 44); teleportBtn.BackgroundColor3 = Color3.fromRGB(45, 120, 210); teleportBtn.Text = "🚀 Dịch Chuyển Tới"; teleportBtn.TextColor3 = Color3.fromRGB(255, 255, 255); teleportBtn.Font = GLOBAL_FONT; teleportBtn.TextSize = 11; teleportBtn.Parent = spectateFrame
+Instance.new("UICorner", teleportBtn).CornerRadius = UDim.new(0, 5)
+
+local specCloseBtn = Instance.new("TextButton")
+specCloseBtn.Size = UDim2.new(0, 120, 0, 24); specCloseBtn.Position = UDim2.new(0.5, -60, 0, 78); specCloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50); specCloseBtn.Text = "Đóng Spectate"; specCloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255); specCloseBtn.Font = GLOBAL_FONT; specCloseBtn.TextSize = 11; specCloseBtn.Parent = spectateFrame
+Instance.new("UICorner", specCloseBtn).CornerRadius = UDim.new(0, 5)
+
+local spectateIndex = 1
+local spectateConnection = nil
+
+local function getSpectateTargets()
+    local targets = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p and p ~= player and p.Parent and p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
+            table.insert(targets, p)
+        end
+    end
+    return targets
+end
+
+local function updateSpectateCamera()
+    pcall(function()
+        local targets = getSpectateTargets()
+        if #targets == 0 then
+            specNameLabel.Text = "Không có người chơi khác!"
+            return
+        end
+        if spectateIndex > #targets then spectateIndex = 1 end
+        if spectateIndex < 1 then spectateIndex = #targets end
+
+        local target = targets[spectateIndex]
+        if not target then return end
+        specNameLabel.Text = (target.DisplayName or target.Name) .. " (@" .. target.Name .. ")"
+
+        local cam = Workspace.CurrentCamera
+        if cam and target.Character then
+            local hum = target.Character:FindFirstChildOfClass("Humanoid")
+            if hum then cam.CameraSubject = hum end
+        end
+    end)
+end
+
+local function toggleSpectateWindow(state)
+    spectateFrame.Visible = state
+    local cam = Workspace.CurrentCamera
+    if not cam then return end
+
+    if state then
+        spectateIndex = 1
+        updateSpectateCamera()
+        if not spectateConnection then
+            spectateConnection = RunService.RenderStepped:Connect(function()
+                if not spectateFrame.Visible then return end
+                pcall(function()
+                    local targets = getSpectateTargets()
+                    local target = targets[spectateIndex]
+                    if target and target.Character then
+                        local hum = target.Character:FindFirstChildOfClass("Humanoid")
+                        if hum and cam.CameraSubject ~= hum then cam.CameraSubject = hum end
+                    end
+                end)
+            end)
+        end
+    else
+        if spectateConnection then spectateConnection:Disconnect(); spectateConnection = nil end
+        if player.Character then
+            local myHum = player.Character:FindFirstChildOfClass("Humanoid")
+            if myHum then cam.CameraSubject = myHum end
+        end
+    end
+end
+
+toggleButton.MouseButton1Click:Connect(function() toggleSpectateWindow(not spectateFrame.Visible) end)
+specPrevBtn.MouseButton1Click:Connect(function() spectateIndex -= 1; updateSpectateCamera() end)
+specNextBtn.MouseButton1Click:Connect(function() spectateIndex += 1; updateSpectateCamera() end)
+teleportBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        local targets = getSpectateTargets()
+        local target = targets[spectateIndex]
+        if target and target.Character and player.Character then
+            local tRoot = target.Character:FindFirstChild("HumanoidRootPart")
+            local mRoot = player.Character:FindFirstChild("HumanoidRootPart")
+            if tRoot and mRoot then mRoot.CFrame = tRoot.CFrame * CFrame.new(0, 0, 3) end
+        end
+    end)
+end)
+specCloseBtn.MouseButton1Click:Connect(function() toggleSpectateWindow(false) end)
+
+addToggle(expTab, "specBtnToggle", false, function(state)
+    toggleButton.Visible = state
+    if not state then toggleSpectateWindow(false) end
+end, true)
+
+-- Quản lý thu phóng UI
+local isAnimating = false
 minimizeButton.MouseButton1Click:Connect(function()
-    frame.Visible = false
-    openUIButton.Visible = true
+    if isAnimating then return end
+    isAnimating = true
+    local tween = TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.fromOffset(0, 0)})
+    tween:Play()
+    tween.Completed:Connect(function()
+        frame.Visible = false
+        openUIButton.Visible = true
+        openUIButton.Size = UDim2.fromOffset(0, 0)
+        TweenService:Create(openUIButton, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(50, 50)}):Play()
+        isAnimating = false
+    end)
 end)
 
 openUIButton.MouseButton1Click:Connect(function()
-    openUIButton.Visible = false
-    frame.Visible = true
+    if isAnimating then return end
+    isAnimating = true
+    local tween = TweenService:Create(openUIButton, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.fromOffset(0, 0)})
+    tween:Play()
+    tween.Completed:Connect(function()
+        openUIButton.Visible = false
+        frame.Visible = true
+        frame.Size = UDim2.fromOffset(0, 0)
+        TweenService:Create(frame, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(410, 340)}):Play()
+        isAnimating = false
+    end)
 end)
 
 closeButton.MouseButton1Click:Connect(function()
+    toggleAutoRoll(false)
+    toggleAimLock(false)
     pcall(function() screenGui:Destroy() end)
 end)
 
+updateLanguage()
 frame.Visible = true
-print("[H HUB] Fix Loaded Successfully!")
+frame.Size = UDim2.fromOffset(1, 1)
+
+task.defer(function()
+    task.wait(0.05)
+    TweenService:Create(frame, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.fromOffset(410, 340)}):Play()
+end)
+
+print("[H HUB] RNG Fights Full Features, Multi-Roll & Selective AimLock Loaded!")
